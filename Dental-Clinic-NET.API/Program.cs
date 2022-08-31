@@ -13,7 +13,8 @@ namespace Dental_Clinic_NET.API
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var builder = CreateHostBuilder(args).Build();
+            builder.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
