@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dental-Clinic-NET.API", "Dental-Clinic-NET.API\Dental-Clinic-NET.API.csproj", "{0E2C838F-9550-4135-A052-943E74B447BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dental-Clinic-NET.API", "Dental-Clinic-NET.API\Dental-Clinic-NET.API.csproj", "{0E2C838F-9550-4135-A052-943E74B447BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLayer", "DataLayer\DataLayer.csproj", "{72A6C9AE-944F-4044-86C6-C95BED0CF08A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{0E2C838F-9550-4135-A052-943E74B447BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2C838F-9550-4135-A052-943E74B447BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2C838F-9550-4135-A052-943E74B447BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72A6C9AE-944F-4044-86C6-C95BED0CF08A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72A6C9AE-944F-4044-86C6-C95BED0CF08A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72A6C9AE-944F-4044-86C6-C95BED0CF08A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72A6C9AE-944F-4044-86C6-C95BED0CF08A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
