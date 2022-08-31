@@ -30,9 +30,6 @@ namespace Dental_Clinic_NET.API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            // services.AddDbContext<PostgresqlContext>();
-            services.AddDbContext<SqlServerContext>();
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
