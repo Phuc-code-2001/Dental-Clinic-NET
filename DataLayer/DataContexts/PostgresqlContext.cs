@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.DataContexts
 {
-    public class PostgresqlContext : DbContext
+    public class PostgresqlContext : AppDbContext
     {
         private static string host = "ec2-52-208-164-5.eu-west-1.compute.amazonaws.com";
         private static string user = "dbq3cc6ivss5qc";
@@ -32,5 +32,6 @@ namespace DataLayer.DataContexts
                 optionsBuilder.UseNpgsql(CONNECTION);
             }
         }
+
     }
 }

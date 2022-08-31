@@ -6,12 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using DataLayer.DataContexts;
 
 namespace Dental_Clinic_NET.API
@@ -30,7 +30,8 @@ namespace Dental_Clinic_NET.API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddDbContext<PostgresqlContext>();
+            // services.AddDbContext<PostgresqlContext>();
+            services.AddDbContext<SqlServerContext>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
