@@ -10,7 +10,7 @@ namespace DataLayer.Services.GroupMembers
 {
     public class GroupMemberServices : IGroupMemberServices
     {
-        public IEnumerable<GroupMember> GetAll()
+        public IQueryable<GroupMember> GetAll()
         {
             return GroupMemberDAO.GetInstance.GetAll();
         }
@@ -30,9 +30,9 @@ namespace DataLayer.Services.GroupMembers
             return GroupMemberDAO.GetInstance.Insert(entity);
         }
 
-        public void Remove(int id)
+        public void Remove(GroupMember entity)
         {
-            GroupMemberDAO.GetInstance.Remove(id);
+            GroupMemberDAO.GetInstance.Remove(entity);
         }
 
         public GroupMember Update(GroupMember entity)

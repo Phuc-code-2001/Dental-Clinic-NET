@@ -10,9 +10,8 @@ namespace DataLayer.DataContexts
 {
     public class AppDbContext : DbContext
     {
-        private static AppDbContext Instance { get; set; }
 
-        public static AppDbContext GetInstance => Instance ?? (Instance = new AppDbContext());
+        public static AppDbContext GetTransaction() => new AppDbContext();
 
         public AppDbContext() { }
 
