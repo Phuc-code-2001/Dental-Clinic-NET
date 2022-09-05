@@ -124,6 +124,8 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 return Ok(new
                 {
+                    count= paginatedGroupMembers.ColectionCount,
+                    pageCount = paginatedGroupMembers.PageCount,
                     previous = previousLink,
                     data = paginatedGroupMembers.Items,
                     next = nextLink,

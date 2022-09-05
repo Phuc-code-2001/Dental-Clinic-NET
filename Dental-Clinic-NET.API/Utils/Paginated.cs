@@ -13,13 +13,14 @@ namespace Dental_Clinic_NET.API.Utils
         public bool HasNext { get; private set; }
 
         public int PageCount { get; private set; }
+        public int ColectionCount { get; private set; }
 
         public IQueryable<T> Items;
 
         public Paginated(IQueryable<T> collection, int pageSize, int pageIndex)
         {
-            double collectionCount = collection.Count<T>();
-            PageCount = (int) Math.Ceiling(collectionCount / pageSize);
+            ColectionCount = collection.Count<T>();
+            PageCount = (int) Math.Ceiling((double) ColectionCount / pageSize);
 
             // Page 1 => pageSize first elements
             // Page 2 => skip pageSize * 1 element, take pageSize element
