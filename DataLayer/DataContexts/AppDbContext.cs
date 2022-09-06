@@ -1,4 +1,5 @@
 ﻿using DataLayer.Schemas;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.DataContexts
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<BaseUser>
     {
 
         public static AppDbContext GetTransaction() => new AppDbContext();
