@@ -9,6 +9,8 @@ namespace Dental_Clinic_NET.API.Utils
     public class Paginated<T>
     {
 
+        public int PageSize = 6;
+
         public bool HasPrevious { get; private set; }
         public bool HasNext { get; private set; }
 
@@ -17,14 +19,14 @@ namespace Dental_Clinic_NET.API.Utils
 
         public IQueryable<T> Items;
 
-        public Paginated(IQueryable<T> collection, int pageSize, int pageIndex)
+        public Paginated(IQueryable<T> collection, int pageIndex)
         {
             ColectionCount = collection.Count<T>();
-            PageCount = (int) Math.Ceiling((double) ColectionCount / pageSize);
+            PageCount = (int) Math.Ceiling((double) ColectionCount / PageSize);
 
             // Page 1 => pageSize first elements
             // Page 2 => skip pageSize * 1 element, take pageSize element
-            Items = collection.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+            Items = collection.Skip(PageSize * (pageIndex - 1)).Take(PageSize);
 
             HasNext = pageIndex + 1 <= PageCount;
             HasPrevious = pageIndex - 1 > 0;

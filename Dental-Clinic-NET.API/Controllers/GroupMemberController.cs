@@ -105,29 +105,31 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetPage(int? pageIndex, int? pageSize)
+        public IActionResult GetPage(int? pageIndex)
         {
 
             try
             {
 
-                if (pageIndex == null || pageSize == null) return BadRequest("Missing pageSize, pageIndex");
-                if (pageIndex.Value <= 0 || pageSize.Value <= 0) return BadRequest("Invalid params: pageSize, pageIndex must be positive integer");
+                if (pageIndex == null) return BadRequest("Missing pageIndex");
+                if (pageIndex.Value <= 0) return BadRequest("Invalid params: pageIndex must be positive integer");
 
                 IQueryable<GroupMember> groupMembers = _groupMemberServices.GetAll();
-                Paginated<GroupMember> paginatedGroupMembers = new (groupMembers, pageSize.Value, pageIndex.Value);
+                Paginated<GroupMember> paginatedGroupMembers = new (groupMembers, pageIndex.Value);
 
                 string url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/{ControllerContext.ActionDescriptor.ControllerName}/{ControllerContext.ActionDescriptor.ActionName}";
 
-                string previousLink = paginatedGroupMembers.HasPrevious ? url + $"?pageIndex={pageIndex - 1}&pageSize={pageSize}" : null;
-                string nextLink = paginatedGroupMembers.HasNext ? url + $"?pageIndex={pageIndex + 1}&pageSize={pageSize}" : null;
+                string previousLink = paginatedGroupMembers.HasPrevious ? url + $"?pageIndex={pageIndex - 1}" : null;
+                string nextLink = paginatedGroupMembers.HasNext ? url + $"?pageIndex={pageIndex + 1}" : null;
 
                 return Ok(new
                 {
-                    count= paginatedGroupMembers.ColectionCount,
-                    pageCount = paginatedGroupMembers.PageCount,
-                    previous = previousLink,
+                    page = pageIndex,
+                    per_page = paginatedGroupMembers.PageSize,
+                    total = paginatedGroupMembers.ColectionCount,
+                    total_pages = paginatedGroupMembers.PageCount,
                     data = paginatedGroupMembers.Items,
+                    previous = previousLink,
                     next = nextLink,
                 });
             }
