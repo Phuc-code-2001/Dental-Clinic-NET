@@ -21,4 +21,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DAOs\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

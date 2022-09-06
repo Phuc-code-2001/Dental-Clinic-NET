@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Dental_Clinic_NET.API.Facebooks.Services;
 
 namespace Dental_Clinic_NET.API
 {
@@ -85,8 +86,10 @@ namespace Dental_Clinic_NET.API
 
                 
                 // User settings
-                options.User.RequireUniqueEmail = true;
+                options.User.RequireUniqueEmail = false;
             });
+
+            services.AddHttpClient();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

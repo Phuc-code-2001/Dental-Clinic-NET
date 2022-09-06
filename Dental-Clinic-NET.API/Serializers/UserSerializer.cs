@@ -29,11 +29,11 @@ namespace Dental_Clinic_NET.API.Serializers
             userInfo.Add("birthday", entity.BirthDate);
             userInfo.Add("phone", entity.PhoneNumber);
             userInfo.Add("image_url", entity.ImageURL);
+            userInfo.Add("permission", entity.Type.ToString());
 
             if (isOwner || isAdmin) userInfo.Add("username", entity.UserName);
             if (isOwner || isAdmin) userInfo.Add("email", entity.Email);
-
-            if (isAdmin) userInfo.Add("Role", entity.Type.ToString());
+            if (isOwner || isAdmin) userInfo.Add("facebook_id", entity.FbConnectedId);
 
             return userInfo;
         }

@@ -18,6 +18,8 @@ namespace DataLayer.Schemas
 
         public UserType Type { get; set; } = UserType.Patient;
 
+        public string FbConnectedId { get; set; }
+
     }
 
     public enum UserType

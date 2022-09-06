@@ -2,30 +2,24 @@
 using Dental_Clinic_NET.API.Models.AuthenticationModels;
 using Dental_Clinic_NET.API.Serializers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AuthenticationController : ControllerBase
+    public class UserController : ControllerBase
     {
 
         private UserManager<BaseUser> _userManager;
         private IConfiguration _configuration;
 
-        public AuthenticationController(UserManager<BaseUser> userManager, IConfiguration configuration)
+        public UserController(UserManager<BaseUser> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -67,40 +61,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
         }
 
-        [HttpPost]
-        public async Task<IActionResult> LoginAsync(BasicLoginModel loginModel)
-        {
-
-            try
-            {
-                BaseUser user = await _userManager.FindByNameAsync(loginModel.UserName);
-                if(user != null)
-                {
-                    bool isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginModel.Password);
-                    if(isPasswordCorrect)
-                    {
-                        
-                        var token = CreateSignInToken(user);
-
-                        return Ok(new
-                        {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            expire = token.ValidTo,
-                        });
-                    }
-                }
-
-                return Unauthorized("UserName or Password incorrect...");
-
-
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-
-        }
-
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAuthorizeAsync()
@@ -119,27 +79,5 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
-    
-        [NonAction]
-        public JwtSecurityToken CreateSignInToken(BaseUser user)
-        {
-            string role = user.Type.ToString();
-            var authClaims = new List<Claim>
-            {
-                new Claim("Id", user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.Type.ToString()),
-            };
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddHours(3),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
-
-            return token;
-        }
     }
 }
