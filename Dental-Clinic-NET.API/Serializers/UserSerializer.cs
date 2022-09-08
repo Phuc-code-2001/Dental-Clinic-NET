@@ -29,7 +29,7 @@ namespace Dental_Clinic_NET.API.Serializers
             userInfo.Add("birthday", entity.BirthDate);
             userInfo.Add("phone", entity.PhoneNumber);
             userInfo.Add("image_url", entity.ImageURL);
-            userInfo.Add("permission", entity.Type.ToString());
+            userInfo.Add("role", entity.Type.ToString());
 
             if (isOwner || isAdmin) userInfo.Add("username", entity.UserName);
             if (isOwner || isAdmin) userInfo.Add("email", entity.Email);
