@@ -84,7 +84,7 @@ namespace Dental_Clinic_NET.API
                 options.Password.RequireLowercase = false;
                 options.Password.RequiredUniqueChars = 1;
 
-                
+
                 // User settings
                 options.User.RequireUniqueEmail = false;
             });

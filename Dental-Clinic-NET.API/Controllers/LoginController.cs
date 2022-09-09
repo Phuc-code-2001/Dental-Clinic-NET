@@ -1,5 +1,4 @@
 ﻿using DataLayer.Schemas;
-using Dental_Clinic_NET.API.Models.AuthenticationModels;
 using Dental_Clinic_NET.API.Services.UserServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +11,7 @@ using Dental_Clinic_NET.API.Facebooks.Services;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
+using Dental_Clinic_NET.API.Models.Users;
 
 namespace Dental_Clinic_NET.API.Controllers
 {

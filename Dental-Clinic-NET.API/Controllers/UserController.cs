@@ -1,5 +1,6 @@
 ﻿using DataLayer.Schemas;
-using Dental_Clinic_NET.API.Models.AuthenticationModels;
+using Dental_Clinic_NET.API.Controllers.Helpers;
+using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Serializers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +14,7 @@ namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : ControllerBase, IPaginatedController
     {
 
         private UserManager<BaseUser> _userManager;
@@ -77,6 +78,28 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
             
+        }
+
+        [HttpGet]
+        public IActionResult GetPage(int? pageIndex)
+        {
+            return Ok();
+        }
+
+        [HttpGet]
+        public IActionResult ViewAllAccount()
+        {
+            try
+            {
+                var users = _userManager.Users.Select(user => new UserSerializer(user, user).Serialize());
+
+
+                return Ok(users);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
     }

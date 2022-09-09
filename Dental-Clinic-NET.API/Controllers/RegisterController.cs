@@ -1,6 +1,8 @@
 ﻿using DataLayer.Schemas;
 using Dental_Clinic_NET.API.Facebooks.Models;
 using Dental_Clinic_NET.API.Facebooks.Services;
+using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services.UserServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -81,7 +83,14 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if(createUserResult.Succeeded)
                 {
-                    return Ok("Sign Up Succeeded");
+                    string token = _userServices.CreateSignInToken(user);
+                    UserSerializer serializer = new UserSerializer(user, user);
+                    return Ok(new
+                    {
+                        id = user.Id,
+                        token = token,
+                        user = serializer.Serialize(),
+                    });
                 }
 
                 var errors = createUserResult.Errors.Select(e => new { e.Code, e.Description });
@@ -99,11 +108,59 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> BasicSignUpAsync(BasicRegisterModel request)
+        {
+
+            try
+            {
+                BaseUser user = request.ToBaseUser_NotIncludePassword();
+                if(await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == user.PhoneNumber) != null)
+                {
+                    return BadRequest(new
+                    {
+                        code= SignUpFailedStatus.PhoneNumberAlreadyAccount,
+                        errors= new string[] { "This phone have already account" }
+                    });
+                }
+
+                var createResult = await _userManager.CreateAsync(user, request.Password);
+                if(createResult.Succeeded)
+                {
+                    string token = _userServices.CreateSignInToken(user);
+                    UserSerializer serializer = new UserSerializer(user, user);
+                    return Ok(new
+                    {
+                        id=user.Id,
+                        token=token,
+                        user=serializer.Serialize(),
+                    });
+                }
+
+                var errors = createResult.Errors.Select(e => new { e.Code, e.Description });
+
+                return BadRequest(new
+                {
+                    code=SignUpFailedStatus.CreatedFailed,
+                    errors=errors
+                });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+
+        }
     }
 
 
     public enum SignUpFailedStatus
     {
+        CreatedFailed,
+        PhoneNumberAlreadyAccount,
+
         FacebookInValidToken,
         FacebookAlreadySignUp,
         FacebookCreateFailed,
