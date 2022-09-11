@@ -34,7 +34,7 @@ namespace DataLayer.DataContexts
             }
         }
 
-        public DbSet<GroupMember> GroupMembers { get; set; }
+        public DbSet<GroupMember> GroupMembers { get; set; } // k sài nữa
 
         
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Dental_Clinic_NET.API.Models.AuthenticationModels
+namespace Dental_Clinic_NET.API.Models.Users
 {
     public class BasicLoginModel
     {
