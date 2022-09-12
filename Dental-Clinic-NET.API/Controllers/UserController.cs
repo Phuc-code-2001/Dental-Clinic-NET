@@ -86,21 +86,7 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok();
         }
 
-        [HttpGet]
-        public IActionResult ViewAllAccount()
-        {
-            try
-            {
-                var users = _userManager.Users.Select(user => new UserSerializer(user, user).Serialize());
-
-
-                return Ok(users);
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        
 
     }
 }
