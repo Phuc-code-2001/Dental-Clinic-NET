@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ImageProcessLayer.Services;
+using Dental_Clinic_NET.API.Facebooks.Services;
+using Dental_Clinic_NET.API.Services.UserServices;
 
 namespace Dental_Clinic_NET.API
 {
@@ -90,7 +92,8 @@ namespace Dental_Clinic_NET.API
             });
 
             services.AddHttpClient();
-
+            services.AddTransient<UserServices>();
+            services.AddTransient<FacebookServices>();
             services.AddTransient<ImageKitServices>();
 
             services.AddControllers();

@@ -25,16 +25,16 @@ namespace Dental_Clinic_NET.API.Controllers
 
         private IHttpClientFactory _client;
 
-        private UserServices _userServices;
         private FacebookServices _facebookServices;
+        private UserServices _userServices;
 
-        public LoginController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client)
+        public LoginController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client, FacebookServices facebookServices, UserServices userServices)
         {
-            _userManager = userManager;
-            _configuration = configuration;
             _client = client;
-            _facebookServices = new FacebookServices(client);
-            _userServices = new UserServices(configuration);
+            _userManager = userManager;
+            _userServices = userServices;
+            _configuration = configuration;
+            _facebookServices = facebookServices;
         }
 
         [HttpPost]

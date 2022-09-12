@@ -13,5 +13,6 @@ namespace ImageProcessLayer.Services
         public Task<ImageKitUploadResult> UploadImageAsync(byte[] file, string filename);
         public Task<ImageKitUploadResult> UploadImageAsync(IFormFile file, string filename);
         public Task DeleteImageAsync(string ImageId);
+        public bool IsImage(IFormFile file);
     }
 }
