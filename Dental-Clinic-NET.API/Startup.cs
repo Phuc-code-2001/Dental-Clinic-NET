@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Dental_Clinic_NET.API.Facebooks.Services;
+using ImageProcessLayer.Services;
 
 namespace Dental_Clinic_NET.API
 {
@@ -91,6 +91,8 @@ namespace Dental_Clinic_NET.API
 
             services.AddHttpClient();
 
+            services.AddTransient<ImageKitServices>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -111,6 +113,7 @@ namespace Dental_Clinic_NET.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
