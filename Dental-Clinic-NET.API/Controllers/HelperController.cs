@@ -46,5 +46,12 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult TestPostImage(IFormFile file)
+        {
+
+            return Ok();
+        }
+
     }
 }
