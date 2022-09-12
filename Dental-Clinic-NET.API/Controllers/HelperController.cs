@@ -99,7 +99,6 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 var users = _userManager.Users.Select(user => new UserSerializer(user, user).Serialize());
 
-
                 return Ok(users);
             }
             catch (Exception ex)

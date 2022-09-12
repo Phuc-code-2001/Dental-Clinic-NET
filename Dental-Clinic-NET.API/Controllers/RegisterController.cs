@@ -21,18 +21,13 @@ namespace Dental_Clinic_NET.API.Controllers
     public class RegisterController : ControllerBase
     {
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
-
-        private IHttpClientFactory _client;
 
         private UserServices _userServices;
         private FacebookServices _facebookServices;
 
-        public RegisterController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client, FacebookServices facebookServices, UserServices userServices)
+        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices)
         {
             _userManager = userManager;
-            _configuration = configuration;
-            _client = client;
             _facebookServices = facebookServices;
             _userServices = userServices;
         }

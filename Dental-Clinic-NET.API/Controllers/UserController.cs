@@ -18,12 +18,10 @@ namespace Dental_Clinic_NET.API.Controllers
     {
 
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
 
-        public UserController(UserManager<BaseUser> userManager, IConfiguration configuration)
+        public UserController(UserManager<BaseUser> userManager)
         {
             _userManager = userManager;
-            _configuration = configuration;
         }
 
         [HttpPost]
