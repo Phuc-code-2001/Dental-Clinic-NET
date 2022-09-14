@@ -9,13 +9,13 @@ namespace Dental_Clinic_NET.API.Serializers
         {
             if (authorizeUser == null)
             {
-                isOwner = false;
-                isAdmin = false;
+                IsOwner = false;
+                IsAdmin = false;
             }
             else
             {
-                isOwner = authorizeUser.Id == entity.Id;
-                isAdmin = authorizeUser.Type == UserType.Administrator;
+                IsOwner = authorizeUser.Id == entity.Id;
+                IsAdmin = authorizeUser.Type == UserType.Administrator;
             }
 
         }
@@ -31,9 +31,9 @@ namespace Dental_Clinic_NET.API.Serializers
             userInfo.Add("image_url", entity.ImageURL);
             userInfo.Add("role", entity.Type.ToString());
 
-            if (isOwner || isAdmin) userInfo.Add("username", entity.UserName);
-            if (isOwner || isAdmin) userInfo.Add("email", entity.Email);
-            if (isOwner || isAdmin) userInfo.Add("facebook_id", entity.FbConnectedId);
+            if (IsOwner || IsAdmin) userInfo.Add("username", entity.UserName);
+            if (IsOwner || IsAdmin) userInfo.Add("email", entity.Email);
+            if (IsOwner || IsAdmin) userInfo.Add("facebook_id", entity.FbConnectedId);
 
             return userInfo;
         }

@@ -13,6 +13,7 @@ namespace DataLayer.Schemas
         [Required]
         public string FullName { get; set; } = "Undefined";
         public string ImageURL { get; set; } = "https://ik.imagekit.io/sdrpji7cj/default-image.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1658454695102";
+        public string ImageAvatarId { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime BirthDate { get; set; } = DateTime.Now.Date;

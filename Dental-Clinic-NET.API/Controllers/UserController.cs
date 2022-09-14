@@ -2,7 +2,9 @@
 using Dental_Clinic_NET.API.Controllers.Helpers;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Serializers;
+using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +20,12 @@ namespace Dental_Clinic_NET.API.Controllers
     {
 
         private UserManager<BaseUser> _userManager;
+        private ImageKitServices _imageKitServices;
 
-        public UserController(UserManager<BaseUser> userManager)
+        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices)
         {
             _userManager = userManager;
+            _imageKitServices = imageKitServices;
         }
 
         [HttpPost]
@@ -84,7 +88,48 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok();
         }
 
-        
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> UpdateAvatarAsync(string userId, IFormFile image)
+        {
+            try
+            {
+                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                BaseUser loginUser = await _userManager.FindByNameAsync(User.Identity.Name);
+
+                var serializer = new UserSerializer(loginUser, requiredUser);
+
+                if(!serializer.IsAdmin && !serializer.IsOwner)
+                {
+                    return Unauthorized("Cann't do this operation");
+                }
+
+                if (_imageKitServices.IsImage(image))
+                {
+                    var result = await _imageKitServices.UploadImageAsync(image, image.FileName);
+                    if(requiredUser.ImageAvatarId != null)
+                    {
+                        await _imageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
+                    }
+                    requiredUser.ImageURL = result.URL;
+                    requiredUser.ImageAvatarId = result.ImageId;
+                    await _userManager.UpdateAsync(requiredUser);
+                    serializer = new UserSerializer(loginUser, requiredUser);
+
+                    return Ok(new
+                    {
+                        newImage=requiredUser.ImageURL,
+                        user=serializer.Serialize()
+                    });
+                }
+
+                return BadRequest("File must be image");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
     }
 }

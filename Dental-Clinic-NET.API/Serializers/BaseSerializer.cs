@@ -6,8 +6,8 @@ namespace Dental_Clinic_NET.API.Serializers
 {
     public abstract class BaseSerializer<T>
     {
-        protected bool isOwner;
-        protected bool isAdmin;
+        public bool IsOwner { get; protected set; }
+        public bool IsAdmin { get; protected set; }
 
         protected T entity;
 
