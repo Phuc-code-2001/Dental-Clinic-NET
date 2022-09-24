@@ -1,38 +1,33 @@
 ﻿using DataLayer.Schemas;
+using Dental_Clinic_NET.API.Permissions;
 using System.Collections.Generic;
 
 namespace Dental_Clinic_NET.API.Serializers
 {
-    public class UserSerializer : BaseSerializer<BaseUser>
+    public class UserSerializer
     {
 
-        public UserSerializer(BaseUser authorizeUser, BaseUser entity) : base(authorizeUser, entity)
-        {
-            if (authorizeUser == null)
-            {
-                IsOwner = false;
-            }
-            else
-            {
-                IsOwner = authorizeUser.Id == entity.Id;
-            }
+        public PermissionOnBaseUser permission;
 
+        public UserSerializer(PermissionOnBaseUser permission)
+        {
+            this.permission = permission;
         }
 
         public Dictionary<string, object> Serialize()
         {
             var userInfo = new Dictionary<string, object>();
 
-            userInfo.Add("id", entity.Id);
-            userInfo.Add("fullname", entity.FullName);
-            userInfo.Add("birthday", entity.BirthDate);
-            userInfo.Add("phone", entity.PhoneNumber);
-            userInfo.Add("image_url", entity.ImageURL);
-            userInfo.Add("role", entity.Type.ToString());
+            userInfo.Add("id", permission.Entity.Id);
+            userInfo.Add("fullname", permission.Entity.FullName);
+            userInfo.Add("birthday", permission.Entity.BirthDate);
+            userInfo.Add("phone", permission.Entity.PhoneNumber);
+            userInfo.Add("image_url", permission.Entity.ImageURL);
+            userInfo.Add("role", permission.Entity.Type.ToString());
 
-            if (IsOwner || IsAdmin) userInfo.Add("username", entity.UserName);
-            if (IsOwner || IsAdmin) userInfo.Add("email", entity.Email);
-            if (IsOwner || IsAdmin) userInfo.Add("facebook_id", entity.FbConnectedId);
+            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("username", permission.Entity.UserName);
+            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("email", permission.Entity.Email);
+            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("facebook_id", permission.Entity.FbConnectedId);
 
             return userInfo;
         }

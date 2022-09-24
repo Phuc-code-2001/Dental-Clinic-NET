@@ -2,6 +2,7 @@
 using Dental_Clinic_NET.API.Facebooks.Models;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services.UserServices;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +80,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createUserResult.Succeeded)
                 {
                     string token = _userServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(user, user);
+                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
                         id = user.Id,
@@ -124,7 +125,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createResult.Succeeded)
                 {
                     string token = _userServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(user, user);
+                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
                         id=user.Id,

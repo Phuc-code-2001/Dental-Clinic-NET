@@ -1,6 +1,8 @@
 ﻿using DataLayer.Schemas;
 using Dental_Clinic_NET.API.Facebooks.Services;
+using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Utils;
 using ImageProcessLayer.ImageKitResult;
 using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Http;
@@ -30,19 +32,26 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteAccountNullFullNameAsync()
+        public IActionResult DeleteAccountNullFullNameAsync()
         {
             try
             {
                 int count = 0;
                 List<BaseUser> users = _userManager.Users.Where(u => u.FullName == null).ToList();
+                List<Task<IdentityResult>> deleteTasks = new List<Task<IdentityResult>>();
                 foreach(var user in users)
                 {
-                    if((await _userManager.DeleteAsync(user)).Succeeded)
+                    deleteTasks.Add(_userManager.DeleteAsync(user));
+                };
+
+                foreach(var task in deleteTasks)
+                {
+                    var res = task.Result;
+                    if(res.Succeeded)
                     {
                         count++;
                     }
-                };
+                }
 
                 return Ok(new {
                     count
@@ -97,7 +106,13 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var users = _userManager.Users.Select(user => new UserSerializer(null, user));
+
+                var users = _userManager.Users.AsEnumerable().Select(user =>
+                {
+                    PermissionOnBaseUser permission = new PermissionOnBaseUser(user, user);
+                    UserSerializer serializer = new UserSerializer(permission);
+                    return serializer.Serialize();
+                });
 
                 return Ok(users);
             }
