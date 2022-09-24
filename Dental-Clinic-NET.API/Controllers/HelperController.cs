@@ -97,7 +97,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var users = _userManager.Users.Select(user => new UserSerializer(user, user).Serialize());
+                var users = _userManager.Users.Select(user => new UserSerializer(null, user));
 
                 return Ok(users);
             }
@@ -107,14 +107,5 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpGet]
-        public IActionResult TestFbDependency()
-        {
-            if (_facebookServices != null) return Ok();
-            else
-            {
-                return NotFound();
-            }
-        }
     }
 }

@@ -34,7 +34,6 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginAsync(BasicLoginModel loginModel)
         {
-
             try
             {
                 BaseUser user = await _userManager.FindByNameAsync(loginModel.UserName);

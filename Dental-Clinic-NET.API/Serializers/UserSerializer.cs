@@ -5,17 +5,16 @@ namespace Dental_Clinic_NET.API.Serializers
 {
     public class UserSerializer : BaseSerializer<BaseUser>
     {
+
         public UserSerializer(BaseUser authorizeUser, BaseUser entity) : base(authorizeUser, entity)
         {
             if (authorizeUser == null)
             {
                 IsOwner = false;
-                IsAdmin = false;
             }
             else
             {
                 IsOwner = authorizeUser.Id == entity.Id;
-                IsAdmin = authorizeUser.Type == UserType.Administrator;
             }
 
         }

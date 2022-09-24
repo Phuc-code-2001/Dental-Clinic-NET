@@ -16,6 +16,7 @@ namespace Dental_Clinic_NET.API.Serializers
         public BaseSerializer(BaseUser authorizeUser, T entity)
         {
             this.entity = entity;
+            IsAdmin = authorizeUser?.Type == UserType.Administrator;
             authorizeRole = authorizeUser.Type;
         }
 
