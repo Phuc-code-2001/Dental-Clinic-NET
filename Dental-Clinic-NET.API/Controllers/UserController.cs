@@ -1,6 +1,7 @@
 ﻿using DataLayer.Schemas;
 using Dental_Clinic_NET.API.Controllers.Helpers;
 using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -70,8 +71,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser authorizeUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
-                UserSerializer serializer = new UserSerializer(authorizeUser, authorizeUser);
+                BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
+                UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
 
                 return Ok(serializer.Serialize());
             }
@@ -97,9 +98,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
                 BaseUser loginUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
-                var serializer = new UserSerializer(loginUser, requiredUser);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loginUser, requiredUser);
 
-                if(!serializer.IsAdmin && !serializer.IsOwner)
+                if(!permission.IsAdmin && !permission.IsOwner)
                 {
                     return Unauthorized("Cann't do this operation");
                 }
@@ -114,8 +115,8 @@ namespace Dental_Clinic_NET.API.Controllers
                     requiredUser.ImageURL = result.URL;
                     requiredUser.ImageAvatarId = result.ImageId;
                     await _userManager.UpdateAsync(requiredUser);
-                    serializer = new UserSerializer(loginUser, requiredUser);
 
+                    UserSerializer serializer = new UserSerializer(permission);
                     return Ok(new
                     {
                         newImage=requiredUser.ImageURL,
