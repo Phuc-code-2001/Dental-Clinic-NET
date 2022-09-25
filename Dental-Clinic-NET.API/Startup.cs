@@ -21,6 +21,7 @@ using System.Text;
 using ImageProcessLayer.Services;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.UserServices;
+using Dental_Clinic_NET.API.Serializers;
 
 namespace Dental_Clinic_NET.API
 {
@@ -95,6 +96,8 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<UserServices>();
             services.AddTransient<FacebookServices>();
             services.AddTransient<ImageKitServices>();
+
+            services.AddRouting();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

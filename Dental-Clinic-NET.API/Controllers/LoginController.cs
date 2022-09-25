@@ -21,26 +21,19 @@ namespace Dental_Clinic_NET.API.Controllers
     {
 
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
-
-        private IHttpClientFactory _client;
-
         private FacebookServices _facebookServices;
         private UserServices _userServices;
 
-        public LoginController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client, FacebookServices facebookServices, UserServices userServices)
+        public LoginController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices)
         {
-            _client = client;
             _userManager = userManager;
             _userServices = userServices;
-            _configuration = configuration;
             _facebookServices = facebookServices;
         }
 
         [HttpPost]
         public async Task<IActionResult> LoginAsync(BasicLoginModel loginModel)
         {
-
             try
             {
                 BaseUser user = await _userManager.FindByNameAsync(loginModel.UserName);
