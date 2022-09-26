@@ -1,4 +1,5 @@
 ﻿using DataLayer.Schemas;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Permissions;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace Dental_Clinic_NET.API.Serializers
     public class UserSerializer
     {
 
+        public delegate UserDTO Transformer(BaseUser user);
+
         public PermissionOnBaseUser permission;
 
         public UserSerializer(PermissionOnBaseUser permission)
@@ -14,20 +17,13 @@ namespace Dental_Clinic_NET.API.Serializers
             this.permission = permission;
         }
 
-        public Dictionary<string, object> Serialize()
+        public UserDTO Serialize(Transformer mapperHandle)
         {
-            var userInfo = new Dictionary<string, object>();
+            var userInfo = mapperHandle(permission.Entity);
 
-            userInfo.Add("id", permission.Entity.Id);
-            userInfo.Add("fullname", permission.Entity.FullName);
-            userInfo.Add("birthday", permission.Entity.BirthDate);
-            userInfo.Add("phone", permission.Entity.PhoneNumber);
-            userInfo.Add("image_url", permission.Entity.ImageURL);
-            userInfo.Add("role", permission.Entity.Type.ToString());
-
-            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("username", permission.Entity.UserName);
-            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("email", permission.Entity.Email);
-            if (permission.IsOwner || permission.IsAdmin) userInfo.Add("facebook_id", permission.Entity.FbConnectedId);
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Username = null;
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Email = null;
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.FbConnectedId = null;
 
             return userInfo;
         }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DataLayer.Schemas;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Models;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
@@ -88,7 +89,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     {
                         id = user.Id,
                         token = token,
-                        user = serializer.Serialize(),
+                        user = serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 
@@ -133,7 +137,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     {
                         id=user.Id,
                         token=token,
-                        user=serializer.Serialize(),
+                        user=serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 

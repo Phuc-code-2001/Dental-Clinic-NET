@@ -23,6 +23,7 @@ using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.UserServices;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
+using Microsoft.AspNetCore.OData;
 
 namespace Dental_Clinic_NET.API
 {
@@ -102,7 +103,14 @@ namespace Dental_Clinic_NET.API
 
             services.AddRouting();
 
-            services.AddControllers();
+            services.AddControllers()
+            .AddOData(opt =>
+            {
+                opt.Select().Filter().Count().OrderBy().Expand();
+            });
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Dental_Clinic_NET.API", Version = "v1" });

@@ -1,5 +1,7 @@
-﻿using DataLayer.Schemas;
+﻿using AutoMapper;
+using DataLayer.Schemas;
 using Dental_Clinic_NET.API.Controllers.Helpers;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
@@ -19,14 +21,15 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class UserController : ControllerBase, IPaginatedController
     {
-
+        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
         private ImageKitServices _imageKitServices;
 
-        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices)
+        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, IMapper mapper)
         {
             _userManager = userManager;
             _imageKitServices = imageKitServices;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -74,7 +77,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
                 UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
 
-                return Ok(serializer.Serialize());
+                return Ok(serializer.Serialize(user =>
+                {
+                    return _mapper.Map<UserDTO>(user);
+                }));
             }
             catch(Exception ex)
             {
@@ -120,7 +126,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     return Ok(new
                     {
                         newImage=requiredUser.ImageURL,
-                        user=serializer.Serialize()
+                        user=serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        })
                     });
                 }
 

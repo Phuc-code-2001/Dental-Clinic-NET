@@ -5,7 +5,7 @@ namespace Dental_Clinic_NET.API.Permissions
 
     public class BasePermission<T>
     {
-        public delegate bool HandleOwnerSelector();
+        public delegate bool HandleOwnerSelector(T entity);
 
         public bool IsAuthenticated { get; protected set; } = false;
         public bool IsOwner { get; protected set; } = false;
@@ -29,7 +29,7 @@ namespace Dental_Clinic_NET.API.Permissions
 
         public BasePermission<T> HandleOwnerPermission(HandleOwnerSelector handler)
         {
-            IsOwner = handler();
+            IsOwner = handler(Entity);
             return this;
         }
 

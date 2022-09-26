@@ -1,4 +1,6 @@
-﻿using DataLayer.Schemas;
+﻿using AutoMapper;
+using DataLayer.Schemas;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
@@ -8,6 +10,7 @@ using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,16 +22,17 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class HelperController : ControllerBase
     {
-
+        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
         private FacebookServices _facebookServices;
         private ImageKitServices _imageKitServices;
 
-        public HelperController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, FacebookServices facebookServices)
+        public HelperController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, FacebookServices facebookServices, IMapper mapper)
         {
             _userManager = userManager;
             _imageKitServices = imageKitServices;
             _facebookServices = facebookServices;
+            _mapper = mapper;
         }
 
         [HttpDelete]
@@ -102,6 +106,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpGet]
+        [EnableQuery]
         public IActionResult ViewAllAccount()
         {
             try
@@ -111,7 +116,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     PermissionOnBaseUser permission = new PermissionOnBaseUser(user, user);
                     UserSerializer serializer = new UserSerializer(permission);
-                    return serializer.Serialize();
+                    return serializer.Serialize(user =>
+                    {
+                        return _mapper.Map<UserDTO>(user);
+                    });
                 });
 
                 return Ok(users);
