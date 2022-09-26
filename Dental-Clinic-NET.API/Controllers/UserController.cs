@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +21,7 @@ namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class UserController : ControllerBase, IPaginatedController
+    public class UserController : ControllerBase
     {
         private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
@@ -89,12 +91,6 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
-        [HttpGet]
-        public IActionResult GetPage(int? pageIndex)
-        {
-            return Ok();
-        }
-
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> UpdateAvatarAsync(string userId, IFormFile image)
@@ -134,6 +130,26 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 return BadRequest("File must be image");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        [Authorize(Roles = "Administrator")]
+        [EnableQuery(PageSize = 10)]
+        public IActionResult GetUsers()
+        {
+            try
+            {
+                var users = _userManager.Users.ToList();
+                var usersDTO = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
+
+                return Ok(usersDTO.AsQueryable());
+
             }
             catch(Exception ex)
             {

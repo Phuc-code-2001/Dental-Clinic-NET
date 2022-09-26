@@ -32,7 +32,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync(BasicLoginModel loginModel)
+        public async Task<IActionResult> LoginBasicAsync(BasicLoginModel loginModel)
         {
             try
             {
