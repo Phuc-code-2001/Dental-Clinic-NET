@@ -8,7 +8,7 @@ namespace Dental_Clinic_NET.API.Permissions
 
         public PermissionOnBaseUser(BaseUser loggedUser, BaseUser entity) : base(loggedUser, entity)
         {
-            HandleOwnerPermission(() => entity.Id == loggedUser.Id);
+            HandleOwnerPermission((entity) => entity.Id == loggedUser.Id);
         }
     }
 }

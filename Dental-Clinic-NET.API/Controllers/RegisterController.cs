@@ -1,4 +1,6 @@
-﻿using DataLayer.Schemas;
+﻿using AutoMapper;
+using DataLayer.Schemas;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Models;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
@@ -21,16 +23,18 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class RegisterController : ControllerBase
     {
+        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
 
         private UserServices _userServices;
         private FacebookServices _facebookServices;
 
-        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices)
+        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices, IMapper mapper)
         {
             _userManager = userManager;
             _facebookServices = facebookServices;
             _userServices = userServices;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -85,7 +89,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     {
                         id = user.Id,
                         token = token,
-                        user = serializer.Serialize(),
+                        user = serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 
@@ -111,7 +118,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
             try
             {
-                BaseUser user = request.ToBaseUser_NotIncludePassword();
+                BaseUser user = _mapper.Map<BasicRegisterModel, BaseUser>(request);
                 if(await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == user.PhoneNumber) != null)
                 {
                     return BadRequest(new
@@ -130,7 +137,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     {
                         id=user.Id,
                         token=token,
-                        user=serializer.Serialize(),
+                        user=serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 
