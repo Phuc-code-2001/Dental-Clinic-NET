@@ -10,7 +10,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dental-Clinic-NET.API", "De
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{72A6C9AE-944F-4044-86C6-C95BED0CF08A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageProcessLayer", "ImageProcessLayer\ImageProcessLayer.csproj", "{C12522BF-A3E9-4631-A104-830417AF1AE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageProcessLayer", "ImageProcessLayer\ImageProcessLayer.csproj", "{C12522BF-A3E9-4631-A104-830417AF1AE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealTimeProcessLayer", "RealTimeProcessLayer\RealTimeProcessLayer.csproj", "{33DD8D38-5335-414A-84B5-8530752F8FAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{C12522BF-A3E9-4631-A104-830417AF1AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C12522BF-A3E9-4631-A104-830417AF1AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C12522BF-A3E9-4631-A104-830417AF1AE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33DD8D38-5335-414A-84B5-8530752F8FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33DD8D38-5335-414A-84B5-8530752F8FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33DD8D38-5335-414A-84B5-8530752F8FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33DD8D38-5335-414A-84B5-8530752F8FAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

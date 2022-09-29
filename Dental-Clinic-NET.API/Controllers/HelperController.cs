@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using DataLayer.Schemas;
+using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using ImageProcessLayer.ImageKitResult;
 using ImageProcessLayer.Services;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using RealTimeProcessLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,49 +24,13 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class HelperController : ControllerBase
     {
-        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
-        private FacebookServices _facebookServices;
-        private ImageKitServices _imageKitServices;
+        private ServicesManager _servicesManager;
 
-        public HelperController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, FacebookServices facebookServices, IMapper mapper)
+        public HelperController(UserManager<BaseUser> userManager, ServicesManager servicesManager)
         {
             _userManager = userManager;
-            _imageKitServices = imageKitServices;
-            _facebookServices = facebookServices;
-            _mapper = mapper;
-        }
-
-        [HttpDelete]
-        public IActionResult DeleteAccountNullFullNameAsync()
-        {
-            try
-            {
-                int count = 0;
-                List<BaseUser> users = _userManager.Users.Where(u => u.FullName == null).ToList();
-                List<Task<IdentityResult>> deleteTasks = new List<Task<IdentityResult>>();
-                foreach(var user in users)
-                {
-                    deleteTasks.Add(_userManager.DeleteAsync(user));
-                };
-
-                foreach(var task in deleteTasks)
-                {
-                    var res = task.Result;
-                    if(res.Succeeded)
-                    {
-                        count++;
-                    }
-                }
-
-                return Ok(new {
-                    count
-                });
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            _servicesManager = servicesManager;
         }
 
         [HttpPost]
@@ -72,11 +38,11 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                bool validFileImage = _imageKitServices.IsImage(file);
+                bool validFileImage = _servicesManager.ImageKitServices.IsImage(file);
                 if (!validFileImage) return BadRequest("Input must be a image");
 
                 string filename = file.FileName;
-                ImageKitUploadResult result = await _imageKitServices.UploadImageAsync(file, filename);
+                ImageKitUploadResult result = await _servicesManager.ImageKitServices.UploadImageAsync(file, filename);
 
                 return Ok(result);
 
@@ -94,7 +60,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 
-                await _imageKitServices.DeleteImageAsync(imageId);
+                await _servicesManager.ImageKitServices.DeleteImageAsync(imageId);
                 return Ok($"Delete image with id={imageId} success");
 
             }
@@ -118,7 +84,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     UserSerializer serializer = new UserSerializer(permission);
                     return serializer.Serialize(user =>
                     {
-                        return _mapper.Map<UserDTO>(user);
+                        return _servicesManager.AutoMapper.Map<UserDTO>(user);
                     });
                 });
 

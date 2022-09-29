@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Dental_Clinic_NET.API.Services.UserServices
+namespace Dental_Clinic_NET.API.Services.Users
 {
     public class UserServices : IUserServices
     {
