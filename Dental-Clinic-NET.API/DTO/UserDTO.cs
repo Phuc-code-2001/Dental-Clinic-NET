@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;

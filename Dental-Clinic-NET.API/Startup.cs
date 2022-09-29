@@ -13,17 +13,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataLayer.DataContexts;
-using DataLayer.Schemas;
+using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ImageProcessLayer.Services;
 using Dental_Clinic_NET.API.Facebooks.Services;
-using Dental_Clinic_NET.API.Services.UserServices;
+using Dental_Clinic_NET.API.Services.Users;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
 using Microsoft.AspNetCore.OData;
+using RealTimeProcessLayer.Services;
+using Dental_Clinic_NET.API.Services;
 
 namespace Dental_Clinic_NET.API
 {
@@ -95,11 +97,15 @@ namespace Dental_Clinic_NET.API
             });
 
             services.AddHttpClient();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+
             services.AddTransient<UserServices>();
             services.AddTransient<FacebookServices>();
             services.AddTransient<ImageKitServices>();
+            services.AddTransient<PusherServices>();
 
-            services.AddAutoMapper(typeof(UserAutoMapperProfile).Assembly);
+            services.AddTransient<ServicesManager>();
 
             services.AddRouting();
 
@@ -109,7 +115,6 @@ namespace Dental_Clinic_NET.API
                 opt.Select().Filter().Count().OrderBy().Expand();
             });
 
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddSwaggerGen(c =>
             {

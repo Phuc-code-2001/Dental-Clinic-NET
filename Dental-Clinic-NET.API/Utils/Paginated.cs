@@ -9,7 +9,7 @@ namespace Dental_Clinic_NET.API.Utils
     public class Paginated<T>
     {
 
-        public int PageSize = 6;
+        public int PageSize = 10;
 
         public bool HasPrevious { get; private set; }
         public bool HasNext { get; private set; }

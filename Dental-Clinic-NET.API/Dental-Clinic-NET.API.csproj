@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
     <ProjectReference Include="..\ImageProcessLayer\ImageProcessLayer.csproj" />
+    <ProjectReference Include="..\RealTimeProcessLayer\RealTimeProcessLayer.csproj" />
   </ItemGroup>
 
 </Project>
