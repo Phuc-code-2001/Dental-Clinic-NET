@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 
 namespace Dental_Clinic_NET.API.Permissions
 {

@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,8 +11,6 @@ namespace DataLayer.DataContexts
 {
     public class AppDbContext : IdentityDbContext<BaseUser>
     {
-
-        public static AppDbContext GetTransaction() => new AppDbContext();
 
         public AppDbContext() { }
 
@@ -35,8 +33,23 @@ namespace DataLayer.DataContexts
         }
 
         public DbSet<GroupMember> GroupMembers { get; set; } // dùng để test
+        public DbSet<Contact> Contacts { get; set; }
 
-        
+        public override int SaveChanges()
+        {
+
+            var entryEntities = ChangeTracker.Entries<BaseEntity>();
+
+            foreach(var entry in entryEntities)
+            {
+                if(entry.State == EntityState.Modified)
+                {
+                    entry.Entity.LastTimeModified = DateTime.Now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
 
     }
 }

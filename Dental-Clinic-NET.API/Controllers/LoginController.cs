@@ -1,5 +1,5 @@
-﻿using DataLayer.Schemas;
-using Dental_Clinic_NET.API.Services.UserServices;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.Services.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

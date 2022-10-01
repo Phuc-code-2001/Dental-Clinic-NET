@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Permissions;
 using System.Collections.Generic;
