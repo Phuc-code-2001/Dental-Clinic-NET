@@ -19,7 +19,7 @@ namespace DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("DataLayer.Schemas.BaseUser", b =>
+            modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -49,6 +49,9 @@ namespace DataLayer.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Gender")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageAvatarId")
                         .HasColumnType("text");
 
                     b.Property<string>("ImageURL")
@@ -102,7 +105,48 @@ namespace DataLayer.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("DataLayer.Schemas.GroupMember", b =>
+            modelBuilder.Entity("DataLayer.Domain.Contact", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("FinishedTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.GroupMember", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -269,7 +313,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("DataLayer.Schemas.BaseUser", null)
+                    b.HasOne("DataLayer.Domain.BaseUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -278,7 +322,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("DataLayer.Schemas.BaseUser", null)
+                    b.HasOne("DataLayer.Domain.BaseUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -293,7 +337,7 @@ namespace DataLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataLayer.Schemas.BaseUser", null)
+                    b.HasOne("DataLayer.Domain.BaseUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -302,7 +346,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("DataLayer.Schemas.BaseUser", null)
+                    b.HasOne("DataLayer.Domain.BaseUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

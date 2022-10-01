@@ -21,7 +21,7 @@ namespace DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("DataLayer.Schemas.GroupMember", b =>
+            modelBuilder.Entity("DataLayer.Domain.GroupMember", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

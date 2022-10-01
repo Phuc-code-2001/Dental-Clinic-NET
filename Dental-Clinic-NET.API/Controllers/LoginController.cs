@@ -1,5 +1,5 @@
-﻿using DataLayer.Schemas;
-using Dental_Clinic_NET.API.Services.UserServices;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.Services.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,26 +21,19 @@ namespace Dental_Clinic_NET.API.Controllers
     {
 
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
-
-        private IHttpClientFactory _client;
-
-        private UserServices _userServices;
         private FacebookServices _facebookServices;
+        private UserServices _userServices;
 
-        public LoginController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client)
+        public LoginController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices)
         {
             _userManager = userManager;
-            _configuration = configuration;
-            _client = client;
-            _facebookServices = new FacebookServices(client);
-            _userServices = new UserServices(configuration);
+            _userServices = userServices;
+            _facebookServices = facebookServices;
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync(BasicLoginModel loginModel)
+        public async Task<IActionResult> LoginBasicAsync(BasicLoginModel loginModel)
         {
-
             try
             {
                 BaseUser user = await _userManager.FindByNameAsync(loginModel.UserName);

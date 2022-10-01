@@ -1,7 +1,18 @@
-﻿using DataLayer.Schemas;
+﻿using AutoMapper;
+using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.Facebooks.Services;
+using Dental_Clinic_NET.API.Permissions;
+using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Utils;
+using ImageProcessLayer.ImageKitResult;
+using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using RealTimeProcessLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,44 +24,76 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class HelperController : ControllerBase
     {
-
         private UserManager<BaseUser> _userManager;
+        private ServicesManager _servicesManager;
 
-        public HelperController(UserManager<BaseUser> userManager)
+        public HelperController(UserManager<BaseUser> userManager, ServicesManager servicesManager)
         {
             _userManager = userManager;
+            _servicesManager = servicesManager;
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAccountNullFullNameAsync()
+        [HttpPost]
+        public async Task<IActionResult> TestPostImageAsync(IFormFile file)
         {
             try
             {
-                int count = 0;
-                List<BaseUser> users = _userManager.Users.Where(u => u.FullName == null).ToList();
-                foreach(var user in users)
-                {
-                    if((await _userManager.DeleteAsync(user)).Succeeded)
-                    {
-                        count++;
-                    }
-                };
+                bool validFileImage = _servicesManager.ImageKitServices.IsImage(file);
+                if (!validFileImage) return BadRequest("Input must be a image");
 
-                return Ok(new {
-                    count
-                });
+                string filename = file.FileName;
+                ImageKitUploadResult result = await _servicesManager.ImageKitServices.UploadImageAsync(file, filename);
+
+                return Ok(result);
+
             }
             catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
+
         }
 
-        [HttpPost]
-        public IActionResult TestPostImage(IFormFile file)
+        [HttpDelete]
+        public async Task<IActionResult> TestDeleteImageAsync(string imageId)
         {
+            try
+            {
+                
+                await _servicesManager.ImageKitServices.DeleteImageAsync(imageId);
+                return Ok($"Delete image with id={imageId} success");
 
-            return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+
+        [HttpGet]
+        [EnableQuery]
+        public IActionResult ViewAllAccount()
+        {
+            try
+            {
+
+                var users = _userManager.Users.AsEnumerable().Select(user =>
+                {
+                    PermissionOnBaseUser permission = new PermissionOnBaseUser(user, user);
+                    UserSerializer serializer = new UserSerializer(permission);
+                    return serializer.Serialize(user =>
+                    {
+                        return _servicesManager.AutoMapper.Map<UserDTO>(user);
+                    });
+                });
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
     }

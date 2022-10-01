@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220906111012_AddFbConnectedId")]
-    partial class AddFbConnectedId
+    [Migration("20220914090544_AddImageKitIdToBaseUser")]
+    partial class AddImageKitIdToBaseUser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -47,6 +47,13 @@ namespace DataLayer.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageAvatarId")
                         .HasColumnType("text");
 
                     b.Property<string>("ImageURL")

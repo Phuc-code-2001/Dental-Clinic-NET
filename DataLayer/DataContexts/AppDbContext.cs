@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,16 +12,14 @@ namespace DataLayer.DataContexts
     public class AppDbContext : IdentityDbContext<BaseUser>
     {
 
-        public static AppDbContext GetTransaction() => new AppDbContext();
-
         public AppDbContext() { }
 
         public AppDbContext(DbContextOptions options) : base(options) { }
 
-        private static string host = "ec2-54-76-43-89.eu-west-1.compute.amazonaws.com";
-        private static string user = "kuxjgkqbsvckvi";
-        private static string database = "d1kev7iaq1v931";
-        private static string password = "7ce3524d49aef95125a4ae81167e8da0bc7c0d0a446da9cdda49b84508f85a3e";
+        private static string host = "ec2-34-243-101-244.eu-west-1.compute.amazonaws.com";
+        private static string user = "bphhmbwrjoskky";
+        private static string database = "dbvkiobqsmietn";
+        private static string password = "a9d3865a698ba684463ecdde6967134cd34299897dbdf60a02e3252df9358533";
 
         private static string CONNECTION => $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 
@@ -34,9 +32,24 @@ namespace DataLayer.DataContexts
             }
         }
 
-        public DbSet<GroupMember> GroupMembers { get; set; } // k sài nữa
+        public DbSet<GroupMember> GroupMembers { get; set; } // dùng để test
+        public DbSet<Contact> Contacts { get; set; }
 
-        
+        public override int SaveChanges()
+        {
+
+            var entryEntities = ChangeTracker.Entries<BaseEntity>();
+
+            foreach(var entry in entryEntities)
+            {
+                if(entry.State == EntityState.Modified)
+                {
+                    entry.Entity.LastTimeModified = DateTime.Now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
 
     }
 }

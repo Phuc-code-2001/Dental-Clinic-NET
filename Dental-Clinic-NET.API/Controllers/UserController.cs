@@ -1,12 +1,19 @@
-﻿using DataLayer.Schemas;
-using Dental_Clinic_NET.API.Controllers.Helpers;
+﻿using AutoMapper;
+using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Services;
+using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,18 +21,32 @@ namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class UserController : ControllerBase, IPaginatedController
+    public class UserController : ControllerBase
     {
-
+        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
+        private ImageKitServices _imageKitServices;
 
-        public UserController(UserManager<BaseUser> userManager, IConfiguration configuration)
+        private ServicesManager _servicesManager;
+
+        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, IMapper mapper, ServicesManager servicesManager)
         {
             _userManager = userManager;
-            _configuration = configuration;
+            _imageKitServices = imageKitServices;
+            _mapper = mapper;
+            _servicesManager = servicesManager;
         }
 
+        /// <summary>
+        ///     Create account with role=Administrator when enable application
+        /// </summary>
+        /// <param name="inputInfo">Account Info</param>
+        /// <returns>
+        ///     400: Superuser already exist || Info invalid
+        ///     200: Create success
+        ///     500: Server Handle Error
+        ///     
+        /// </returns>
         [HttpPost]
         public async Task<IActionResult> CreateSuperUserAsync(CreateSuperUserModel inputInfo)
         {
@@ -35,7 +56,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (_userManager.Users.Any(user => user.Type == UserType.Administrator))
                 {
-                    return BadRequest("SuperUser already exist...");
+                    return BadRequest("Superuser already exist...");
                 }
 
                 BaseUser user = inputInfo.ToBaseUser_NotIncludePassword();
@@ -44,7 +65,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (result.Succeeded)
                 {
-                    return Ok("Ok...");
+                    return Ok(_mapper.Map<UserDTO>(user));
                 }
 
                 var errors = result.Errors.Select(er => new { er.Code, er.Description });
@@ -62,16 +83,28 @@ namespace Dental_Clinic_NET.API.Controllers
 
         }
 
+        /// <summary>
+        /// Get User information by JWT after login
+        /// </summary>
+        /// <returns>
+        ///     UserDTO: User information
+        /// </returns>
         [HttpGet]
         [Authorize]
+        [EnableQuery]
         public async Task<IActionResult> GetAuthorizeAsync()
         {
             try
             {
-                BaseUser authorizeUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
-                UserSerializer serializer = new UserSerializer(authorizeUser, authorizeUser);
+                BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
+                UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
 
-                return Ok(serializer.Serialize());
+                _servicesManager.PusherServices.Authenticate(loggedUser.Type.ToString(), HttpContext.Connection.Id);
+
+                return Ok(serializer.Serialize(user =>
+                {
+                    return _mapper.Map<UserDTO>(user);
+                }));
             }
             catch(Exception ex)
             {
@@ -80,21 +113,79 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
-        [HttpGet]
-        public IActionResult GetPage(int? pageIndex)
-        {
-            return Ok();
-        }
-
-        [HttpGet]
-        public IActionResult ViewAllAccount()
+        /// <summary>
+        /// Update avatar for User
+        /// </summary>
+        /// <param name="userId">Id of User</param>
+        /// <param name="image">Image file</param>
+        /// <returns>
+        ///     401: not is_admin, not is_owner, not is_authenticated
+        ///     400: Image file invalid
+        ///     500: ImageKit server error || Server handle error
+        ///     200: { string: newImage, UserDTO: user }
+        /// </returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> UpdateAvatarAsync(string userId, IFormFile image)
         {
             try
             {
-                var users = _userManager.Users.Select(user => new UserSerializer(user, user).Serialize());
+                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                BaseUser loginUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loginUser, requiredUser);
 
-                return Ok(users);
+                if(!permission.IsAdmin && !permission.IsOwner)
+                {
+                    return Unauthorized("Cann't do this operation");
+                }
+
+                if (_imageKitServices.IsImage(image))
+                {
+                    var result = await _imageKitServices.UploadImageAsync(image, image.FileName);
+                    if(requiredUser.ImageAvatarId != null)
+                    {
+                        await _imageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
+                    }
+                    requiredUser.ImageURL = result.URL;
+                    requiredUser.ImageAvatarId = result.ImageId;
+                    await _userManager.UpdateAsync(requiredUser);
+
+                    UserSerializer serializer = new UserSerializer(permission);
+                    return Ok(new
+                    {
+                        newImage=requiredUser.ImageURL,
+                        user=serializer.Serialize(user => _mapper.Map<UserDTO>(user))
+                    });
+                }
+
+                return BadRequest("File must be image");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Require administrator role. List all users within ODATA, each page include max 10 users
+        /// </summary>
+        /// <returns>
+        ///     200: Query success
+        ///     500: Server handle error
+        /// </returns>
+        [HttpGet]
+        [Authorize(Roles = "Administrator")]
+        [EnableQuery(PageSize = 10)]
+        public IActionResult GetUsers()
+        {
+            try
+            {
+                var users = _userManager.Users.ToList();
+                var usersDTO = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
+
+                return Ok(usersDTO.AsQueryable());
+
             }
             catch(Exception ex)
             {

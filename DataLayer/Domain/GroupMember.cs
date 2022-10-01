@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DataLayer.Schemas
+namespace DataLayer.Domain
 {
     [Table("GroupMembers")]
     public class GroupMember

@@ -1,9 +1,12 @@
-﻿using DataLayer.Schemas;
+﻿using AutoMapper;
+using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Models;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
-using Dental_Clinic_NET.API.Services.UserServices;
+using Dental_Clinic_NET.API.Services.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,21 +23,18 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class RegisterController : ControllerBase
     {
+        private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
-        private IConfiguration _configuration;
-
-        private IHttpClientFactory _client;
 
         private UserServices _userServices;
         private FacebookServices _facebookServices;
 
-        public RegisterController(UserManager<BaseUser> userManager, IConfiguration configuration, IHttpClientFactory client)
+        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices, IMapper mapper)
         {
             _userManager = userManager;
-            _configuration = configuration;
-            _client = client;
-            _userServices = new UserServices(configuration);
-            _facebookServices = new FacebookServices(client);
+            _facebookServices = facebookServices;
+            _userServices = userServices;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -84,12 +84,15 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createUserResult.Succeeded)
                 {
                     string token = _userServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(user, user);
+                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
                         id = user.Id,
                         token = token,
-                        user = serializer.Serialize(),
+                        user = serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 
@@ -115,7 +118,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
             try
             {
-                BaseUser user = request.ToBaseUser_NotIncludePassword();
+                BaseUser user = _mapper.Map<BasicRegisterModel, BaseUser>(request);
                 if(await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == user.PhoneNumber) != null)
                 {
                     return BadRequest(new
@@ -129,12 +132,15 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createResult.Succeeded)
                 {
                     string token = _userServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(user, user);
+                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
                         id=user.Id,
                         token=token,
-                        user=serializer.Serialize(),
+                        user=serializer.Serialize(user =>
+                        {
+                            return _mapper.Map<UserDTO>(user);
+                        }),
                     });
                 }
 

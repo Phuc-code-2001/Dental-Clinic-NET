@@ -1,4 +1,4 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
 using System.ComponentModel.DataAnnotations;
 
 namespace Dental_Clinic_NET.API.Facebooks.Models

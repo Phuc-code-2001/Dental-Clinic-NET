@@ -1,39 +1,29 @@
-﻿using DataLayer.Schemas;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.Permissions;
 using System.Collections.Generic;
 
 namespace Dental_Clinic_NET.API.Serializers
 {
-    public class UserSerializer : BaseSerializer<BaseUser>
+    public class UserSerializer
     {
-        public UserSerializer(BaseUser authorizeUser, BaseUser entity) : base(authorizeUser, entity)
-        {
-            if (authorizeUser == null)
-            {
-                isOwner = false;
-                isAdmin = false;
-            }
-            else
-            {
-                isOwner = authorizeUser.Id == entity.Id;
-                isAdmin = authorizeUser.Type == UserType.Administrator;
-            }
 
+        public delegate UserDTO Transformer(BaseUser user);
+
+        public PermissionOnBaseUser permission;
+
+        public UserSerializer(PermissionOnBaseUser permission)
+        {
+            this.permission = permission;
         }
 
-        public Dictionary<string, object> Serialize()
+        public UserDTO Serialize(Transformer mapperHandle)
         {
-            var userInfo = new Dictionary<string, object>();
+            var userInfo = mapperHandle(permission.Entity);
 
-            userInfo.Add("id", entity.Id);
-            userInfo.Add("fullname", entity.FullName);
-            userInfo.Add("birthday", entity.BirthDate);
-            userInfo.Add("phone", entity.PhoneNumber);
-            userInfo.Add("image_url", entity.ImageURL);
-            userInfo.Add("role", entity.Type.ToString());
-
-            if (isOwner || isAdmin) userInfo.Add("username", entity.UserName);
-            if (isOwner || isAdmin) userInfo.Add("email", entity.Email);
-            if (isOwner || isAdmin) userInfo.Add("facebook_id", entity.FbConnectedId);
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Username = null;
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Email = null;
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.FbConnectedId = null;
 
             return userInfo;
         }

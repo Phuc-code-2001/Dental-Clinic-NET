@@ -63,6 +63,11 @@ namespace ImageProcessLayer.Services
             throw new Exception("Something went wrong while upload image");
         }
 
-        
+        public bool IsImage(IFormFile file)
+        {
+            if (file == null) return false;
+            if (file.ContentType.StartsWith("image")) return true;
+            return false;
+        }
     }
 }
