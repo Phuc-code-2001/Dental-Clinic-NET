@@ -3,15 +3,17 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221001080204_InitContact")]
+    partial class InitContact
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,29 +115,18 @@ namespace DataLayer.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("FinishedTime")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("State")
+                    b.Property<int>("PhoneNumber")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("TimeCreated")
