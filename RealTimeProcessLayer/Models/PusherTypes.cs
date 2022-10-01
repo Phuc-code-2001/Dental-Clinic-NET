@@ -9,5 +9,6 @@ namespace RealTimeProcessLayer.Models
     public enum PusherTypes
     {
         Application,
+        Admin
     }
 }
