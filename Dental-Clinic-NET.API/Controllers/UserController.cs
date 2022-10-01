@@ -4,6 +4,7 @@ using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Services;
 using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,11 +27,14 @@ namespace Dental_Clinic_NET.API.Controllers
         private UserManager<BaseUser> _userManager;
         private ImageKitServices _imageKitServices;
 
-        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, IMapper mapper)
+        private ServicesManager _servicesManager;
+
+        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, IMapper mapper, ServicesManager servicesManager)
         {
             _userManager = userManager;
             _imageKitServices = imageKitServices;
             _mapper = mapper;
+            _servicesManager = servicesManager;
         }
 
         /// <summary>
@@ -61,7 +65,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (result.Succeeded)
                 {
-                    return Ok("Ok...");
+                    return Ok(_mapper.Map<UserDTO>(user));
                 }
 
                 var errors = result.Errors.Select(er => new { er.Code, er.Description });
@@ -94,6 +98,8 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
                 UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
+
+                _servicesManager.PusherServices.Authenticate(loggedUser.Type.ToString(), HttpContext.Connection.Id);
 
                 return Ok(serializer.Serialize(user =>
                 {

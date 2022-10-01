@@ -12,8 +12,6 @@ namespace DataLayer.DataContexts
     public class AppDbContext : IdentityDbContext<BaseUser>
     {
 
-        public static AppDbContext GetTransaction() => new AppDbContext();
-
         public AppDbContext() { }
 
         public AppDbContext(DbContextOptions options) : base(options) { }
@@ -35,8 +33,23 @@ namespace DataLayer.DataContexts
         }
 
         public DbSet<GroupMember> GroupMembers { get; set; } // dùng để test
+        public DbSet<Contact> Contacts { get; set; }
 
-        
+        public override int SaveChanges()
+        {
+
+            var entryEntities = ChangeTracker.Entries<BaseEntity>();
+
+            foreach(var entry in entryEntities)
+            {
+                if(entry.State == EntityState.Modified)
+                {
+                    entry.Entity.LastTimeModified = DateTime.Now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
 
     }
 }
