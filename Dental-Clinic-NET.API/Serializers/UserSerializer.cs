@@ -21,7 +21,7 @@ namespace Dental_Clinic_NET.API.Serializers
         {
             var userInfo = mapperHandle(permission.Entity);
 
-            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Username = null;
+            if (!(permission.IsOwner || permission.IsAdmin)) userInfo.UserName = null;
             if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Email = null;
             if (!(permission.IsOwner || permission.IsAdmin)) userInfo.FbConnectedId = null;
             if (!(permission.IsOwner || permission.IsAdmin)) userInfo.PusherChannel = null;
