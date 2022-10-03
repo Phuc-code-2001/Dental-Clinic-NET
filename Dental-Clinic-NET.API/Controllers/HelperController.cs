@@ -34,6 +34,25 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> GenerateChannelIfNullAsync()
+        {
+            var users = _userManager.Users.ToList();
+            foreach(var user in users)
+            {
+                if (String.IsNullOrEmpty(user.PusherChannel))
+                {
+                    string channel = _servicesManager.PusherServices.GenerateUniqueUserChannel();
+                    user.PusherChannel = channel;
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
+            var userDTOs = users.Select(user => _servicesManager.AutoMapper.Map<UserDTO>(user)).ToList();
+
+            return Ok(userDTOs);
+        }
+
+        [HttpPost]
         public async Task<IActionResult> TestPostImageAsync(IFormFile file)
         {
             try
