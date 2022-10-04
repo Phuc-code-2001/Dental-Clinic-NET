@@ -150,8 +150,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
+                ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
+
                 Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-ChangeState", new { id=contact.Id, state=contact.State.ToString() }, result =>
+                    .PushTo(chanels, "Contact-ChangeState", contactDTO, result =>
                     {
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
@@ -193,7 +195,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-Delete", new { id = contact.Id }, result =>
+                    .PushTo(chanels, "Contact-Delete", new { Id = contact.Id }, result =>
                     {
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
