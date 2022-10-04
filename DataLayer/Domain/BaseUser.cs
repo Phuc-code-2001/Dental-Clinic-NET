@@ -24,6 +24,8 @@ namespace DataLayer.Domain
 
         public string FbConnectedId { get; set; }
 
+        public string PusherChannel { get; set; }
+
     }
 
     public enum UserType
