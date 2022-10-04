@@ -99,8 +99,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
                 UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
 
-                _servicesManager.PusherServices.Authenticate(loggedUser.Type.ToString(), HttpContext.Connection.Id);
-
                 return Ok(serializer.Serialize(user =>
                 {
                     return _mapper.Map<UserDTO>(user);

@@ -12,7 +12,7 @@ namespace Dental_Clinic_NET.API.DTO
         public string Id { get; set; }
 
         [JsonProperty("username")]
-        public string Username { get; set; }
+        public string UserName { get; set; }
 
         [JsonProperty("email")]
         public string Email { get; set; }
@@ -37,6 +37,9 @@ namespace Dental_Clinic_NET.API.DTO
 
         [JsonProperty("facebook_id")]
         public string FbConnectedId { get; set; }
+
+        [JsonProperty("pusher_channel")]
+        public string PusherChannel { get; set; }
 
     }
 }
