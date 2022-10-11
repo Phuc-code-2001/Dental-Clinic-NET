@@ -3,15 +3,17 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221010022024_InitPatient")]
+    partial class InitPatient
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,14 +29,15 @@ namespace DataLayer.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
@@ -109,6 +112,8 @@ namespace DataLayer.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("BaseUser");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Contact", b =>
@@ -152,6 +157,32 @@ namespace DataLayer.Migrations
                     b.ToTable("Contacts");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.GroupMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("BirthDay")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MemberCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GroupMembers");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.MediaFile", b =>
                 {
                     b.Property<int>("Id")
@@ -174,27 +205,6 @@ namespace DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Patient", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int>("FileId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileId");
-
-                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -329,21 +339,14 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
                 {
-                    b.HasOne("DataLayer.Domain.MediaFile", "MedicalRecordFile")
-                        .WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasBaseType("DataLayer.Domain.BaseUser");
 
-                    b.HasOne("DataLayer.Domain.BaseUser", "BaseUser")
-                        .WithMany()
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int?>("File")
+                        .HasColumnType("integer");
 
-                    b.Navigation("BaseUser");
+                    b.HasIndex("File");
 
-                    b.Navigation("MedicalRecordFile");
+                    b.HasDiscriminator().HasValue("Patient");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -395,6 +398,15 @@ namespace DataLayer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.Patient", b =>
+                {
+                    b.HasOne("DataLayer.Domain.MediaFile", "PatientProfile")
+                        .WithMany()
+                        .HasForeignKey("File");
+
+                    b.Navigation("PatientProfile");
                 });
 #pragma warning restore 612, 618
         }

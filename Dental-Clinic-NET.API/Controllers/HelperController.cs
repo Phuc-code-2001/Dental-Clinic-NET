@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Services;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
 using RealTimeProcessLayer.Services;
 using System;
 using System.Collections.Generic;
@@ -26,14 +28,19 @@ namespace Dental_Clinic_NET.API.Controllers
     {
         private UserManager<BaseUser> _userManager;
         private ServicesManager _servicesManager;
+        private AppDbContext _context;
 
-        public HelperController(UserManager<BaseUser> userManager, ServicesManager servicesManager)
+        public HelperController(UserManager<BaseUser> userManager, ServicesManager servicesManager, AppDbContext context)
         {
             _userManager = userManager;
             _servicesManager = servicesManager;
+            _context = context;
         }
 
+        
+
         [HttpPost]
+        [NonAction]
         public async Task<IActionResult> GenerateChannelIfNullAsync()
         {
             var users = _userManager.Users.ToList();
@@ -53,6 +60,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
+        [NonAction]
         public async Task<IActionResult> TestPostImageAsync(IFormFile file)
         {
             try
@@ -74,6 +82,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpDelete]
+        [NonAction]
         public async Task<IActionResult> TestDeleteImageAsync(string imageId)
         {
             try
@@ -110,6 +119,54 @@ namespace Dental_Clinic_NET.API.Controllers
                 return Ok(users);
             }
             catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        public IActionResult GetPatients()
+        {
+            var results = _context.Patients.Include(pat => pat.BaseUser).Include(pat => pat.MedicalRecordFile)
+                .Select(pat => _servicesManager.AutoMapper.Map<PatientDTO>(pat)).ToList();
+
+            return Ok(results);
+        }
+
+        [HttpGet]
+        public IActionResult GetFiles()
+        {
+            var results = _context.Medias.Select(file => _servicesManager.AutoMapper.Map<MediaFileDTO>(file)).ToList();
+            return Ok(results);
+        }
+
+        [HttpPost]
+        public IActionResult GeneratePatientProfiles()
+        {
+            try
+            {
+                var users = _userManager.Users.ToList();
+                users.ForEach(user =>
+                {
+                    Patient patient = _context.Patients.Find(user.Id);
+                    if (patient == null)
+                    {
+                        patient = new Patient()
+                        {
+                            Id = user.Id,
+                            MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.PatientProfile },
+                        };
+                        _context.Patients.Add(patient);
+                    }
+
+                });
+
+                _context.SaveChanges();
+
+                return Ok(_context.Patients.ToList());
+            }
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

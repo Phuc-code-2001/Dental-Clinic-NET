@@ -29,6 +29,9 @@ namespace Dental_Clinic_NET.API.DTO
         [JsonProperty("id")]
         public string Gender { get; set; }
 
+        [JsonProperty("address")]
+        public string Address { get; set; }
+
         [JsonProperty("phone")]
         public string PhoneNumber { get; set; }
 
