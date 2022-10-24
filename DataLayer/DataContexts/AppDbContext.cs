@@ -32,8 +32,10 @@ namespace DataLayer.DataContexts
             }
         }
 
-        public DbSet<GroupMember> GroupMembers { get; set; } // dùng để test
         public DbSet<Contact> Contacts { get; set; }
+
+        public DbSet<MediaFile> Medias { get; set; }
+        public DbSet<Patient> Patients { get; set; }
 
         public override int SaveChanges()
         {
