@@ -76,7 +76,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     errors = errors,
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -99,18 +99,16 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
                 UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
 
-                _servicesManager.PusherServices.Authenticate(loggedUser.Type.ToString(), HttpContext.Connection.Id);
-
                 return Ok(serializer.Serialize(user =>
                 {
                     return _mapper.Map<UserDTO>(user);
                 }));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
-            
+
         }
 
         /// <summary>
@@ -135,7 +133,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loginUser, requiredUser);
 
-                if(!permission.IsAdmin && !permission.IsOwner)
+                if (!permission.IsAdmin && !permission.IsOwner)
                 {
                     return Unauthorized("Cann't do this operation");
                 }
@@ -143,7 +141,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 if (_imageKitServices.IsImage(image))
                 {
                     var result = await _imageKitServices.UploadImageAsync(image, image.FileName);
-                    if(requiredUser.ImageAvatarId != null)
+                    if (requiredUser.ImageAvatarId != null)
                     {
                         await _imageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
                     }
@@ -154,14 +152,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     UserSerializer serializer = new UserSerializer(permission);
                     return Ok(new
                     {
-                        newImage=requiredUser.ImageURL,
-                        user=serializer.Serialize(user => _mapper.Map<UserDTO>(user))
+                        newImage = requiredUser.ImageURL,
+                        user = serializer.Serialize(user => _mapper.Map<UserDTO>(user))
                     });
                 }
 
                 return BadRequest("File must be image");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -184,7 +182,146 @@ namespace Dental_Clinic_NET.API.Controllers
                 var users = _userManager.Users.ToList();
                 var usersDTO = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
 
-                return Ok(usersDTO.AsQueryable());
+                return Ok(usersDTO);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///  Change role of specific user
+        /// </summary>
+        /// <param name="request">Info need to change role</param>
+        /// <returns>
+        ///     404: user not found
+        ///     400: something went wrong so cannot update
+        ///     500: Server handle error
+        ///     200: Update success
+        /// </returns>
+        [HttpPut]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> ChangeRole(ChangeRoleModel request)
+        {
+            try
+            {
+                BaseUser user = await _userManager.FindByIdAsync(request.UserId);
+                if (user == null) return NotFound("User not found");
+
+                user.Type = request.RoleId;
+                var result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    var errors = result.Errors;
+                    return BadRequest(errors);
+                }
+
+                UserDTO userDTO = _servicesManager.AutoMapper.Map<UserDTO>(user);
+                return Ok(userDTO);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Update User information by owner or admin
+        /// </summary>
+        /// <param name="request">UpdateUserInfo(FullName, BirthDate, Address, Gender)</param>
+        /// <returns>
+        ///     403: Forbidden (Not isAdmin and IsOwner)
+        ///     400: Fields invalid
+        ///     500: Server handle error
+        ///     200: Update success
+        /// </returns>
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateAsync(UpdateUserModel request)
+        {
+
+            try
+            {
+                BaseUser requiredUser = await _userManager.FindByIdAsync(request.userId);
+                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
+
+                if (!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+
+                if (!String.IsNullOrWhiteSpace(request.FullName)) requiredUser.FullName = request.FullName;
+                if (request.BirthDate != null) requiredUser.BirthDate = request.BirthDate.Value;
+                if (!String.IsNullOrWhiteSpace(request.Address)) requiredUser.Address = request.Address;
+                if (!String.IsNullOrWhiteSpace(request.Gender)) requiredUser.Gender = request.Gender;
+
+                IdentityResult updateResult = await _userManager.UpdateAsync(requiredUser);
+
+                if (updateResult.Succeeded)
+                {
+                    UserDTO userDTO = new UserSerializer(permission).Serialize((user) =>
+                    {
+                        return _servicesManager.AutoMapper.Map<UserDTO>(user);
+                    });
+                    return Ok(userDTO);
+                }
+
+                var errors = updateResult.Errors.ToList();
+                return BadRequest(errors);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+
+        /// <summary>
+        ///   Update password for specific user
+        /// </summary>
+        /// <param name="request">Info needed to update password</param>
+        /// <returns>
+        ///     404: Not found user
+        ///     403: Forbiden
+        ///     400: an invalid or error while update
+        ///     500: Server handle error
+        ///     200: Update success
+        /// </returns>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> UpdatePasswordAsync(UpdatePasswordModel request)
+        {
+            try
+            {
+                BaseUser requiredUser = await _userManager.FindByIdAsync(request.userId);
+                if(requiredUser == null)
+                {
+                    return NotFound("Truyền sai userId rồi ba");
+                }
+
+                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
+                if(!permission.IsAdmin && !permission.IsOwner)
+                {
+                    return StatusCode(403);
+                }
+
+                IdentityResult updateResult = await _userManager.ChangePasswordAsync(requiredUser, request.OldPassword, request.NewPassword);
+
+                if(updateResult.Succeeded)
+                {
+                    return Ok("Update password success");
+                }
+
+                var errors = updateResult.Errors;
+
+                return BadRequest(errors);
 
             }
             catch(Exception ex)

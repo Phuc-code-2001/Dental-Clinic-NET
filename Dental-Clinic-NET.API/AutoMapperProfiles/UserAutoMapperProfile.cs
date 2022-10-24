@@ -13,9 +13,10 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         {
             CreateMap<BasicRegisterModel, BaseUser>();
 
-
             CreateMap<BaseUser, UserDTO>()
                 .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()));
+
+            CreateMap<Patient, PatientDTO>();
 
         }
 

@@ -3,15 +3,17 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221001141353_AddPusherChannel")]
+    partial class AddPusherChannel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,9 +28,6 @@ namespace DataLayer.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("timestamp without time zone");
@@ -152,49 +151,30 @@ namespace DataLayer.Migrations
                     b.ToTable("Contacts");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.MediaFile", b =>
+            modelBuilder.Entity("DataLayer.Domain.GroupMember", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("BirthDay")
+                        .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("FileURL")
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<string>("MemberCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
 
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<string>("Name")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Patient", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int>("FileId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileId");
-
-                    b.ToTable("Patients");
+                    b.ToTable("GroupMembers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -325,25 +305,6 @@ namespace DataLayer.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Patient", b =>
-                {
-                    b.HasOne("DataLayer.Domain.MediaFile", "MedicalRecordFile")
-                        .WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataLayer.Domain.BaseUser", "BaseUser")
-                        .WithMany()
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BaseUser");
-
-                    b.Navigation("MedicalRecordFile");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

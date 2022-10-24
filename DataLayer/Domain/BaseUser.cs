@@ -20,9 +20,13 @@ namespace DataLayer.Domain
 
         public string Gender { get; set; }
 
+        public string Address { get; set; }
+
         public UserType Type { get; set; } = UserType.Patient;
 
         public string FbConnectedId { get; set; }
+
+        public string PusherChannel { get; set; }
 
     }
 
