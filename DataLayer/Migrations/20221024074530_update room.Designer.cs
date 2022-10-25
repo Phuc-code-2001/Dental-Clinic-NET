@@ -3,15 +3,17 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221024074530_update room")]
+    partial class updateroom
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,6 +180,10 @@ namespace DataLayer.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("room_id");
 
+                    b.Property<int>("ServiceDeviceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("serviceDevice_id");
+
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
@@ -187,6 +193,8 @@ namespace DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("ServiceDeviceId");
 
                     b.ToTable("Devices");
                 });
@@ -276,6 +284,10 @@ namespace DataLayer.Migrations
                     b.Property<string>("ServiceCode")
                         .HasColumnType("text");
 
+                    b.Property<int>("ServiceDeviceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("serviceDevice_id");
+
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("timestamp without time zone");
 
@@ -284,22 +296,35 @@ namespace DataLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ServiceDeviceId");
+
                     b.ToTable("Services");
                 });
 
-            modelBuilder.Entity("DeviceService", b =>
+            modelBuilder.Entity("DataLayer.Domain.ServiceDevice", b =>
                 {
-                    b.Property<int>("DevicesId")
-                        .HasColumnType("integer");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("ServicesId")
-                        .HasColumnType("integer");
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("device_id");
 
-                    b.HasKey("DevicesId", "ServicesId");
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("timestamp without time zone");
 
-                    b.HasIndex("ServicesId");
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("service_id");
 
-                    b.ToTable("DeviceService");
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceDevices");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -439,6 +464,14 @@ namespace DataLayer.Migrations
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DataLayer.Domain.ServiceDevice", "ServiceDevice")
+                        .WithMany()
+                        .HasForeignKey("ServiceDeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceDevice");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
@@ -460,19 +493,15 @@ namespace DataLayer.Migrations
                     b.Navigation("MedicalRecordFile");
                 });
 
-            modelBuilder.Entity("DeviceService", b =>
+            modelBuilder.Entity("DataLayer.Domain.Service", b =>
                 {
-                    b.HasOne("DataLayer.Domain.Device", null)
+                    b.HasOne("DataLayer.Domain.ServiceDevice", "ServiceDevice")
                         .WithMany()
-                        .HasForeignKey("DevicesId")
+                        .HasForeignKey("ServiceDeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataLayer.Domain.Service", null)
-                        .WithMany()
-                        .HasForeignKey("ServicesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ServiceDevice");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
