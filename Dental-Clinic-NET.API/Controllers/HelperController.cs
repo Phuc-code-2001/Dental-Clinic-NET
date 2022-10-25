@@ -101,7 +101,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        public IActionResult ViewAllAccount()
+        public IActionResult ViewAllAccount(int page = 1)
         {
             try
             {
@@ -116,7 +116,18 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 });
 
-                return Ok(users);
+                
+                Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(users.AsQueryable(), page);
+                
+
+                return Ok(new
+                {
+                    page=page,
+                    per_page=paginatedUsers.PageSize,
+                    total=paginatedUsers.ColectionCount,
+                    total_pages=paginatedUsers.PageCount,
+                    data=paginatedUsers.Items
+                });
             }
             catch (Exception ex)
             {
