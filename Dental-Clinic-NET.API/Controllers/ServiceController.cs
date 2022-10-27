@@ -9,12 +9,14 @@ using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Services;
 using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.Utils;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class ServiceController : Controller
+    public class ServiceController : ControllerBase
     {
         private AppDbContext _context;
         private ServicesManager _servicesManager;
@@ -32,7 +34,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page = 1)
         {
             try
             {
@@ -40,7 +42,17 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 var serviceDTOs = services.Select(services => _servicesManager.AutoMapper.Map<ServiceDTO>(services));
 
-                return Ok(serviceDTOs);
+                Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
+
+
+                return Ok(new
+                {
+                    page = page,
+                    per_page = paginatedServices.PageSize,
+                    total = paginatedServices.ColectionCount,
+                    total_pages = paginatedServices.PageCount,
+                    data = paginatedServices.Items
+                });
             }
             catch (Exception ex)
             {

@@ -13,7 +13,7 @@ namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AddServiceForDeviceController : Controller
+    public class AddServiceForDeviceController : ControllerBase
     {
         private AppDbContext _context;
         private ServicesManager _servicesManager;
