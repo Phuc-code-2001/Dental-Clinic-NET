@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Dental_Clinic_NET.API.Facebooks.Services;
+using Dental_Clinic_NET.API.Services.FileUploads;
 using Dental_Clinic_NET.API.Services.Users;
+using FileProcessorServices;
 using ImageProcessLayer.Services;
 using RealTimeProcessLayer.Services;
 
@@ -16,13 +18,18 @@ namespace Dental_Clinic_NET.API.Services
         public ImageKitServices ImageKitServices { get; set; }
         public PusherServices PusherServices { get; set; }
 
-        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices)
+        public FileUploadServices FileUploadServices { get; set; }
+        public DropboxServices DropboxServices { get; set; }
+
+        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices, FileUploadServices fileUploadServices, DropboxServices dropboxServices)
         {
             AutoMapper = autoMapper;
             UserServices = userServices;
             FacebookServices = facebookServices;
             ImageKitServices = imageKitServices;
             PusherServices = pusherServices;
+            FileUploadServices = fileUploadServices;
+            DropboxServices = dropboxServices;
         }
 
 

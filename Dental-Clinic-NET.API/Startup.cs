@@ -26,6 +26,8 @@ using Dental_Clinic_NET.API.AutoMapperProfiles;
 using Microsoft.AspNetCore.OData;
 using RealTimeProcessLayer.Services;
 using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Services.FileUploads;
+using FileProcessorServices;
 
 namespace Dental_Clinic_NET.API
 {
@@ -104,6 +106,8 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<FacebookServices>();
             services.AddTransient<ImageKitServices>();
             services.AddTransient<PusherServices>();
+            services.AddTransient<FileUploadServices>();
+            services.AddTransient<DropboxServices>();
 
             services.AddTransient<ServicesManager>();
 
