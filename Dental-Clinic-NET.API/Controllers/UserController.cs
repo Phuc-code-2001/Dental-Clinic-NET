@@ -5,11 +5,13 @@ using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Utils;
 using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -175,14 +177,24 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         [EnableQuery(PageSize = 10)]
-        public IActionResult GetUsers()
+        public IActionResult GetUsers(int page = 1)
         {
             try
             {
                 var users = _userManager.Users.ToList();
                 var usersDTO = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
 
-                return Ok(usersDTO);
+                Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(usersDTO.AsQueryable(), page);
+
+
+                return Ok(new
+                {
+                    page = page,
+                    per_page = paginatedUsers.PageSize,
+                    total = paginatedUsers.ColectionCount,
+                    total_pages = paginatedUsers.PageCount,
+                    data = paginatedUsers.Items
+                });
 
             }
             catch (Exception ex)
