@@ -13,7 +13,8 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         {
             CreateMap<CreateRoom, Room>();
             CreateMap<Room, RoomDTO>()
-                .ForMember(des => des.DeviceNames, act => act.MapFrom(src => src.Devices.Select(d => d.DeviceName).ToList()));
+                .ForMember(des => des.DeviceNames, act => act.MapFrom(src => src.Devices.Select(d => d.DeviceName).ToList()))
+                .ForMember(des => des.RoomType, act => act.MapFrom(src => src.RoomType.ToString()));
         }
     }
 }
