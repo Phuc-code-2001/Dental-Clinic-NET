@@ -266,11 +266,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
-
-                if (!String.IsNullOrWhiteSpace(request.FullName)) requiredUser.FullName = request.FullName;
-                if (request.BirthDate != null) requiredUser.BirthDate = request.BirthDate.Value;
-                if (!String.IsNullOrWhiteSpace(request.Address)) requiredUser.Address = request.Address;
-                if (!String.IsNullOrWhiteSpace(request.Gender)) requiredUser.Gender = request.Gender;
+                _servicesManager.AutoMapper.Map<UpdateUserModel, BaseUser>(request, requiredUser);
 
                 IdentityResult updateResult = await _userManager.UpdateAsync(requiredUser);
 

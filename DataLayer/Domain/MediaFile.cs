@@ -18,7 +18,8 @@ namespace DataLayer.Domain
         
         public enum FileCategory
         {
-            PatientProfile,
+            MedicalRecord,
+            DoctorCertificate,
         }
     }
 }

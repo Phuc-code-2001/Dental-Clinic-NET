@@ -11,6 +11,7 @@ using Dental_Clinic_NET.API.Models.Services;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Dental_Clinic_NET.API.Models.Devices;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -172,9 +173,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return NotFound("Service not found");
                 }
-                if (request.ServiceCode != null && request.ServiceCode != "") service.ServiceCode = request.ServiceCode;
-                if (request.Description != null && request.Description != "") service.Description = request.Description;
-                service.price = request.price;
+
+                _servicesManager.AutoMapper.Map<UpdateService, Service>(request, service);
+                
                 _context.Entry(service).State = EntityState.Modified;
                 _context.SaveChanges();
 
