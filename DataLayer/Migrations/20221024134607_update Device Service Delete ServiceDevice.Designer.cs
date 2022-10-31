@@ -3,58 +3,23 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221024134607_update Device Service Delete ServiceDevice")]
+    partial class updateDeviceServiceDeleteServiceDevice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-            modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DoctorId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PatientId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("RoomId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Slot")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("State")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("PatientId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("Appointments");
-                });
 
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
                 {
@@ -228,30 +193,6 @@ namespace DataLayer.Migrations
                     b.ToTable("Devices");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.Doctor", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("CertificateId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Major")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CertificateId");
-
-                    b.ToTable("Doctors");
-                });
-
             modelBuilder.Entity("DataLayer.Domain.MediaFile", b =>
                 {
                     b.Property<int>("Id")
@@ -313,9 +254,6 @@ namespace DataLayer.Migrations
                     b.Property<string>("RoomCode")
                         .HasColumnType("text");
 
-                    b.Property<int>("RoomType")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("timestamp without time zone");
 
@@ -330,9 +268,6 @@ namespace DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<int?>("AppointmentId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -350,8 +285,6 @@ namespace DataLayer.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Services");
                 });
@@ -501,29 +434,6 @@ namespace DataLayer.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
-                {
-                    b.HasOne("DataLayer.Domain.Doctor", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId");
-
-                    b.HasOne("DataLayer.Domain.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId");
-
-                    b.HasOne("DataLayer.Domain.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Room");
-                });
-
             modelBuilder.Entity("DataLayer.Domain.Device", b =>
                 {
                     b.HasOne("DataLayer.Domain.Room", null)
@@ -531,23 +441,6 @@ namespace DataLayer.Migrations
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Doctor", b =>
-                {
-                    b.HasOne("DataLayer.Domain.MediaFile", "Certificate")
-                        .WithMany()
-                        .HasForeignKey("CertificateId");
-
-                    b.HasOne("DataLayer.Domain.BaseUser", "BaseUser")
-                        .WithMany()
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BaseUser");
-
-                    b.Navigation("Certificate");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
@@ -567,13 +460,6 @@ namespace DataLayer.Migrations
                     b.Navigation("BaseUser");
 
                     b.Navigation("MedicalRecordFile");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Service", b =>
-                {
-                    b.HasOne("DataLayer.Domain.Appointment", null)
-                        .WithMany("Services")
-                        .HasForeignKey("AppointmentId");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -640,11 +526,6 @@ namespace DataLayer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
-                {
-                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Room", b =>

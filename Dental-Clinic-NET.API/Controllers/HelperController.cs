@@ -166,7 +166,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         patient = new Patient()
                         {
                             Id = user.Id,
-                            MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.PatientProfile },
+                            MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.MedicalRecord },
                         };
                         _context.Patients.Add(patient);
                     }
