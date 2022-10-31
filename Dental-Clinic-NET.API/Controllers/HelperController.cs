@@ -183,5 +183,11 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> TestDropbox(IFormFile file)
+        {
+            string result = await _servicesManager.DropboxServices.TestService(file);
+            return Ok(result);
+        }
     }
 }

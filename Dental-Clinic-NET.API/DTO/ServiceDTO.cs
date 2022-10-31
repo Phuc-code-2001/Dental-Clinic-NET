@@ -11,5 +11,6 @@ namespace Dental_Clinic_NET.API.DTO
         public int Price { get; set; }
         public List<string> DeviceNames { get; set; }
         public List<int> DeviceIdList { get; set; }
+
     }
 }

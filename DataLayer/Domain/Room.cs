@@ -11,9 +11,10 @@ namespace DataLayer.Domain
         public int Id { get; set; }
         public string RoomCode { get; set; }
         public string Description { get; set; }
+
         public ICollection<Device> Devices { get; set; }
 
-        public RoomTypes RoomType { get; set; } = 0;
+        public RoomTypes RoomType { get; set; } = RoomTypes.GeneralRoom;
         
         public enum RoomTypes
         {
