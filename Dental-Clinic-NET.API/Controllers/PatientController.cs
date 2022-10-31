@@ -132,7 +132,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     }
                     else
                     {
-                        mediafile = new MediaFile() { FileURL = uploadResult.FileUrl, Category = MediaFile.FileCategory.PatientProfile };
+                        mediafile = new MediaFile() { FileURL = uploadResult.FileUrl, Category = MediaFile.FileCategory.MedicalRecord };
                         patient.MedicalRecordFile = mediafile;
                     }
                     _context.Patients.Update(patient);

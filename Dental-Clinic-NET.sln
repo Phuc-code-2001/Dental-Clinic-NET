@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealTimeProcessLayer", "Rea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebClient", "WebClient\WebClient.csproj", "{640F6610-5F9F-44F5-93DB-7C2A103A433B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileProcessorServices", "FileProcessorServices\FileProcessorServices.csproj", "{B9EC3213-A537-419D-841A-5A102B9DA76C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessorServices", "FileProcessorServices\FileProcessorServices.csproj", "{B9EC3213-A537-419D-841A-5A102B9DA76C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +44,10 @@ Global
 		{640F6610-5F9F-44F5-93DB-7C2A103A433B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{640F6610-5F9F-44F5-93DB-7C2A103A433B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{640F6610-5F9F-44F5-93DB-7C2A103A433B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9EC3213-A537-419D-841A-5A102B9DA76C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9EC3213-A537-419D-841A-5A102B9DA76C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9EC3213-A537-419D-841A-5A102B9DA76C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9EC3213-A537-419D-841A-5A102B9DA76C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

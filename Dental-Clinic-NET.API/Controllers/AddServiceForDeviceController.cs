@@ -31,6 +31,7 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 Device device = _context.Devices.Include(d => d.Services).FirstOrDefault(d => d.Id == listService.Id);
                 if (device == null) return BadRequest();
+
                 device.Services = new List<Service>();
                 foreach (int id in listService.ListServiceId)
                 {

@@ -16,6 +16,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<Service, ServiceDTO>()
                 .ForMember(des => des.DeviceNames, act => act.MapFrom(src => src.Devices.Select(d => d.DeviceName).ToList()))
                 .ForMember(des => des.DeviceIdList, act => act.MapFrom(src => src.Devices.Select(d => d.Id).ToList()));
+
             CreateMap<UpdateService, Service>()
                     .ForAllMembers(opt => opt.Condition((src, des, field) =>
                     {
