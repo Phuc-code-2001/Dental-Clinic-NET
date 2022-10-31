@@ -3,9 +3,11 @@ using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -36,13 +38,25 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page = 1)
         {
             try
             {
                 var contacts = _context.Contacts.ToList();
                 var contactDTOs = contacts.Select(contact => _servicesManager.AutoMapper.Map<ContactDTO>(contact));
-                return Ok(contactDTOs);
+
+                Paginated<ContactDTO> paginatedContacts = new Paginated<ContactDTO>(contactDTOs.AsQueryable(), page);
+
+
+                return Ok(new
+                {
+                    page = page,
+                    per_page = paginatedContacts.PageSize,
+                    total = paginatedContacts.ColectionCount,
+                    total_pages = paginatedContacts.PageCount,
+                    data = paginatedContacts.Items
+                });
+
             }
             catch(Exception ex)
             {

@@ -4,8 +4,10 @@ using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Models.Room;
 using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
@@ -16,7 +18,7 @@ namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class RoomController : Controller
+    public class RoomController : ControllerBase
     {
         private AppDbContext _context;
         private ServicesManager _servicesManager;
@@ -34,13 +36,24 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page = 1)
         {
             try
             {
                 var rooms = _context.Rooms.Include(r => r.Devices).ToList();
                 var roomDTOs = rooms.Select(room => _servicesManager.AutoMapper.Map<RoomDTO>(room));
-                return Ok(roomDTOs);
+
+                Paginated<RoomDTO> paginatedRooms = new Paginated<RoomDTO>(roomDTOs.AsQueryable(), page);
+
+
+                return Ok(new
+                {
+                    page = page,
+                    per_page = paginatedRooms.PageSize,
+                    total = paginatedRooms.ColectionCount,
+                    total_pages = paginatedRooms.PageCount,
+                    data = paginatedRooms.Items
+                });
             }
             catch (Exception ex)
             {
