@@ -2,6 +2,7 @@
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Users;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +16,14 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
 
             CreateMap<BaseUser, UserDTO>()
                 .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()));
+
+            CreateMap<UpdateUserModel, BaseUser>()
+                .ForAllMembers(opt => opt.Condition((src, des, field) =>
+                {
+                    bool condition_01 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
+                    bool condition_02 = field is DateTime? && field != null;
+                    return condition_01 || condition_02;
+                }));
 
             CreateMap<Patient, PatientDTO>();
 

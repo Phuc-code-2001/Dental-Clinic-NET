@@ -11,6 +11,7 @@ using Dental_Clinic_NET.API.Models.Devices;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Dental_Clinic_NET.API.Models.Users;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -166,13 +167,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Device device = _context.Devices.Find(request.Id);
+                Device device = _context.Devices.Include(d => d.Services).FirstOrDefault(d => d.Id == request.Id);
                 if (device == null)
                 {
                     return NotFound("Service not found");
                 }
-                if (request.DeviceName != null && request.DeviceName != "") device.DeviceName = device.DeviceName;
-                if (request.Description != null && request.Description != "") device.Description = request.Description;
+                _servicesManager.AutoMapper.Map<UpdateDevice, Device>(request, device);
 
                 _context.Entry(device).State = EntityState.Modified;
                 _context.SaveChanges();

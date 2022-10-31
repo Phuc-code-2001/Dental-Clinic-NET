@@ -9,5 +9,6 @@ namespace Dental_Clinic_NET.API.DTO
         public string RoomCode { get; set; }
         public string Description { get; set; }
         public List<string> DeviceNames { get; set; }
+        public string RoomType { get; set; }
     }
 }
