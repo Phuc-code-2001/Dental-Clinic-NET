@@ -31,13 +31,15 @@ namespace FileProcessorServices
         {
 
             string result = "";
-            using(var ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 await file.CopyToAsync(ms);
-                var response = await _dropBoxClient.Files
-                    .UploadAsync(_appFolder, WriteMode.Overwrite.Instance, body: ms);
+                byte[] bytes = ms.ToArray();
 
-                result = response.PreviewUrl;
+                var response = await _dropBoxClient.Files
+                    .UploadAsync("/" + file.FileName, WriteMode.Overwrite.Instance, body: ms);
+
+                result = $"Uploaded Id {response.Id} Rev {response.Rev}";
             }
 
             return result;
