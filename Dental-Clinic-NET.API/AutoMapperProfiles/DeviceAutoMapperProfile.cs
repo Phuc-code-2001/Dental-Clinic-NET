@@ -28,7 +28,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 .ForMember(des => des.Status, opt => opt.MapFrom(src => src.Status.Value))
                 .ForAllMembers(opt => opt.Condition((src, des, field) =>
                 {
-                    bool condition_01 = field != null;
+                    bool condition_01 = field != null && field is not string;
                     bool condition_02 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
                     return condition_01 || condition_02;
                 }));
