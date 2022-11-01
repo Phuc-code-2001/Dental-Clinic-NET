@@ -337,6 +337,36 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAsync(string id)
+        {
+            try{
+                BaseUser requiredUser = await _userManager.FindByIdAsync(id);
+                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
 
+                if (!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+
+                IdentityResult deleteResult = await _userManager.DeleteAsync(requiredUser);
+
+                if (deleteResult.Succeeded)
+                {
+                    return Ok("Delete user success");
+                }
+
+                var errors = deleteResult.Errors.ToList();
+                return BadRequest(errors);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+        }
     }
 }
