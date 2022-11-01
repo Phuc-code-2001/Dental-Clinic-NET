@@ -32,6 +32,11 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                     bool condition_02 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
                     return condition_01 || condition_02;
                 }));
+
+
+            CreateMap<Device, EnumTypeDTO>()
+                .ForMember(des => des.Name, opt => opt.MapFrom(src => src.DeviceName));
+
         }
 
         //private string ConvertImageFile(IFormFile formFile)

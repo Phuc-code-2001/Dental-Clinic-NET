@@ -58,5 +58,19 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        
+        [HttpGet]
+        public IActionResult GetDevices()
+        {
+            try
+            {
+                var types = _context.Devices.Select(dv => _servicesManager.AutoMapper.Map<EnumTypeDTO>(dv));
+                return Ok(types);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
