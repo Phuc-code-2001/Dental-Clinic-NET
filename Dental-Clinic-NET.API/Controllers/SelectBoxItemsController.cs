@@ -50,7 +50,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var types = _context.Services.Select(sv => _servicesManager.AutoMapper.Map<EnumTypeDTO>(sv));
+                var types = _context.Services.Select(sv => new
+                {
+                    Id=sv.Id,
+                    Name="Chưa làm",
+                    Code=sv.ServiceCode,
+                });
                 return Ok(types);
             }
             catch (Exception ex)
@@ -64,7 +69,32 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var types = _context.Devices.Select(dv => _servicesManager.AutoMapper.Map<EnumTypeDTO>(dv));
+                var types = _context.Devices.Select(dv => new
+                {
+                    Id=dv.Id,
+                    Name=dv.DeviceName,
+                    Description=dv.Description
+                });
+
+                return Ok(types);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
+        [HttpGet]
+        public IActionResult GetRooms()
+        {
+            try
+            {
+                var types = _context.Rooms.Select(r => new
+                {
+                    Id=r.Id,
+                    Code=r.RoomCode,
+                    Description=r.Description
+                });
                 return Ok(types);
             }
             catch (Exception ex)
