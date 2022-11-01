@@ -244,32 +244,36 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateDevice, Device>(request, device);
 
-                List<Service> serviceToAdd = new List<Service>();
-                List<Service> serviceToRemove = new List<Service>();
 
-                foreach(int serviceId in request.ServiceIdList)
+                if(request.ServiceIdList != null)
                 {
-                    Service service = _context.Services.Find(serviceId);
-                    if(!device.Services.Contains(service)) {
-                        serviceToAdd.Add(service);
-                    }
-                }
+                    List<Service> serviceToAdd = new List<Service>();
+                    List<Service> serviceToRemove = new List<Service>();
 
-                foreach(Service service in device.Services)
-                {
-                    if(!request.ServiceIdList.Contains(service.Id))
+                    foreach(int serviceId in request.ServiceIdList)
                     {
-                        serviceToRemove.Add(service);
+                        Service service = _context.Services.Find(serviceId);
+                        if(!device.Services.Contains(service)) {
+                            serviceToAdd.Add(service);
+                        }
                     }
-                }
 
-                foreach(Service service in serviceToAdd)
-                {
-                    device.Services.Add(service);
-                }
-                foreach(Service service in serviceToRemove)
-                {
-                    device.Services.Remove(service);
+                    foreach(Service service in device.Services)
+                    {
+                        if(!request.ServiceIdList.Contains(service.Id))
+                        {
+                            serviceToRemove.Add(service);
+                        }
+                    }
+
+                    foreach(Service service in serviceToAdd)
+                    {
+                        device.Services.Add(service);
+                    }
+                    foreach(Service service in serviceToRemove)
+                    {
+                        device.Services.Remove(service);
+                    }
                 }
 
                 _context.Entry(device).State = EntityState.Modified;

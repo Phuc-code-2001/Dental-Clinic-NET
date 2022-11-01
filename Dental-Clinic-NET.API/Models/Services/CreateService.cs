@@ -1,4 +1,6 @@
 ﻿using DataLayer.Domain;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,6 +13,13 @@ namespace Dental_Clinic_NET.API.Models.Services
         [Required]
         public string Description { get; set; }
         [Required]
+        public string ServiceName { get; set; }
+
+        public IFormFile ImageFile { get; set; }
+
+        [Required]
         public int Price { get; set; }
+
+        public List<int> DeviceIdList { get; set; } = new List<int>();
     }
 }
