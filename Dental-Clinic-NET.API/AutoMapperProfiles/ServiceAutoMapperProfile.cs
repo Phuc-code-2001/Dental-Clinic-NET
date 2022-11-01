@@ -24,6 +24,12 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                         bool condition_02 = field is int && int.Parse(field.ToString()) > 0;
                         return condition_01 || condition_02;
                     }));
+
+            // EnumType to handle selectbox
+
+            CreateMap<Service, EnumTypeDTO>()
+                .ForMember(des => des.Name, opt => opt.MapFrom(src => src.ServiceCode));
+
         }
     }
 }
