@@ -63,29 +63,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         /// <summary>
-        /// Get all RoomType to create Room
-        /// </summary>
-        /// <returns>
-        ///     200: Success
-        ///     500: Server handle error
-        /// </returns>
-        [HttpGet]
-        public IActionResult GetRoomTypes()
-        {
-            try
-            {
-                var types = _servicesManager.AutoMapper
-                    .Map<EnumTypeDTO[]>(Enum.GetValues<Room.RoomTypes>());
-
-                return Ok(types);
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
         ///     Create new room from any actor
         /// </summary>
         /// <param name="request">Room Info</param>
