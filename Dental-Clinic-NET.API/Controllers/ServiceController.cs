@@ -71,7 +71,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
-        public IActionResult Create(CreateService request)
+        public IActionResult Create([FromForm] CreateService request)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPut]
-        public IActionResult Update(UpdateService request)
+        public IActionResult Update([FromForm] UpdateService request)
         {
             try
             {

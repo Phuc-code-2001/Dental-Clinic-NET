@@ -71,7 +71,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
-        public IActionResult Create(CreateDevice request)
+        public IActionResult Create([FromForm] CreateDevice request)
         {
             try
             {
@@ -205,7 +205,7 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
         [HttpPut]
-        public IActionResult Update(UpdateDevice request)
+        public IActionResult Update([FromForm] UpdateDevice request)
         {
             try
             {
