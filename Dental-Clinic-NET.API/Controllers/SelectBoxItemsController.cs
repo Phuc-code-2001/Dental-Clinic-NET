@@ -53,7 +53,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 var types = _context.Services.Select(sv => new
                 {
                     Id=sv.Id,
-                    Name="Chưa làm",
+                    Name=sv.ServiceName,
                     Code=sv.ServiceCode,
                 });
                 return Ok(types);
