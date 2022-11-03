@@ -15,12 +15,21 @@ namespace DataLayer.Domain
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("Doctor")]
+        [ForeignKey(nameof(Doctor))]
         public string DoctorId { get; set; }
         public Doctor Doctor { get; set; }
-        [ForeignKey("Patient")]
+
+        [ForeignKey(nameof(Patient))]
         public string PatientId { get; set; }
         public Patient Patient { get; set; }
+
+        [ForeignKey(nameof(Room))]
+        public int RoomId { get; set; }
+        public Room Room { get; set; }
+
+        [ForeignKey(nameof(Service))]
+        public int ServiceId { get; set; }
+        public Service Service { get; set; }
 
         [Required]
         public string Content { get; set; }
@@ -28,17 +37,12 @@ namespace DataLayer.Domain
         [Required]
         public TimeManager.Slot Slot { get; set; }
 
-        [ForeignKey("Room")]
-        public int RoomId { get; set; }
-        public Room Room { get; set; }
-
         public States State { get; set; } = States.NotYet;
-
-        public ICollection<Service> Services { get; set; }
-
+        
         public enum States
         {
             NotYet,
+            Accept,
             Cancel,
             Complete,
         }

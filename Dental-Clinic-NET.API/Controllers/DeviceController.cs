@@ -51,7 +51,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     page = page,
                     per_page = paginatedDevices.PageSize,
-                    total = paginatedDevices.ColectionCount,
+                    total = paginatedDevices.QueryCount,
                     total_pages = paginatedDevices.PageCount,
                     data = paginatedDevices.Items
                 });

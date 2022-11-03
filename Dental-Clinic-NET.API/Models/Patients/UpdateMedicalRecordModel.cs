@@ -7,9 +7,7 @@ namespace Dental_Clinic_NET.API.Models.Patients
     {
         [Required]
         public string Id { get; set; }
-
         [Required]
-        [FileExtensions(Extensions = "pdf")]
-        public IFormFile File;
+        public IFormFile File { get; set; }
     }
 }

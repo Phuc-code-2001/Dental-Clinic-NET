@@ -10,6 +10,7 @@ using DataLayer.DataContexts;
 using Dental_Clinic_NET.API.Models.Users;
 using System.Linq;
 using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.Utils;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -24,14 +25,27 @@ namespace Dental_Clinic_NET.API.Controllers
             _context = context;
             _servicesManager = servicesManager;
         }
+
+        /// <summary>
+        ///  List all doctors
+        /// </summary>
+        /// <param name="page">Paginated</param>
+        /// <returns>
+        ///     200: Request success
+        ///     500: Server Handle Error
+        /// </returns>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page = 1)
         {
             try
             {
-                var doctors = _context.Doctors.Include(d => d.BaseUser)
-                    .Select(doc => _servicesManager.AutoMapper.Map<DoctorDTO>(doc)).ToList();
-                return Ok(doctors);
+
+                Paginated<Doctor> paginated = new Paginated<Doctor>(_context.Doctors.Include(d => d.BaseUser), page);
+
+                Doctor[] doctors = paginated.Items.ToArray();
+
+                DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
+                return Ok(doctorDTOs);
 
             }
             catch (Exception ex)
@@ -39,18 +53,44 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        /// <summary>
+        ///  Make an account become a doctor
+        /// </summary>
+        /// <param name="request">Doctor info</param>
+        /// <returns>
+        /// 
+        /// </returns>
         [HttpPost]
-        public IActionResult UpdateUserToDoctor(UpdateDoctor request)
+        public IActionResult RequestToBecomeDoctor(RequestDoctor request)
         {
             try
             {
                 BaseUser user = _context.Users.Find(request.Id);
                 if (user == null)
                 {
-                    return NotFound("user not found");
+                    return NotFound("User not found!");
                 }
-                Doctor doctor = _servicesManager.AutoMapper.Map<Doctor>(request);
-                doctor.BaseUser = user;
+
+                Doctor doctor = _context.Doctors.Find(request.Id);
+
+                if (doctor != null)
+                {
+                    return BadRequest("This user already doctor role!");
+                }
+
+                doctor = _servicesManager.AutoMapper.Map<Doctor>(request);
+                
+                if(doctor.Verified)
+                {
+                    user.Type = UserType.Doctor;
+                }
+                
+                // < Xử lý file
+
+
+                // Xử lý file />
+
                 _context.Doctors.Add(doctor);
 
                 _context.SaveChanges();
@@ -65,25 +105,65 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
-                return Ok($"Update user to doctor success");
+                doctor = _context.Doctors
+                    .Include(d => d.BaseUser)
+                    .FirstOrDefault(d => d.Id == doctor.Id);
+
+                DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
+
+                return Ok(doctorDTO);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
+
+        /// <summary>
+        /// Update doctor state, info
+        /// </summary>
+        /// <param name="request">Doctor info</param>
+        /// <returns>
+        ///     200: Request success
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut]
-        public IActionResult Update(UpdateDoctor request)
+        public IActionResult Update(RequestDoctor request)
         {
             try
             {
                 Doctor doctor = _context.Doctors.Find(request.Id);
+
                 if (doctor == null)
                 {
                     return NotFound("Doctor not found");
                 }
-                _servicesManager.AutoMapper.Map<UpdateDoctor, Doctor>(request, doctor);
+
+                _servicesManager.AutoMapper.Map<RequestDoctor, Doctor>(request, doctor);
+
+                BaseUser user = _context.Users.Find(doctor.Id);
+                if(!doctor.Verified)
+                {
+                    if(user != null && user.Type == UserType.Doctor)
+                    {
+                        user.Type = UserType.Patient;
+                        _context.Entry(user).State = EntityState.Modified;
+                    }
+                }
+                else
+                {
+                    if(user != null && user.Type != UserType.Doctor)
+                    {
+                        user.Type = UserType.Doctor;
+                        _context.Entry(user).State = EntityState.Modified;
+                    }
+                }
+
+                // < Xử lý file
+
+
+                // Xử lý file />
+
                 _context.Entry(doctor).State = EntityState.Modified;
                 _context.SaveChanges();
 
@@ -97,7 +177,6 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
                 return Ok($"Update doctor success");
             }
             catch (Exception ex)
@@ -105,5 +184,41 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+        /// <summary>
+        /// Get specific doctor info
+        /// </summary>
+        /// <param name="id">id of doctor</param>
+        /// <returns>
+        ///     200: Request success
+        ///     500: Server handle error
+        /// </returns>
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
+        {
+            try
+            {
+                Doctor doctor = _context.Doctors
+                    .Include(d => d.BaseUser)
+                    .FirstOrDefault(d => d.Id == id);
+
+                if(doctor == null)
+                {
+                    return NotFound("Doctor not found!");
+                }
+
+                DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
+
+                return Ok(doctor);
+
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
     }
 }

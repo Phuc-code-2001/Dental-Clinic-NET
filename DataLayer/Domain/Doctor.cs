@@ -15,13 +15,21 @@ namespace DataLayer.Domain
         [ForeignKey("BaseUser")]
         public string Id { get; set; }
         public BaseUser BaseUser { get; set; }
-        public Majors Major { get; set; }
+
+        public Majors Major { get; set; } = Majors.Unknown;
+        
         public MediaFile Certificate { get; set; }
+
+        public bool Verified { get; set; }
+
         public enum Majors
         {
-            Major1,
-            Major2,
-            Major3
+            Unknown,
+            Allergist,
+            Andrologist,
+            Cardiologist,
+            Endocrinologist,
+            Gastroenterologist,
         }
     }
     
