@@ -16,12 +16,13 @@ namespace DataLayer.Domain
 
         public static TimeManager Instance { get
             {
-                return _instance = (_instance ?? new TimeManager());
+                return _instance ??= new TimeManager();
             }
         }
 
         public enum Slot
         {
+            Slot_00,
             Slot_01,
             Slot_02,
             Slot_03,
@@ -43,7 +44,7 @@ namespace DataLayer.Domain
 
             this.Add(Slot.Slot_05, new TimeSpan(15, 0, 0));
 
-            this.Add(Slot.Slot_06, new TimeSpan(16, 0, 0)); 
+            this.Add(Slot.Slot_06, new TimeSpan(16, 0, 0));
 
         }
         

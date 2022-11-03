@@ -9,5 +9,6 @@ namespace Dental_Clinic_NET.API.DTO
         public UserDTO BaseUser { get; set; }
         public EnumTypeDTO Major { get; set; }
         public MediaFileDTO Certificate { get; set; }
+        public bool Verified { get; set; }
     }
 }

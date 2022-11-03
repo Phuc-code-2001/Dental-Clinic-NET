@@ -59,7 +59,7 @@ namespace FileProcessorServices
                     return shareLink.Url;
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
 
             }
@@ -88,7 +88,7 @@ namespace FileProcessorServices
                 };
 
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 throw new Exception("Something went wrong: Upload error!");
             }
