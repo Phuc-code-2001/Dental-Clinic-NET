@@ -39,8 +39,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-
-                Paginated<Doctor> paginated = new Paginated<Doctor>(_context.Doctors.Include(d => d.BaseUser), page);
+                var queries = _context.Doctors.Include(d => d.BaseUser);
+                Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
 
                 Doctor[] doctors = paginated.Items.ToArray();
 
@@ -185,7 +185,6 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-
         /// <summary>
         /// Get specific doctor info
         /// </summary>
@@ -210,7 +209,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
 
-                return Ok(doctor);
+                return Ok(doctorDTO);
 
 
             }

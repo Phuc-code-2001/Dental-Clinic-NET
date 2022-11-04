@@ -118,5 +118,22 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+        [HttpGet]
+        public IActionResult GetAppointmentStates()
+        {
+            try
+            {
+                var types = _servicesManager.AutoMapper
+                    .Map<EnumTypeDTO[]>(Enum.GetValues<Appointment.States>());
+
+                return Ok(types);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
