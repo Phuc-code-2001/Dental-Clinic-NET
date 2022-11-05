@@ -32,10 +32,14 @@ namespace DataLayer.Domain
         public Service Service { get; set; }
 
         [Required]
-        public string Content { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime Date { get; set; }
 
         [Required]
         public TimeManager.Slot Slot { get; set; }
+        
+        [Required]
+        public string Content { get; set; }
 
         public States State { get; set; } = States.NotYet;
         

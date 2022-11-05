@@ -55,6 +55,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     Id=sv.Id,
                     Name=sv.ServiceName,
                     Code=sv.ServiceCode,
+                    Description=sv.Description, // Addon to show at home
                 });
                 return Ok(types);
             }
@@ -110,6 +111,23 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 var types = _servicesManager.AutoMapper
                     .Map<EnumTypeDTO[]>(Enum.GetValues<Doctor.Majors>());
+
+                return Ok(types);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        public IActionResult GetAppointmentStates()
+        {
+            try
+            {
+                var types = _servicesManager.AutoMapper
+                    .Map<EnumTypeDTO[]>(Enum.GetValues<Appointment.States>());
 
                 return Ok(types);
             }
