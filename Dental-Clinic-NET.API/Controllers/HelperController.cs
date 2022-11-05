@@ -40,7 +40,6 @@ namespace Dental_Clinic_NET.API.Controllers
         
 
         [HttpPost]
-        [NonAction]
         public async Task<IActionResult> GenerateChannelIfNullAsync()
         {
             var users = _userManager.Users.ToList();

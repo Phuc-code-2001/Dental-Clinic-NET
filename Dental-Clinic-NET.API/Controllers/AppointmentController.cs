@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,11 +33,13 @@ namespace Dental_Clinic_NET.API.Controllers
         private IQueryable<Appointment> QueryAll()
         {
             return _context.Appointments
-                .Include(apt => apt.Patient)
-                .Include(apt => apt.Doctor)
-                .Include(apt => apt.Service)
+                .Include(apt => apt.Patient.BaseUser)
+                .Include(apt => apt.Patient.MedicalRecordFile)
+                .Include(apt => apt.Doctor.BaseUser)
+                .Include(apt => apt.Doctor.Certificate)
+                .Include(apt => apt.Service.Devices)
                 .Include(apt => apt.Documents)
-                .Include(apt => apt.Room);
+                .Include(apt => apt.Room.Devices);
         }
 
         [HttpGet]
@@ -77,10 +80,17 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 Appointment entity = _servicesManager.AutoMapper.Map<Appointment>(request);
+
+                // Check Service
+                if(_context.Services.Find(request.ServiceId) == null)
+                {
+                    return BadRequest("Truyền sai serviceId rồi => Service not found");
+                }
+
                 if(request.Document != null)
                 {
                     // < Xử lý file >
-                    if(!request.Document.ContentType.EndsWith("docx"))
+                    if(!request.Document.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                     {
                         return BadRequest("Document file must be *.docx format!");
                     }
@@ -92,7 +102,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         Category = MediaFile.FileCategory.AppointmentDocument
                     };
 
-                    string filename = $"apm_{request.PatientId}+{DateTime.Now.Ticks}.docx";
+                    string filename = $"apm_{request.PatientId}+{DateTime.Now.Ticks}" + Path.GetExtension(request.Document.FileName);
                     var result = await _servicesManager.DropboxServices.UploadAsync(request.Document, filename);
 
                     document.Document.FilePath = result.UploadPath;
@@ -109,8 +119,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 _context.SaveChanges();
 
                 entity = QueryAll().FirstOrDefault(e => e.Id == entity.Id);
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
-                return Ok(entity);
+                return Ok(entityDTO);
 
             }
             catch(Exception ex)
