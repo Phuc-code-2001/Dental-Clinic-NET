@@ -41,7 +41,10 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var queries = _context.Doctors.Include(d => d.BaseUser);
+                var queries = _context.Doctors
+                    .Include(d => d.Certificate)
+                    .Include(d => d.BaseUser);
+
                 Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
 
                 Doctor[] doctors = paginated.Items.ToArray();

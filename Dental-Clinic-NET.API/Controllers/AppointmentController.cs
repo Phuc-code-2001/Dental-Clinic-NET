@@ -132,5 +132,26 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            try
+            {
+                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+                if(entity == null)
+                {
+                    return NotFound("Truyền sai id rồi => Appointment not found!");
+                }
+
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+
+                return Ok(entityDTO);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 }
