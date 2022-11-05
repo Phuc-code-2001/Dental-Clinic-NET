@@ -11,6 +11,8 @@ using Dental_Clinic_NET.API.Models.Users;
 using System.Linq;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
+using System.IO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -62,7 +64,8 @@ namespace Dental_Clinic_NET.API.Controllers
         /// 
         /// </returns>
         [HttpPost]
-        public IActionResult RequestToBecomeDoctor(RequestDoctor request)
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> RequestToBecomeDoctorAsync([FromForm] RequestDoctor request)
         {
             try
             {
@@ -76,7 +79,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (doctor != null)
                 {
-                    return BadRequest("This user already doctor role!");
+                    return BadRequest("This user already request doctor!");
                 }
 
                 doctor = _servicesManager.AutoMapper.Map<Doctor>(request);
@@ -87,12 +90,40 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
                 
                 // < Xử lý file
+                if(request.CertificateFile != null)
+                {
+                    if(request.CertificateFile.ContentType.EndsWith("pdf"))
+                    {
+                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
+                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
 
+                        MediaFile cirtificatefile = doctor.Certificate;
+
+                        if (cirtificatefile != null)
+                        {
+                            cirtificatefile.FilePath = uploadResult.UploadPath;
+                        }
+                        else
+                        {
+                            cirtificatefile = new MediaFile()
+                            {
+                                FilePath = uploadResult.UploadPath,
+                                Category = MediaFile.FileCategory.DoctorCertificate
+                            };
+
+                            doctor.Certificate = cirtificatefile;
+                        }
+
+                    }
+                    else
+                    {
+                        return BadRequest("File format must be *.pdf");
+                    }
+                }
 
                 // Xử lý file />
 
                 _context.Doctors.Add(doctor);
-
                 _context.SaveChanges();
 
                 // Push event
@@ -107,6 +138,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 doctor = _context.Doctors
                     .Include(d => d.BaseUser)
+                    .Include(d => d.Certificate)
                     .FirstOrDefault(d => d.Id == doctor.Id);
 
                 DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
@@ -128,7 +160,8 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPut]
-        public IActionResult Update(RequestDoctor request)
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> UpdateAsync([FromForm] UpdateDoctor request)
         {
             try
             {
@@ -139,7 +172,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Doctor not found");
                 }
 
-                _servicesManager.AutoMapper.Map<RequestDoctor, Doctor>(request, doctor);
+                _servicesManager.AutoMapper.Map<UpdateDoctor, Doctor>(request, doctor);
 
                 BaseUser user = _context.Users.Find(doctor.Id);
                 if(!doctor.Verified)
@@ -160,7 +193,36 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // < Xử lý file
+                if (request.CertificateFile != null)
+                {
+                    if (request.CertificateFile.ContentType.EndsWith("pdf"))
+                    {
+                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
+                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
 
+                        MediaFile cirtificatefile = doctor.Certificate;
+
+                        if (cirtificatefile != null)
+                        {
+                            cirtificatefile.FilePath = uploadResult.UploadPath;
+                        }
+                        else
+                        {
+                            cirtificatefile = new MediaFile()
+                            {
+                                FilePath = uploadResult.UploadPath,
+                                Category = MediaFile.FileCategory.DoctorCertificate
+                            };
+
+                            doctor.Certificate = cirtificatefile;
+                        }
+
+                    }
+                    else
+                    {
+                        return BadRequest("File format must be *.pdf");
+                    }
+                }
 
                 // Xử lý file />
 
@@ -177,7 +239,14 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                return Ok($"Update doctor success");
+                doctor = _context.Doctors
+                    .Include(d => d.BaseUser)
+                    .Include(d => d.Certificate)
+                    .FirstOrDefault(d => d.Id == doctor.Id);
+
+                DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
+
+                return Ok(doctorDTO);
             }
             catch (Exception ex)
             {

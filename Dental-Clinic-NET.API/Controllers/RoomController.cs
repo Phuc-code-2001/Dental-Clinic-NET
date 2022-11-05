@@ -71,6 +71,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create(CreateRoom request)
         {
             try
@@ -110,6 +111,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        
         /// <summary>
         ///     Get a Room details
         /// </summary>
@@ -147,6 +149,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int id)
         {
             try
@@ -178,6 +181,16 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        
+        /// <summary>
+        ///     Update room info
+        /// </summary>
+        /// <param name="request">new room info</param>
+        /// <returns>
+        ///     200: Success
+        ///     404: Not found room
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut]
         public IActionResult Update(UpdateRoom request)
         {

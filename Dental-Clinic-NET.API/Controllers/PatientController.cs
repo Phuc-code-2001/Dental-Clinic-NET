@@ -39,7 +39,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             return _context.Patients
                 .Include(pat => pat.BaseUser)
-                .Include(pat => pat.MedicalRecordFile);
+                .Include(pat => pat.MedicalRecordFile)
+                .Where(pat => pat.BaseUser.Type == UserType.Patient);
         }
 
         /// <summary>
@@ -123,11 +124,13 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="request">request info</param>
         /// <returns>
         ///     200: Request success
+        ///     403: Forbiden
         ///     404: Patient not found
         ///     400: Some field invalid
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> UpdateMedicalRecordAsync([FromForm] UpdateMedicalRecordModel request)
         {
             try
@@ -135,16 +138,25 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 Patient patient = FullyQueryPatientFromContext().FirstOrDefault(p => p.Id == request.Id);
 
-                //if(patient.BaseUser.Type != UserType.Patient)
-                //{
-                //    return BadRequest("This user is not patient!");
-                //}
+                if (patient.BaseUser.Type != UserType.Patient)
+                {
+                    return BadRequest("This user is not patient!");
+                }
 
-                if(patient == null)
+                if (patient == null)
                 {
                     return NotFound("Patient not found!");
                 }
-                if(!request.File.ContentType.EndsWith("pdf"))
+
+                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, patient.BaseUser);
+
+                if (!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(403, "Only admin or Owner can update medical record!");
+                }
+
+                if (!request.File.ContentType.EndsWith("pdf"))
                 {
                     return BadRequest("Only Accept PDF file!");
                 }
