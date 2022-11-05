@@ -30,7 +30,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             if(TimeManager.Instance.ContainsKey(slot))
             {
                 TimeSpan timer = TimeManager.Instance[slot].Value;
-                return $"{timer.Hours}:{timer.Minutes}";
+                return $"{timer.Hours.ToString("00")}:{timer.Minutes.ToString("00")}";
             }
 
             return "No defined";
