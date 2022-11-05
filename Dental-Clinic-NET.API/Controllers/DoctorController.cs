@@ -277,6 +277,7 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 Doctor doctor = _context.Doctors
                     .Include(d => d.BaseUser)
+                    .Include(d => d.Certificate)
                     .FirstOrDefault(d => d.Id == id);
 
                 if(doctor == null)

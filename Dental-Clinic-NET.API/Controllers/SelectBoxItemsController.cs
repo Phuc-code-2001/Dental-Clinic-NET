@@ -1,5 +1,6 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
+using Dental_Clinic_NET.API.AutoMapperProfiles;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Http;
@@ -120,7 +121,6 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-
         [HttpGet]
         public IActionResult GetAppointmentStates()
         {
@@ -136,5 +136,20 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet]
+        public IActionResult GetSlots()
+        {
+            var result = Enum.GetValues<TimeManager.Slot>().Select(type => new
+            {
+                id = type,
+                name = type.ToString(),
+                desc = AppointmentAutoMapperProfile.ConvertSlotToStrTime(type),
+                details = TimeManager.Instance.ContainsKey(type) ? TimeManager.Instance[type] : null,
+            });
+
+            return Ok(result);
+        }
+
     }
 }
