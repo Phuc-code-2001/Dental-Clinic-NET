@@ -83,15 +83,23 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 // Verify Email and PhoneNumber later
 
+
+
+                // Create Default Actor
+                Patient patient = new Patient()
+                {
+                    BaseUser = user,
+                    MedicalRecordFile = new MediaFile()
+                    {
+                        Category = MediaFile.FileCategory.MedicalRecord
+                    }
+                };
+
                 var createUserResult = await _userManager.CreateAsync(user);
 
                 if(createUserResult.Succeeded)
                 {
-                    CreateProfile(user.Id, () =>
-                    {
-                        Console.WriteLine($"Just create patient for {user.Id}");
-                    });
-
+                
                     string token = _userServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
@@ -137,14 +145,21 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 }
 
+                // Create Default Actor
+                Patient patient = new Patient()
+                {
+                    BaseUser = user,
+                    MedicalRecordFile = new MediaFile()
+                    {
+                        Category = MediaFile.FileCategory.MedicalRecord
+                    }
+                };
+
+                _context.Patients.Add(patient);
+
                 var createResult = await _userManager.CreateAsync(user, request.Password);
                 if(createResult.Succeeded)
                 {
-
-                    CreateProfile(user.Id, () =>
-                    {
-                        Console.WriteLine($"Just create patient for {user.Id}");
-                    });
 
                     string token = _userServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
@@ -174,32 +189,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
 
         }
-    
 
-        private async void CreateProfile(string userId, Action callback)
-        {
-            try
-            {
-                Patient patient = new Patient()
-                {
-                    Id = userId,
-                    MedicalRecordFile = new MediaFile()
-                    {
-                        Category = MediaFile.FileCategory.MedicalRecord
-                    }
-                };
-
-                _context.Patients.Add(patient);
-                await _context.SaveChangesAsync();
-                callback();
-
-            }
-            catch(Exception)
-            {
-
-            }
-
-        }
     }
 
 

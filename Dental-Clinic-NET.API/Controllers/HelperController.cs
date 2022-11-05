@@ -158,6 +158,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 var users = _userManager.Users.ToList();
+                int count = 0;
                 users.ForEach(user =>
                 {
                     Patient patient = _context.Patients.Find(user.Id);
@@ -169,13 +170,14 @@ namespace Dental_Clinic_NET.API.Controllers
                             MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.MedicalRecord },
                         };
                         _context.Patients.Add(patient);
+                        count++;
                     }
 
                 });
 
                 _context.SaveChanges();
 
-                return Ok(_context.Patients.ToList());
+                return Ok($"Mới tạo được {count} thằng.");
             }
             catch(Exception ex)
             {
