@@ -74,7 +74,7 @@ namespace FileProcessorServices
             {
                 Stream stream = file.OpenReadStream();
                 FileMetadata result = await _dropBoxClient.Files
-                    .UploadAsync("/" + filename, body: stream);
+                    .UploadAsync("/" + filename, mode: WriteMode.Overwrite.Instance, body: stream);
 
                 string path = result.PathDisplay;
                 string url = await GetShareLinkAsync(path);
