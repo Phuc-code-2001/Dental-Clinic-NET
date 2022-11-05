@@ -11,7 +11,11 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
     {
         public DoctorAutoMapperProfile()
         {
-            CreateMap<RequestDoctor, Doctor>()
+            CreateMap<RequestDoctor, Doctor>();
+
+            CreateMap<UpdateDoctor, Doctor>()
+                .ForMember(des => des.Major, opt => opt.MapFrom(src => src.Major.Value))
+                .ForMember(des => des.Verified, opt => opt.MapFrom(src => src.Verified.Value))
                 .ForAllMembers(opt =>
                 {
                     opt.Condition((src, des, member) =>

@@ -13,6 +13,7 @@ using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dental_Clinic_NET.API.Models.Devices;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -76,6 +77,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create([FromForm] CreateService request)
         {
             try
@@ -174,6 +176,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int id)
         {
             try
@@ -216,6 +219,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPut]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Update([FromForm] UpdateService request)
         {
             try
