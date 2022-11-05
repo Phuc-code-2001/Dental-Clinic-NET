@@ -45,16 +45,21 @@ namespace Dental_Clinic_NET.API.Controllers
                 var services = _context.Services.Include(d => d.Devices).ToArray();
                 var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
 
-                Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
-
-                return Ok(new
+                if(page != -1)
                 {
-                    page = page,
-                    per_page = paginatedServices.PageSize,
-                    total = paginatedServices.QueryCount,
-                    total_pages = paginatedServices.PageCount,
-                    data = paginatedServices.Items
-                });
+                    Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
+                    return Ok(new
+                    {
+                        page = page,
+                        per_page = paginatedServices.PageSize,
+                        total = paginatedServices.QueryCount,
+                        total_pages = paginatedServices.PageCount,
+                        data = paginatedServices.Items
+                    });
+                }
+
+                return Ok(serviceDTOs);
+
             }
             catch (Exception ex)
             {
