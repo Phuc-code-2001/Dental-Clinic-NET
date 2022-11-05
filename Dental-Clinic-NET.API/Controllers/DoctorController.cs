@@ -47,7 +47,15 @@ namespace Dental_Clinic_NET.API.Controllers
                 Doctor[] doctors = paginated.Items.ToArray();
 
                 DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
-                return Ok(doctorDTOs);
+
+                return Ok(new
+                {
+                    page = page,
+                    per_page = paginated.PageSize,
+                    total = paginated.QueryCount,
+                    total_pages = paginated.PageCount,
+                    data = doctorDTOs
+                });
 
             }
             catch (Exception ex)
