@@ -13,7 +13,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 
 ### Backend
 1. Python + Django restframework
-2. C# + ASP.NET Core + EntityFrameworkCore
+2. C# dotnet 5.0 + ASP.NET Core + EntityFrameworkCore
 
 ### Frontend
 1. ReactJs
@@ -28,7 +28,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 
 ### Storage
 1. ImageKit
-2. Amazon S3 buckets
+2. Dropbox
 
 ### Realtime Engine
 1. Pusher
