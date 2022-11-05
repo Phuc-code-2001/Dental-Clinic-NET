@@ -20,6 +20,7 @@ namespace DataLayer.Domain
         {
             MedicalRecord,
             DoctorCertificate,
+            AppointmentDocument,
         }
     }
 }
