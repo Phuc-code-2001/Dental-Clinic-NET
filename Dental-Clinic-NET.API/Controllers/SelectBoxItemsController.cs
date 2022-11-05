@@ -55,6 +55,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     Id=sv.Id,
                     Name=sv.ServiceName,
                     Code=sv.ServiceCode,
+                    Description=sv.Description, // Addon to show at home
                 });
                 return Ok(types);
             }
