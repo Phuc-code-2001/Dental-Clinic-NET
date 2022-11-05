@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.OData;
 using RealTimeProcessLayer.Services;
 using Dental_Clinic_NET.API.Services;
 using FileProcessorServices;
+using Dental_Clinic_NET.API.Services.Appointments;
 
 namespace Dental_Clinic_NET.API
 {
@@ -102,6 +103,7 @@ namespace Dental_Clinic_NET.API
 
 
             services.AddTransient<UserServices>();
+            services.AddTransient<AppointmentServices>();
             services.AddTransient<FacebookServices>();
             services.AddTransient<ImageKitServices>();
             services.AddTransient<PusherServices>();

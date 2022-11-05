@@ -42,6 +42,7 @@ namespace DataLayer.DataContexts
 
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<AppointmentDocument> AppointmentsDocuments { get; set; }
 
         public override int SaveChanges()
         {

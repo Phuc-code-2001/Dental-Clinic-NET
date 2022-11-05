@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace DataLayer.Domain
 {
 
-    public class TimeManager : Dictionary<TimeManager.Slot, TimeSpan>
+    public class TimeManager : Dictionary<TimeManager.Slot, Nullable<TimeSpan>>
     {
         private static TimeManager _instance;
 
@@ -22,7 +22,6 @@ namespace DataLayer.Domain
 
         public enum Slot
         {
-            Slot_00,
             Slot_01,
             Slot_02,
             Slot_03,

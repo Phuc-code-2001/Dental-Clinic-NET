@@ -50,6 +50,9 @@ namespace DataLayer.Domain
             Cancel,
             Complete,
         }
+
+        public ICollection<AppointmentDocument> Documents { get; set; } = new HashSet<AppointmentDocument>();
+        
     }
     
 }
