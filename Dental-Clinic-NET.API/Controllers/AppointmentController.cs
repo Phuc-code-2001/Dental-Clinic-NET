@@ -380,7 +380,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return StatusCode(403, "Lấy thằng admin hoặc bác sĩ phụ trách mới xài chức năng này được!");
                 }
 
-                entity.State = Appointment.States.Doing;
+                entity.State = Appointment.States.Complete;
                 _context.Entry(entity).State = EntityState.Modified;
                 _context.SaveChanges();
 
