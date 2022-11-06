@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class Appointment
+    public class Appointment : BaseEntity
     {
 
         [Key]
@@ -48,6 +48,7 @@ namespace DataLayer.Domain
             NotYet,
             Accept,
             Cancel,
+            Doing,
             Complete,
         }
 

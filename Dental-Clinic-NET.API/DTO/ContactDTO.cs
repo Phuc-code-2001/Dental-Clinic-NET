@@ -3,7 +3,7 @@ using System;
 
 namespace Dental_Clinic_NET.API.DTO
 {
-    public class ContactDTO
+    public class ContactDTO : BaseEntityDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -13,13 +13,8 @@ namespace Dental_Clinic_NET.API.DTO
 
         public string Content { get; set; }
 
-        public DateTime TimeCreated { get; set; }
-
         public string State { get; set; }
         public DateTime? FinishedTime { get; set; }
-
-        // Admin view
-        public string LastTimeModified { get; set; }
 
     }
 }

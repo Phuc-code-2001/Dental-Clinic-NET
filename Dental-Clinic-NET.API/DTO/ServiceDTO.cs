@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Dental_Clinic_NET.API.DTO
 {
-    public class ServiceDTO
+    public class ServiceDTO : BaseEntityDTO
     {
         public int Id { get; set; }
         public string ServiceCode { get; set; }
