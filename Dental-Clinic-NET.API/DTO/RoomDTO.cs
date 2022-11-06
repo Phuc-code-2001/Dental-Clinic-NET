@@ -9,7 +9,7 @@ namespace Dental_Clinic_NET.API.DTO
         public string RoomCode { get; set; }
         public string Description { get; set; }
         public List<DeviceInnerDTO> Devices { get; set; }
-        public string RoomType { get; set; }
+        public EnumTypeDTO RoomType { get; set; }
 
         public class DeviceInnerDTO
         {

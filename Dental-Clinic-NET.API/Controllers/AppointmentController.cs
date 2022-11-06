@@ -46,7 +46,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .ThenInclude(d => d.Document);
         }
 
-        private bool CanGet(Appointment entity, BaseUser user)
+        private static bool CanRead(Appointment entity, BaseUser user)
         {
             var permission = new PermissionOnAppointment(user, entity);
             bool c1 = permission.IsAdmin;
@@ -65,6 +65,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet]
+
         [Authorize]
         public IActionResult GetAll([FromQuery] AppointmentFilter filter, int page = 1)
         {
@@ -74,7 +75,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 var queryAll = QueryAll();
                 var filtered = filter.Filter(queryAll);
                 var permissionFiltered = filtered.AsEnumerable()
-                    .Where(entity => CanGet(entity, loggedUser)).AsQueryable();
+                    .Where(entity => CanRead(entity, loggedUser)).AsQueryable();
 
                 if(page != -1)
                 {
@@ -207,7 +208,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
 
-                if(!CanGet(entity, loggedUser))
+                if(!CanRead(entity, loggedUser))
                 {
                     return StatusCode(403, "Quyền đâu mà xem!");
                 }
@@ -348,7 +349,56 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        /// <summary>
+        ///  Transform an appointment to 'Complete' state
+        /// </summary>
+        /// <param name="id">id of appointment</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     500: Server handle error
+        /// </returns>
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
+        public IActionResult Complete(int id)
+        {
+            try
+            {
+                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
 
+                if (entity == null)
+                {
+                    return NotFound("Truyền sai id rồi => Appointment not found!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                PermissionOnAppointment permission = new PermissionOnAppointment(loggedUser, entity);
+                if (!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(403, "Lấy thằng admin hoặc bác sĩ phụ trách mới xài chức năng này được!");
+                }
+
+                entity.State = Appointment.States.Complete;
+                _context.Entry(entity).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+
+                return Ok(entityDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Allow doctors adding a document for their appointment
+        /// </summary>
+        /// <param name="requestModel">Contain</param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
         public async Task<IActionResult> DoctorAddDocumentAsync([FromForm] AddDocumentModel requestModel)
@@ -409,6 +459,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
 
     }
 }
