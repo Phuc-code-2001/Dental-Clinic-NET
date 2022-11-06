@@ -48,6 +48,7 @@ namespace DataLayer.Domain
             NotYet,
             Accept,
             Cancel,
+            Doing,
             Complete,
         }
 

@@ -1,4 +1,6 @@
 ﻿using DataLayer.Domain;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -13,10 +15,12 @@ namespace Dental_Clinic_NET.API.Services.Users
     {
 
         private IConfiguration _configuration;
+        private UserManager<BaseUser> _userManager;
 
-        public UserServices(IConfiguration configuration)
+        public UserServices(IConfiguration configuration, UserManager<BaseUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
         public string CreateSignInToken(BaseUser user)
@@ -38,6 +42,19 @@ namespace Dental_Clinic_NET.API.Services.Users
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public BaseUser GetLoggedUser(HttpContext context)
+        {
+            if(!context.User.Identity.IsAuthenticated)
+            {
+                return null;
+            }
+
+            string username = context.User.Identity.Name;
+            BaseUser user = _userManager.FindByNameAsync(username).Result;
+            return user;
+            
         }
     }
 }
