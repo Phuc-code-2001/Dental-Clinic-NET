@@ -23,6 +23,12 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value));
 
+            // Appointment document
+            CreateMap<AddDocumentModel, AppointmentDocument>();
+
+            CreateMap<AppointmentDocument, AppointmentDocumentDTO>()
+                .ForMember(des => des.Tag, opt => opt.MapFrom(src => src.Tag.ToString()));
+
         }
 
         public static string ConvertSlotToStrTime(Slot slot)

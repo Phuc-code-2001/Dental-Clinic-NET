@@ -41,8 +41,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 .Include(apt => apt.Doctor.BaseUser)
                 .Include(apt => apt.Doctor.Certificate)
                 .Include(apt => apt.Service.Devices)
+                .Include(apt => apt.Room.Devices)
                 .Include(apt => apt.Documents)
-                .Include(apt => apt.Room.Devices);
+                .ThenInclude(d => d.Document);
         }
 
         private bool CanGet(Appointment entity, BaseUser user)
@@ -106,6 +107,17 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
+        /// <summary>
+        ///     Create new Appointment, by admin or by patient
+        /// </summary>
+        /// <param name="request">Appointment information</param>
+        /// <returns>
+        ///     200: Create success
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     400: Some field invalid
+        ///     500: Server handle error
+        /// </returns>
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Patient) + "," + nameof(UserType.Administrator))]
         public async Task<IActionResult> CreateAsync([FromForm] CreateAppointment request)
@@ -139,12 +151,13 @@ namespace Dental_Clinic_NET.API.Controllers
 
                     AppointmentDocument document = new AppointmentDocument();
                     document.Title = "Medical Record Profile for Appontment";
+                    document.Tag = AppointmentDocument.DocumentTags.Patient;
                     document.Document = new MediaFile()
                     {
                         Category = MediaFile.FileCategory.AppointmentDocument
                     };
 
-                    string filename = $"apm_{request.PatientId}+{DateTime.Now.Ticks}" + Path.GetExtension(request.Document.FileName);
+                    string filename = $"apm_{entity.Id}_Patient+{DateTime.Now.Ticks}" + Path.GetExtension(request.Document.FileName);
                     var result = await _servicesManager.DropboxServices.UploadAsync(request.Document, filename);
 
                     document.Document.FilePath = result.UploadPath;
@@ -174,6 +187,17 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
+        /// <summary>
+        ///     Get details of an appointment
+        /// </summary>
+        /// <param name="id">id of appointment</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     500: Server handle error
+        /// </returns>
         [HttpGet("{id}")]
         [Authorize]
         public IActionResult Get(int id)
@@ -203,6 +227,17 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        /// <summary>
+        ///  Transform an appointment to 'Accept' state
+        /// </summary>
+        /// <param name="id">id of appointment</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut("{id}")]
         [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
         public IActionResult Accept(int id)
@@ -230,6 +265,17 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        /// <summary>
+        ///  Transform an appointment to 'Cancel' state
+        /// </summary>
+        /// <param name="id">id of appointment</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut("{id}")]
         [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
         public IActionResult Cancel(int id)
@@ -256,5 +302,113 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        /// <summary>
+        ///  Transform an appointment to 'Doing' state
+        /// </summary>
+        /// <param name="id">id of appointment</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     500: Server handle error
+        /// </returns>
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
+        public IActionResult Doing(int id)
+        {
+            try
+            {
+                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+
+                if (entity == null)
+                {
+                    return NotFound("Truyền sai id rồi => Appointment not found!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                PermissionOnAppointment permission = new PermissionOnAppointment(loggedUser, entity);
+                if(!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(403, "Lấy thằng admin hoặc bác sĩ phụ trách mới xài chức năng này được!");
+                }
+
+                entity.State = Appointment.States.Doing;
+                _context.Entry(entity).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+
+                return Ok(entityDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
+        public async Task<IActionResult> DoctorAddDocumentAsync([FromForm] AddDocumentModel requestModel)
+        {
+            try
+            {
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                Appointment entity = QueryAll().FirstOrDefault(item => item.Id == requestModel.AppointmentId);
+
+                if(entity == null)
+                {
+                    return NotFound("Appointment not found! Kiểm tra lại 'appoinmentId'!");
+                }
+
+                var permission = new PermissionOnAppointment(loggedUser, entity);
+                if(!permission.IsOwner && !permission.IsAdmin)
+                {
+                    return StatusCode(403, "Yêu cầu quyền admin hoặc bác sĩ phụ trách!");
+                }
+
+                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                if(string.IsNullOrWhiteSpace(document.Title))
+                {
+                    document.Title = "Doctor document for appointment";
+                }
+
+                document.Tag = AppointmentDocument.DocumentTags.Doctor;
+
+                IFormFile file = requestModel.DocumentFile;
+
+                // < Xử lý file >
+                if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                {
+                    return BadRequest("Document file must be *.docx format!");
+                }
+
+                document.Document = new MediaFile()
+                {
+                    Category = MediaFile.FileCategory.AppointmentDocument
+                };
+
+                string filename = $"apm_{entity.Id}_Doctor+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
+                var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
+
+                document.Document.FilePath = result.UploadPath;
+
+                entity.Documents.Add(document);
+                _context.Entry(entity).State = EntityState.Modified;
+                _context.SaveChanges();
+                // </ Xử lý file >
+
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+
+                return Ok(entityDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 }

@@ -21,5 +21,7 @@ namespace Dental_Clinic_NET.API.DTO
         public string Time { get; set; }
 
         public string State { get; set; }
+
+        public AppointmentDocumentDTO[] Documents { get; set; }
     }
 }
