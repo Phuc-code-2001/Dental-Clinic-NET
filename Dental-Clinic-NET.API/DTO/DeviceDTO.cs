@@ -5,7 +5,7 @@ using System;
 
 namespace Dental_Clinic_NET.API.DTO
 {
-    public class DeviceDTO
+    public class DeviceDTO : BaseEntityDTO
     {
         public int Id { get; set; }
         public int DeviceValue { get; set; }
