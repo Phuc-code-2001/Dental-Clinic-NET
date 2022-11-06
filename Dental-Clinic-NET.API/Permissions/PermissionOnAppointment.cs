@@ -10,7 +10,8 @@ namespace Dental_Clinic_NET.API.Permissions
             HandleOwnerPermission((entity) =>
             {
                 bool c1 = entity.PatientId == loggedUser.Id;
-                bool c2 = entity.DoctorId == loggedUser.Id;
+                bool c2 = entity.DoctorId == loggedUser.Id 
+                && (entity.State == Appointment.States.Accept || entity.State == Appointment.States.Complete);
                 return c1 || c2;
             });
         }
