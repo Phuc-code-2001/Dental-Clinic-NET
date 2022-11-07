@@ -38,15 +38,18 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 2. Frontend on GitHub
 
 ## Feature Until 6/11/2022
-### BaseUser
+
+### Guest
 + Register (Done)
 + Verified Account (NotYet)
++ View Services (Done)
+
+### BaseUser
 + Login (Done)
 + Change Password (Done)
 + Forgot Password (NotYet)
 + View Information (Done)
 + Update Information and Avatar (Done)
-+ View Services (Done)
 
 ## Patient
 + Take Appointment (Done)
