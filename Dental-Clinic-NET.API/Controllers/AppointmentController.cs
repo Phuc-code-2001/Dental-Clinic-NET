@@ -62,7 +62,8 @@ namespace Dental_Clinic_NET.API.Controllers
             switch(user.Type)
             {
                 case UserType.Patient:
-                    return false;
+                    // Only allowed in upload document
+                    return permission.IsOwner;
 
                 case UserType.Doctor:
                     return permission.IsOwner 
@@ -431,8 +432,15 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <summary>
         ///     Allow doctors adding a document for their appointment
         /// </summary>
-        /// <param name="requestModel">Contain</param>
-        /// <returns></returns>
+        /// <param name="requestModel">Contain document information</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     400: Some fields invalid
+        ///     500: Server handle error
+        /// </returns>
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
         public async Task<IActionResult> DoctorAddDocumentAsync([FromForm] AddDocumentModel requestModel)
