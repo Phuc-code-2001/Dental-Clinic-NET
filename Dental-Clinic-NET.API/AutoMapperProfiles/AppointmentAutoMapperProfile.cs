@@ -22,6 +22,12 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<CreateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value));
+            
+            CreateMap<UpdateAppointment, Appointment>()
+                .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
+                .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value))
+                .ForMember(des => des.ServiceId, opt => opt.MapFrom(src => src.ServiceId.Value))
+                .ForAllMembers(opt => opt.Condition((des, src, field) => field != null));
 
             // Appointment document
             CreateMap<AddDocumentModel, AppointmentDocument>();

@@ -501,7 +501,136 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        /// <summary>
+        ///     Allow patients adding a document for their appointment
+        /// </summary>
+        /// <param name="requestModel">Contain document information</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Not found
+        ///     403: Forbiden
+        ///     401: Unauthorize
+        ///     400: Some fields invalid
+        ///     500: Server handle error
+        /// </returns>
+        [HttpPost]
+        [Authorize(Roles = nameof(UserType.Patient) + "," + nameof(UserType.Administrator))]
+        public async Task<IActionResult> PatientAddDocumentAsync([FromForm] AddDocumentModel requestModel)
+        {
+            try
+            {
+
+                Appointment entity = QueryAll().FirstOrDefault(item => item.Id == requestModel.AppointmentId);
+
+                if (entity == null)
+                {
+                    return NotFound("Appointment not found! Kiểm tra lại 'appoinmentId'!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if (!CanWrite(entity, loggedUser))
+                {
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
+                }
+
+                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                if (string.IsNullOrWhiteSpace(document.Title))
+                {
+                    document.Title = "Adding document by Patient";
+                }
+
+                document.Tag = AppointmentDocument.DocumentTags.Patient;
+
+                IFormFile file = requestModel.DocumentFile;
+
+                // < Xử lý file >
+                if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                {
+                    return BadRequest("Document file must be *.docx format!");
+                }
+
+                document.Document = new MediaFile()
+                {
+                    Category = MediaFile.FileCategory.AppointmentDocument
+                };
+
+                string filename = $"apm_{entity.Id}Patient+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
+                var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
+
+                document.Document.FilePath = result.UploadPath;
+
+                entity.Documents.Add(document);
+                _context.Entry(entity).State = EntityState.Modified;
+                _context.SaveChanges();
+                // </ Xử lý file >
+
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+
+                return Ok(entityDTO);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Remove a document by Reception or Admin
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
+        public IActionResult RemoveDocument(int id) 
+        {
+            try
+            {
+                AppointmentDocument entity = _context.AppointmentsDocuments.Find(id);
+
+                if(entity == null)
+                {
+                    return NotFound("Document not found!");
+                }
+
+                _context.AppointmentsDocuments.Remove(entity);
+                _context.SaveChanges();
+
+                return Ok($"Removed Document '{entity.Title}' of Appointment '{entity.AppointmentId}'");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
 
+        [HttpPut]
+        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
+        public IActionResult Update(UpdateAppointment requestModel)
+        {
+            try
+            {
+                Appointment entity = _context.Appointments.Find(requestModel.Id);
+                if(entity == null)
+                {
+                    return NotFound("Appointment not found!");
+                }
+
+                _servicesManager.AutoMapper.Map<UpdateAppointment, Appointment>(requestModel, entity);
+
+                _context.Entry(entity).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                entity = QueryAll().FirstOrDefault(a => a.Id == entity.Id);
+                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+                return Ok(entityDTO);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
