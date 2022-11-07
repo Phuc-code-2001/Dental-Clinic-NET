@@ -55,6 +55,31 @@ namespace Dental_Clinic_NET.API.Controllers
             return c1 || c2 || c3;
         }
 
+        private static bool CanWrite(Appointment entity, BaseUser user)
+        {
+            var permission = new PermissionOnAppointment(user, entity);
+
+            switch(user.Type)
+            {
+                case UserType.Patient:
+                    return false;
+
+                case UserType.Doctor:
+                    return permission.IsOwner 
+                        && entity.State == Appointment.States.Accept
+                        && entity.State == Appointment.States.Doing;
+
+                case UserType.Receptionist:
+                    return entity.State == Appointment.States.NotYet;
+
+                case UserType.Administrator:
+                    return true;
+            }
+
+            return false;
+
+        }
+
         /// <summary>
         ///     Retrive a list of appointments, all which can view by logged user.
         /// </summary>
@@ -65,7 +90,6 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet]
-
         [Authorize]
         public IActionResult GetAll([FromQuery] AppointmentFilter filter, int page = 1)
         {
@@ -252,6 +276,12 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Truyền sai id rồi => Appointment not found!");
                 }
 
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if(!CanWrite(entity, loggedUser))
+                {
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
+                }
+
                 entity.State = Appointment.States.Accept;
                 _context.Entry(entity).State = EntityState.Modified;
                 _context.SaveChanges();
@@ -288,6 +318,12 @@ namespace Dental_Clinic_NET.API.Controllers
                 if (entity == null)
                 {
                     return NotFound("Truyền sai id rồi => Appointment not found!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if (!CanWrite(entity, loggedUser))
+                {
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Cancel;
@@ -329,10 +365,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                PermissionOnAppointment permission = new PermissionOnAppointment(loggedUser, entity);
-                if(!permission.IsOwner && !permission.IsAdmin)
+                if (!CanWrite(entity, loggedUser))
                 {
-                    return StatusCode(403, "Lấy thằng admin hoặc bác sĩ phụ trách mới xài chức năng này được!");
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Doing;
@@ -374,10 +409,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                PermissionOnAppointment permission = new PermissionOnAppointment(loggedUser, entity);
-                if (!permission.IsOwner && !permission.IsAdmin)
+                if (!CanWrite(entity, loggedUser))
                 {
-                    return StatusCode(403, "Lấy thằng admin hoặc bác sĩ phụ trách mới xài chức năng này được!");
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Complete;
@@ -405,7 +439,6 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 Appointment entity = QueryAll().FirstOrDefault(item => item.Id == requestModel.AppointmentId);
 
                 if(entity == null)
@@ -413,10 +446,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Appointment not found! Kiểm tra lại 'appoinmentId'!");
                 }
 
-                var permission = new PermissionOnAppointment(loggedUser, entity);
-                if(!permission.IsOwner && !permission.IsAdmin)
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if (!CanWrite(entity, loggedUser))
                 {
-                    return StatusCode(403, "Yêu cầu quyền admin hoặc bác sĩ phụ trách!");
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
