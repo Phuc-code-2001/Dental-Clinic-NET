@@ -9,39 +9,51 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class Appointment
+    public class Appointment : BaseEntity
     {
 
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("Doctor")]
+        [ForeignKey(nameof(Doctor))]
         public string DoctorId { get; set; }
         public Doctor Doctor { get; set; }
-        [ForeignKey("Patient")]
+
+        [ForeignKey(nameof(Patient))]
         public string PatientId { get; set; }
         public Patient Patient { get; set; }
 
-        [Required]
-        public string Content { get; set; }
-
-        [Required]
-        public TimeManager.Slot Slot { get; set; }
-
-        [ForeignKey("Room")]
+        [ForeignKey(nameof(Room))]
         public int RoomId { get; set; }
         public Room Room { get; set; }
 
+        [ForeignKey(nameof(Service))]
+        public int ServiceId { get; set; }
+        public Service Service { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime Date { get; set; }
+
+        [Required]
+        public TimeManager.Slot Slot { get; set; }
+        
+        [Required]
+        public string Content { get; set; }
+
         public States State { get; set; } = States.NotYet;
-
-        public ICollection<Service> Services { get; set; }
-
+        
         public enum States
         {
             NotYet,
+            Accept,
             Cancel,
+            Doing,
             Complete,
         }
+
+        public ICollection<AppointmentDocument> Documents { get; set; } = new HashSet<AppointmentDocument>();
+        
     }
     
 }

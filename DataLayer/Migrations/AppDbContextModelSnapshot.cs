@@ -30,8 +30,14 @@ namespace DataLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("DoctorId")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("PatientId")
                         .HasColumnType("text");
@@ -39,11 +45,17 @@ namespace DataLayer.Migrations
                     b.Property<int>("RoomId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Slot")
                         .HasColumnType("integer");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
@@ -53,7 +65,43 @@ namespace DataLayer.Migrations
 
                     b.HasIndex("RoomId");
 
+                    b.HasIndex("ServiceId");
+
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.AppointmentDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Tag")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("AppointmentsDocuments");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
@@ -148,6 +196,40 @@ namespace DataLayer.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FromId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ToId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromId");
+
+                    b.HasIndex("ToId");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Contact", b =>
                 {
                     b.Property<int>("Id")
@@ -200,20 +282,27 @@ namespace DataLayer.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DeviceName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("DeviceValue")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ImageId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("RoomId")
-                        .HasColumnType("integer")
-                        .HasColumnName("room_id");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
@@ -245,6 +334,9 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<bool>("Verified")
+                        .HasColumnType("boolean");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CertificateId");
@@ -262,7 +354,7 @@ namespace DataLayer.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("integer");
 
-                    b.Property<string>("FileURL")
+                    b.Property<string>("FilePath")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LastTimeModified")
@@ -331,16 +423,22 @@ namespace DataLayer.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int?>("AppointmentId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageURL")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("ServiceCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ServiceName")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("TimeCreated")
@@ -350,8 +448,6 @@ namespace DataLayer.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Services");
                 });
@@ -517,20 +613,60 @@ namespace DataLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataLayer.Domain.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Doctor");
 
                     b.Navigation("Patient");
 
                     b.Navigation("Room");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.AppointmentDocument", b =>
+                {
+                    b.HasOne("DataLayer.Domain.Appointment", null)
+                        .WithMany("Documents")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataLayer.Domain.MediaFile", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId");
+
+                    b.Navigation("Document");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.ChatMessage", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromId");
+
+                    b.HasOne("DataLayer.Domain.BaseUser", "ToUser")
+                        .WithMany()
+                        .HasForeignKey("ToId");
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Device", b =>
                 {
-                    b.HasOne("DataLayer.Domain.Room", null)
+                    b.HasOne("DataLayer.Domain.Room", "Room")
                         .WithMany("Devices")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Doctor", b =>
@@ -567,13 +703,6 @@ namespace DataLayer.Migrations
                     b.Navigation("BaseUser");
 
                     b.Navigation("MedicalRecordFile");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.Service", b =>
-                {
-                    b.HasOne("DataLayer.Domain.Appointment", null)
-                        .WithMany("Services")
-                        .HasForeignKey("AppointmentId");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -644,7 +773,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
                 {
-                    b.Navigation("Services");
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Room", b =>

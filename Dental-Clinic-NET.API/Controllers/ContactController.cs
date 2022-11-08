@@ -52,7 +52,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     page = page,
                     per_page = paginatedContacts.PageSize,
-                    total = paginatedContacts.ColectionCount,
+                    total = paginatedContacts.QueryCount,
                     total_pages = paginatedContacts.PageCount,
                     data = paginatedContacts.Items
                 });

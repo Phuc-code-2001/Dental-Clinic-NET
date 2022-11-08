@@ -13,9 +13,8 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         public ServiceAutoMapperProfile()
         {
             CreateMap<CreateService, Service>();
-            CreateMap<Service, ServiceDTO>()
-                .ForMember(des => des.DeviceNames, act => act.MapFrom(src => src.Devices.Select(d => d.DeviceName).ToList()))
-                .ForMember(des => des.DeviceIdList, act => act.MapFrom(src => src.Devices.Select(d => d.Id).ToList()));
+            CreateMap<Service, ServiceDTO>();
+
             CreateMap<UpdateService, Service>()
                     .ForAllMembers(opt => opt.Condition((src, des, field) =>
                     {
@@ -23,6 +22,15 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                         bool condition_02 = field is int && int.Parse(field.ToString()) > 0;
                         return condition_01 || condition_02;
                     }));
+
+            // EnumType to handle selectbox
+
+            CreateMap<Service, EnumTypeDTO>()
+                .ForMember(des => des.Name, opt => opt.MapFrom(src => src.ServiceCode));
+
+            // Lite
+            CreateMap<Service, ServiceDTOLite>();
+
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DataLayer.Domain;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static DataLayer.Domain.Room;
 
 namespace Dental_Clinic_NET.API.Models.Room
 {
@@ -11,5 +13,8 @@ namespace Dental_Clinic_NET.API.Models.Room
         public string RoomCode { get; set; }
         [Required]
         public string Description { get; set; }
+
+        public RoomTypes RoomType { get; set; } = RoomTypes.GeneralRoom;
+
     }
 }

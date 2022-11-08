@@ -12,9 +12,21 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         public RoomAutoMapperProfile()
         {
             CreateMap<CreateRoom, Room>();
-            CreateMap<Room, RoomDTO>()
-                .ForMember(des => des.DeviceNames, act => act.MapFrom(src => src.Devices.Select(d => d.DeviceName).ToList()))
-                .ForMember(des => des.RoomType, act => act.MapFrom(src => src.RoomType.ToString()));
+
+            CreateMap<Device, RoomDTO.DeviceInnerDTO>();
+            CreateMap<Room, RoomDTO>();
+
+            CreateMap<UpdateRoom, Room>()
+                .ForAllMembers(opt => opt.Condition((src, des, field) =>
+                {
+                    bool condition_01 = field != null && field is not string;
+                    bool condition_02 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
+
+                    return condition_01 || condition_02;
+                }));
+
+            // Lite
+            CreateMap<Room, RoomDTOLite>();
         }
     }
 }

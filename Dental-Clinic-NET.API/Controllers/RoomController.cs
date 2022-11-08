@@ -40,17 +40,18 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var rooms = _context.Rooms.Include(r => r.Devices).ToList();
-                var roomDTOs = rooms.Select(room => _servicesManager.AutoMapper.Map<RoomDTO>(room));
+                var rooms = _context.Rooms
+                    .Include(r => r.Devices)
+                    .ToArray();
+                RoomDTO[] roomDTOs = _servicesManager.AutoMapper.Map<RoomDTO[]>(rooms);
+
 
                 Paginated<RoomDTO> paginatedRooms = new Paginated<RoomDTO>(roomDTOs.AsQueryable(), page);
-
-
                 return Ok(new
                 {
                     page = page,
                     per_page = paginatedRooms.PageSize,
-                    total = paginatedRooms.ColectionCount,
+                    total = paginatedRooms.QueryCount,
                     total_pages = paginatedRooms.PageCount,
                     data = paginatedRooms.Items
                 });
@@ -60,6 +61,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
         /// <summary>
         ///     Create new room from any actor
         /// </summary>
@@ -69,14 +71,25 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create(CreateRoom request)
         {
             try
             {
                 Room room = _servicesManager.AutoMapper.Map<Room>(request);
-                if(_context.Rooms.FirstOrDefault(r => r.RoomCode == room.RoomCode) != null) return BadRequest("Duplicate room code");
+
+                // Check room code
+                bool duplicateRoomCode = _context.Rooms.Any(r => r.RoomCode == room.RoomCode);
+                if (duplicateRoomCode) 
+                    return BadRequest("Duplicate room code");
+
                 _context.Rooms.Add(room);
                 _context.SaveChanges();
+
+                room = _context.Rooms
+                    .Include(r => r.Devices)
+                    .FirstOrDefault(r => r.Id == room.Id);
+
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
 
                 // Push event
@@ -89,7 +102,6 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
 
                 return Ok(roomDTO);
 
@@ -99,6 +111,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        
         /// <summary>
         ///     Get a Room details
         /// </summary>
@@ -112,7 +125,10 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Room room = _context.Rooms.Find(id);
+                Room room = _context.Rooms
+                    .Include(r => r.Devices)
+                    .FirstOrDefault(r => r.Id == id);
+
                 if (room == null) return NotFound("Room not found.");
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
@@ -133,6 +149,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int id)
         {
             try
@@ -156,15 +173,24 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
-
                 return Ok($"You just have completely delete room with id='{id}' success");
+
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
+        
+        /// <summary>
+        ///     Update room info
+        /// </summary>
+        /// <param name="request">new room info</param>
+        /// <returns>
+        ///     200: Success
+        ///     404: Not found room
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut]
         public IActionResult Update(UpdateRoom request)
         {
@@ -175,8 +201,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return NotFound("Room not found");
                 }
-                if(request.RoomCode != null && request.RoomCode != "") room.RoomCode = request.RoomCode;
-                if(request.Description != null && request.Description != "") room.Description = request.Description;
+
+                _servicesManager.AutoMapper.Map<UpdateRoom, Room>(request, room);
+
                 _context.Entry(room).State = EntityState.Modified;
                 _context.SaveChanges();
 
@@ -190,8 +217,9 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
-                return Ok($"Update room success");
+                RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
+
+                return Ok(roomDTO);
             }
             catch (Exception ex)
             {

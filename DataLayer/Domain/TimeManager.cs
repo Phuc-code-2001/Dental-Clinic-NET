@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 namespace DataLayer.Domain
 {
 
-    public class TimeManager : Dictionary<TimeManager.Slot, TimeSpan>
+    public class TimeManager : Dictionary<TimeManager.Slot, Nullable<TimeSpan>>
     {
         private static TimeManager _instance;
 
         public static TimeManager Instance { get
             {
-                return _instance = (_instance ?? new TimeManager());
+                return _instance ??= new TimeManager();
             }
         }
 
@@ -43,7 +43,7 @@ namespace DataLayer.Domain
 
             this.Add(Slot.Slot_05, new TimeSpan(15, 0, 0));
 
-            this.Add(Slot.Slot_06, new TimeSpan(16, 0, 0)); 
+            this.Add(Slot.Slot_06, new TimeSpan(16, 0, 0));
 
         }
         

@@ -37,10 +37,7 @@ namespace Dental_Clinic_NET.API.Controllers
             _context = context;
         }
 
-        
-
         [HttpPost]
-        [NonAction]
         public async Task<IActionResult> GenerateChannelIfNullAsync()
         {
             var users = _userManager.Users.ToList();
@@ -48,7 +45,7 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 if (String.IsNullOrEmpty(user.PusherChannel))
                 {
-                    string channel = _servicesManager.PusherServices.GenerateUniqueUserChannel();
+                    string channel = _servicesManager.UserServices.GenerateUniqueUserChannel();
                     user.PusherChannel = channel;
                     await _userManager.UpdateAsync(user);
                 }
@@ -124,7 +121,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     page=page,
                     per_page=paginatedUsers.PageSize,
-                    total=paginatedUsers.ColectionCount,
+                    total=paginatedUsers.QueryCount,
                     total_pages=paginatedUsers.PageCount,
                     data=paginatedUsers.Items
                 });
@@ -158,6 +155,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 var users = _userManager.Users.ToList();
+                int count = 0;
                 users.ForEach(user =>
                 {
                     Patient patient = _context.Patients.Find(user.Id);
@@ -169,18 +167,37 @@ namespace Dental_Clinic_NET.API.Controllers
                             MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.MedicalRecord },
                         };
                         _context.Patients.Add(patient);
+                        count++;
                     }
 
                 });
 
                 _context.SaveChanges();
 
-                return Ok(_context.Patients.ToList());
+                return Ok($"Mới tạo được {count} thằng.");
             }
             catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost]
+        [NonAction]
+        public async Task<IActionResult> TestDropbox(IFormFile file)
+        {
+            string result = await _servicesManager.DropboxServices.TestService(file);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public IActionResult GetAllDocuments()
+        {
+            var dataset = _context.AppointmentsDocuments
+                .Include(d => d.Document)
+                .ToList();
+
+            return Ok(dataset);
         }
 
     }

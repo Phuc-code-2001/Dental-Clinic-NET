@@ -12,6 +12,8 @@ using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dental_Clinic_NET.API.Models.Devices;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -26,6 +28,8 @@ namespace Dental_Clinic_NET.API.Controllers
             _context = context;
             _servicesManager = servicesManager;
         }
+
+
         /// <summary>
         ///     List all services by admin
         /// </summary>
@@ -39,21 +43,24 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var services = _context.Services.Include(d => d.Devices).ToList();
+                var services = _context.Services.Include(d => d.Devices).ToArray();
+                var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
 
-                var serviceDTOs = services.Select(services => _servicesManager.AutoMapper.Map<ServiceDTO>(services));
-
-                Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
-
-
-                return Ok(new
+                if(page != -1)
                 {
-                    page = page,
-                    per_page = paginatedServices.PageSize,
-                    total = paginatedServices.ColectionCount,
-                    total_pages = paginatedServices.PageCount,
-                    data = paginatedServices.Items
-                });
+                    Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
+                    return Ok(new
+                    {
+                        page = page,
+                        per_page = paginatedServices.PageSize,
+                        total = paginatedServices.QueryCount,
+                        total_pages = paginatedServices.PageCount,
+                        data = paginatedServices.Items
+                    });
+                }
+
+                return Ok(serviceDTOs);
+
             }
             catch (Exception ex)
             {
@@ -66,14 +73,48 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="request">Services Info</param>
         /// <returns>
         ///     200: Create success
+        ///     400: Invalid Info
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
-        public IActionResult Create(CreateService request)
+        [Authorize(Roles = "Administrator")]
+        public IActionResult Create([FromForm] CreateService request)
         {
             try
             {
+
                 Service service = _servicesManager.AutoMapper.Map<Service>(request);
+
+                // Check Image File null
+                if (request.ImageFile != null)
+                {
+                    // Check Image
+                    bool imageCorrect = _servicesManager.ImageKitServices.IsImage(request.ImageFile);
+                    if (!imageCorrect)
+                    {
+                        return BadRequest("File must be image!");
+                    }
+                    
+                    // Upload New Image
+                    var uploadImageResult = _servicesManager
+                        .ImageKitServices
+                        .UploadImageAsync(request.ImageFile, request.ImageFile.FileName).Result;
+
+                    service.ImageURL = uploadImageResult.URL;
+                    service.ImageId = uploadImageResult.ImageId;
+                }
+
+                // Check device inner
+                service.Devices = new List<Device>();
+                foreach (int id in request.DeviceIdList)
+                {
+                    Device device = _context.Devices.Find(id);
+                    if (device != null)
+                    {
+                        service.Devices.Add(device);
+                    }
+                }
+
                 _context.Services.Add(service);
                 _context.SaveChanges();
 
@@ -87,9 +128,9 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
+                ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);
 
-                return Ok(service);
+                return Ok(serviceDTO);
 
             }
             catch (Exception ex)
@@ -103,6 +144,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="id">service id</param>
         /// <returns>
         ///     200: Request success
+        ///     404: Not found
         ///     500: Server handle error
         /// </returns>
         [HttpGet("{id}")]
@@ -110,7 +152,9 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Service service = _context.Services.Find(id);
+                Service service = _context.Services
+                    .Include(s => s.Devices).FirstOrDefault(s => s.Id == id);
+
                 if (service == null) return NotFound("Service not found.");
 
                 ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);
@@ -128,9 +172,11 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="id">service id</param>
         /// <returns>
         ///     200: Request success
+        ///     404: Not found
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int id)
         {
             try
@@ -154,7 +200,6 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
 
                 return Ok($"You just have completely delete service with id='{id}' success");
             }
@@ -163,19 +208,93 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        /// <summary>
+        ///     Update Service Info
+        /// </summary>
+        /// <param name="request">New Info</param>
+        /// <returns>
+        ///     200: Update success
+        ///     400: Invalid Info
+        ///     404: Not found
+        ///     500: Server handle error
+        /// </returns>
         [HttpPut]
-        public IActionResult Update(UpdateService request)
+        [Authorize(Roles = "Administrator")]
+        public IActionResult Update([FromForm] UpdateService request)
         {
             try
             {
-                Service service = _context.Services.Find(request.Id);
+                // Find Service
+                Service service = _context.Services
+                    .Include(s => s.Devices)
+                    .FirstOrDefault(s => s.Id == request.Id);
+
+                // Check service null
                 if (service == null)
                 {
                     return NotFound("Service not found");
                 }
 
+                // Check Image File null
+                if (request.ImageFile != null)
+                {
+                    // Check Image
+                    bool imageCorrect = _servicesManager.ImageKitServices.IsImage(request.ImageFile);
+                    if (!imageCorrect)
+                    {
+                        return BadRequest("File must be image!");
+                    }
+                    // Delete Old Image
+                    if (service.ImageId != null)
+                    {
+                        _ = _servicesManager.ImageKitServices.DeleteImageAsync(service.ImageId);
+                    }
+                    // Upload New Image
+                    var uploadImageResult = _servicesManager
+                        .ImageKitServices
+                        .UploadImageAsync(request.ImageFile, request.ImageFile.FileName).Result;
+
+                    service.ImageURL = uploadImageResult.URL;
+                    service.ImageId = uploadImageResult.ImageId;
+                }
+                // Map Data
                 _servicesManager.AutoMapper.Map<UpdateService, Service>(request, service);
-                
+
+                // Setup DeviceList
+                if(request.DeviceIdList != null)
+                {
+                    List<Device> deviceToAdd = new List<Device>();
+                    List<Device> deviceToRemove = new List<Device>();
+                    // Check To Add
+                    foreach (int deviceId in request.DeviceIdList)
+                    {
+                        Device device = _context.Devices.Find(deviceId);
+                        if (device != null && !service.Devices.Contains(device))
+                        {
+                            deviceToAdd.Add(device);
+                        }
+                    }
+                    // Check To Remove
+                    foreach (Device device in service.Devices)
+                    {
+                        if (!request.DeviceIdList.Contains(device.Id))
+                        {
+                            deviceToRemove.Add(device);
+                        }
+                    }
+                    // Add
+                    foreach (Device device in deviceToAdd)
+                    {
+                        service.Devices.Add(device);
+                    }
+                    // Remove
+                    foreach (Device device in deviceToRemove)
+                    {
+                        service.Devices.Remove(device);
+                    }
+                } 
+
+                //Save
                 _context.Entry(service).State = EntityState.Modified;
                 _context.SaveChanges();
 
@@ -189,8 +308,10 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
-                return Ok($"Update service success");
+                // Map View
+                ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);
+
+                return Ok(serviceDTO);
             }
             catch (Exception ex)
             {

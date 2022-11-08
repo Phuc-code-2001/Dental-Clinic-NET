@@ -13,13 +13,14 @@ namespace DataLayer.Domain
     {
         [Key]
         public int Id { get; set; }
-        public string FileURL { get; set; }
+        public string FilePath { get; set; }
         public FileCategory Category { get; set; }
         
         public enum FileCategory
         {
             MedicalRecord,
             DoctorCertificate,
+            AppointmentDocument,
         }
     }
 }

@@ -191,7 +191,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     page = page,
                     per_page = paginatedUsers.PageSize,
-                    total = paginatedUsers.ColectionCount,
+                    total = paginatedUsers.QueryCount,
                     total_pages = paginatedUsers.PageCount,
                     data = paginatedUsers.Items
                 });
@@ -333,6 +333,61 @@ namespace Dental_Clinic_NET.API.Controllers
 
             }
             catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetAsync(string userId)
+        {
+            try
+            {
+                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                if (requiredUser == null)
+                {
+                    return NotFound("Truyền sai userId rồi ba");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
+                if (!permission.IsAdmin && !permission.IsOwner)
+                {
+                    return StatusCode(403);
+                }
+
+                UserDTO userDTO = new UserSerializer(permission).Serialize((user) =>
+                {
+                    return _servicesManager.AutoMapper.Map<UserDTO>(user);
+                });
+
+                return Ok(userDTO);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete("{userId}")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> DeleteAsync(string userId)
+        {
+            try
+            {
+                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                if (requiredUser == null)
+                {
+                    return NotFound("Truyền sai userId rồi ba");
+                }
+
+                await _userManager.DeleteAsync(requiredUser);
+                return Ok();
+
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

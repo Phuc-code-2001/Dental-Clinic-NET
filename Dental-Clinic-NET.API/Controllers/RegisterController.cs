@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Facebooks.Models;
@@ -23,18 +24,21 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class RegisterController : ControllerBase
     {
+        AppDbContext _context;
+
         private IMapper _mapper;
         private UserManager<BaseUser> _userManager;
 
         private UserServices _userServices;
         private FacebookServices _facebookServices;
 
-        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices, IMapper mapper)
+        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices, IMapper mapper, AppDbContext context)
         {
             _userManager = userManager;
             _facebookServices = facebookServices;
             _userServices = userServices;
             _mapper = mapper;
+            _context = context;
         }
 
         [HttpPost]
@@ -79,10 +83,23 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 // Verify Email and PhoneNumber later
 
+
+
+                // Create Default Actor
+                Patient patient = new Patient()
+                {
+                    BaseUser = user,
+                    MedicalRecordFile = new MediaFile()
+                    {
+                        Category = MediaFile.FileCategory.MedicalRecord
+                    }
+                };
+
                 var createUserResult = await _userManager.CreateAsync(user);
 
                 if(createUserResult.Succeeded)
                 {
+                
                     string token = _userServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
@@ -128,9 +145,22 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 }
 
+                // Create Default Actor
+                Patient patient = new Patient()
+                {
+                    BaseUser = user,
+                    MedicalRecordFile = new MediaFile()
+                    {
+                        Category = MediaFile.FileCategory.MedicalRecord
+                    }
+                };
+
+                _context.Patients.Add(patient);
+
                 var createResult = await _userManager.CreateAsync(user, request.Password);
                 if(createResult.Succeeded)
                 {
+
                     string token = _userServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
@@ -159,6 +189,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
 
         }
+
     }
 
 
@@ -171,4 +202,6 @@ namespace Dental_Clinic_NET.API.Controllers
         FacebookAlreadySignUp,
         FacebookCreateFailed,
     }
+    
+
 }
