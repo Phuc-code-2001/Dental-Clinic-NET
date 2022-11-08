@@ -8,18 +8,20 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class PatientInChatBoxOfReception
+    public class UserInChatBoxOfReception
     {
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(Patient))]
-        public string PatientId { get; set; }
-        public Patient Patient { get; set; }
+        [ForeignKey(nameof(BaseUser))]
+        public string UserId { get; set; }
+        public BaseUser User { get; set; }
 
         public bool HasMessageUnRead { get; set; }
-        public DateTime LastMessageCreated { get; set; }
 
+        [ForeignKey(nameof(ChatMessage))]
         public int LastMessageId { get; set; }
+        [ForeignKey(nameof(LastMessageId))]
+        public ChatMessage LastMessage { get; set; }
     }
 }

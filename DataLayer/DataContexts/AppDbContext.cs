@@ -46,7 +46,7 @@ namespace DataLayer.DataContexts
 
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
-        public DbSet<PatientInChatBoxOfReception> PatientInChatBoxOfReceptions { get; set; }
+        public DbSet<UserInChatBoxOfReception> UsersInChatBoxOfReception { get; set; }
 
         public override int SaveChanges()
         {

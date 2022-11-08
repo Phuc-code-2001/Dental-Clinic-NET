@@ -3,15 +3,17 @@ using System;
 using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221108164339_UpdateUserChatbox")]
+    partial class UpdateUserChatbox
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,6 +391,31 @@ namespace DataLayer.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.PatientInChatBoxOfReception", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<bool>("HasMessageUnRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LastMessageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PatientId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastMessageId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientInChatBoxOfReceptions");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -450,31 +477,6 @@ namespace DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.UserInChatBoxOfReception", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<bool>("HasMessageUnRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("LastMessageId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LastMessageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UsersInChatBoxOfReception");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -730,7 +732,7 @@ namespace DataLayer.Migrations
                     b.Navigation("MedicalRecordFile");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.UserInChatBoxOfReception", b =>
+            modelBuilder.Entity("DataLayer.Domain.PatientInChatBoxOfReception", b =>
                 {
                     b.HasOne("DataLayer.Domain.ChatMessage", "LastMessage")
                         .WithMany()
@@ -738,13 +740,13 @@ namespace DataLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataLayer.Domain.BaseUser", "User")
+                    b.HasOne("DataLayer.Domain.Patient", "Patient")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("PatientId");
 
                     b.Navigation("LastMessage");
 
-                    b.Navigation("User");
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("DeviceService", b =>

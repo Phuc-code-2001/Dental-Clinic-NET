@@ -47,6 +47,29 @@ namespace ChatServices.API.Controllers
                 ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
                 message.FromId = loggedUser.Id;
 
+                var userChatBoxInfo = _servicesManager.DbContext
+                    .UsersInChatBoxOfReception
+                    .FirstOrDefault(cb => cb.UserId == loggedUser.Id);
+
+                if(userChatBoxInfo != null)
+                {
+                    userChatBoxInfo.LastMessage = message;
+                    userChatBoxInfo.HasMessageUnRead = true;
+
+                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                }
+                else
+                {
+                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    {
+                        UserId = message.FromId,
+                        HasMessageUnRead = true,
+                        LastMessage = message,
+                    };
+
+                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                }
+                
                 _servicesManager.DbContext.Add(message);
                 _servicesManager.DbContext.SaveChanges();
 
@@ -112,6 +135,29 @@ namespace ChatServices.API.Controllers
                 ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
                 message.FromId = loggedUser.Id;
 
+                var userChatBoxInfo = _servicesManager.DbContext
+                    .UsersInChatBoxOfReception
+                    .FirstOrDefault(cb => cb.UserId == toPatient.Id);
+
+                if (userChatBoxInfo != null)
+                {
+                    userChatBoxInfo.LastMessage = message;
+                    userChatBoxInfo.HasMessageUnRead = false;
+
+                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                }
+                else
+                {
+                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    {
+                        UserId = message.ToId,
+                        HasMessageUnRead = false,
+                        LastMessage = message,
+                    };
+
+                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                }
+
                 _servicesManager.DbContext.Add(message);
                 _servicesManager.DbContext.SaveChanges();
 
@@ -166,7 +212,7 @@ namespace ChatServices.API.Controllers
                     .Where(message => message.FromUser.Type == UserType.Patient);
 
                 var userGroup = queries.AsEnumerable().GroupBy(message => message.FromUser)
-                    .Select(group => new PatientInChatBoxOfReceptionDTO
+                    .Select(group => new UserInChatBoxOfReceptionDTO
                     {
                         User = _servicesManager.AutoMapper.Map<ChatUserDTO>(group.Key),
                         HasMessageUnRead = group.Any(message => !message.IsRead),
