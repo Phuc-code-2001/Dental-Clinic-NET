@@ -37,8 +37,6 @@ namespace Dental_Clinic_NET.API.Controllers
             _context = context;
         }
 
-        
-
         [HttpPost]
         public async Task<IActionResult> GenerateChannelIfNullAsync()
         {
@@ -47,7 +45,7 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 if (String.IsNullOrEmpty(user.PusherChannel))
                 {
-                    string channel = _servicesManager.PusherServices.GenerateUniqueUserChannel();
+                    string channel = _servicesManager.UserServices.GenerateUniqueUserChannel();
                     user.PusherChannel = channel;
                     await _userManager.UpdateAsync(user);
                 }

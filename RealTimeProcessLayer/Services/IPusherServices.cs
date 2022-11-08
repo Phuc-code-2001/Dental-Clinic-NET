@@ -10,7 +10,6 @@ namespace RealTimeProcessLayer.Services
 {
     public interface IPusherServices
     {
-        public string GenerateUniqueUserChannel();
         public Task PushTo(string[] channels, string actionName, object data, CallBack callBack);
     }
 }
