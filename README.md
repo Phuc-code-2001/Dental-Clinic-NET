@@ -64,7 +64,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 
 ## Receptionist
 + Preprocessing Appointment (Done)
-+ Chat with Patient (NotYet)
++ Chat with Patient (Done)
 + Response Contact (Done)
 
 ## Administrator
@@ -79,5 +79,5 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + Manage ChatMessage (Update, Delete) (NotYet)
 + Manage Feedback (Update, Delete) (NotYet)
 
-21 (Done)
-7 (NotYet)
+22 (Done)
+6 (NotYet)
