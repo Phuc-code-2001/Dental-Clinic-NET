@@ -44,6 +44,8 @@ namespace DataLayer.DataContexts
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<AppointmentDocument> AppointmentsDocuments { get; set; }
 
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
         public override int SaveChanges()
         {
 

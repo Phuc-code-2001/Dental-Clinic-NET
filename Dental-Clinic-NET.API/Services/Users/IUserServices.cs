@@ -8,5 +8,6 @@ namespace Dental_Clinic_NET.API.Services.Users
     {
         public string CreateSignInToken(BaseUser user);
         public BaseUser GetLoggedUser(HttpContext context);
+        public string GenerateUniqueUserChannel();
     }
 }
