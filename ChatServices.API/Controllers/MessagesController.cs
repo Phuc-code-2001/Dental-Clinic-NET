@@ -25,10 +25,14 @@ namespace ChatServices.API.Controllers
         }
 
         /// <summary>
-        ///     Send a message from patient to receptionist (receptionist auto detect)
+        ///     Send a message from Patient to Receptionist (any Receptionist can view and reply)
         /// </summary>
+        /// <param name="request">Include Content</param>
         /// <returns>
-        /// 
+        ///     200: Request success
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
         /// </returns>
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Patient))]
@@ -43,6 +47,29 @@ namespace ChatServices.API.Controllers
                 ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
                 message.FromId = loggedUser.Id;
 
+                var userChatBoxInfo = _servicesManager.DbContext
+                    .UsersInChatBoxOfReception
+                    .FirstOrDefault(cb => cb.UserId == loggedUser.Id);
+
+                if(userChatBoxInfo != null)
+                {
+                    userChatBoxInfo.LastMessage = message;
+                    userChatBoxInfo.HasMessageUnRead = true;
+
+                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                }
+                else
+                {
+                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    {
+                        UserId = message.FromId,
+                        HasMessageUnRead = true,
+                        LastMessage = message,
+                    };
+
+                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                }
+                
                 _servicesManager.DbContext.Add(message);
                 _servicesManager.DbContext.SaveChanges();
 
@@ -75,6 +102,17 @@ namespace ChatServices.API.Controllers
 
         }
 
+        /// <summary>
+        /// Send a message from Receptionist to Patient
+        /// </summary>
+        /// <param name="request">Include patientId, and Content</param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Patient not found
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
+        /// </returns>
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult RecToPat(RecToPatMessage request)
@@ -87,7 +125,7 @@ namespace ChatServices.API.Controllers
 
                 if(toPatient == null)
                 {
-                    return BadRequest("Truyền cái PatientId đúng chưa? Patient not found!");
+                    return NotFound("Truyền cái PatientId đúng chưa? Patient not found!");
                 }
 
                 string loggedUserName = User.Identity.Name;
@@ -97,7 +135,28 @@ namespace ChatServices.API.Controllers
                 ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
                 message.FromId = loggedUser.Id;
 
-                message.ToId = request.PatientId;
+                var userChatBoxInfo = _servicesManager.DbContext
+                    .UsersInChatBoxOfReception
+                    .FirstOrDefault(cb => cb.UserId == toPatient.Id);
+
+                if (userChatBoxInfo != null)
+                {
+                    userChatBoxInfo.LastMessage = message;
+                    userChatBoxInfo.HasMessageUnRead = false;
+
+                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                }
+                else
+                {
+                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    {
+                        UserId = message.ToId,
+                        HasMessageUnRead = false,
+                        LastMessage = message,
+                    };
+
+                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                }
 
                 _servicesManager.DbContext.Add(message);
                 _servicesManager.DbContext.SaveChanges();
@@ -131,6 +190,15 @@ namespace ChatServices.API.Controllers
 
         }
 
+        /// <summary>
+        ///     List User ChatBox by Reception
+        /// </summary>
+        /// <returns>
+        ///     200: Request success
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
+        /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult ListUsersHasMessage()
@@ -140,17 +208,21 @@ namespace ChatServices.API.Controllers
 
                 var queries = _servicesManager.DbContext.ChatMessages
                     .Include(message => message.FromUser)
+                    .Include(message => message.ToUser)
                     .Where(message => message.FromUser.Type == UserType.Patient);
 
                 var userGroup = queries.AsEnumerable().GroupBy(message => message.FromUser)
-                    .Select(group => new
+                    .Select(group => new UserInChatBoxOfReceptionDTO
                     {
                         User = _servicesManager.AutoMapper.Map<ChatUserDTO>(group.Key),
                         HasMessageUnRead = group.Any(message => !message.IsRead),
-                        LastMessageCreated = group.Max(message => message.TimeCreated)
+                        LastMessageCreated = group.Max(message => message.TimeCreated).Value,
                     });
 
-                // Hơi tốn performance, fix sau
+                // Đang sai chỗ chỉ group by fromuser, tốn performance, fix sau
+                // 1. Tạo thêm bảng lưu trữ những hộp thoại đang mở
+                // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
+                // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
 
                 return Ok(userGroup);
             }
@@ -160,6 +232,16 @@ namespace ChatServices.API.Controllers
             }
         }
 
+        /// <summary>
+        ///     List messages in chatbox of a patient
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns>
+        ///     200: Request success
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
+        /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Patient))]
         public IActionResult ListMessagesInConversationOfPatient(int page = 1)
@@ -195,13 +277,32 @@ namespace ChatServices.API.Controllers
             }
         }
 
+        /// <summary>
+        ///     List messages in chatbox of a reception with a patient
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns>
+        ///     200: Request success
+        ///     404: Patient not found
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
+        /// </returns>
         [HttpGet("{patientId}")]
         [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult ListMessagesInConversationOfReception(string patientId, int page = 1)
         {
             try
             {
-                
+                Patient toPatient = _servicesManager.DbContext.Patients
+                    .Include(pat => pat.BaseUser)
+                    .FirstOrDefault(pat => pat.Id == patientId);
+
+                if (toPatient == null)
+                {
+                    return NotFound("Truyền cái PatientId đúng chưa? Patient not found!");
+                }
+
                 var queries = _servicesManager.DbContext.ChatMessages
                     .Include(message => message.FromUser)
                     .Where(message => message.FromUser.Id == patientId || message.ToUser.Id == patientId)

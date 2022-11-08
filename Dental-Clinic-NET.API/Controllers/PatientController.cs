@@ -102,7 +102,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, patient.BaseUser);
                 
-                if(loggedUser.Type == UserType.Doctor || permission.IsOwner || permission.IsAdmin)
+                if(permission.IsOwner || loggedUser.Type != UserType.Patient)
                 {
                     PatientDTO patientDTO = _servicesManager.AutoMapper.Map<PatientDTO>(patient);
                     return Ok(patientDTO);

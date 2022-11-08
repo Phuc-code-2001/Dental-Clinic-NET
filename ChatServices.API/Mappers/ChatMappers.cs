@@ -12,10 +12,18 @@ namespace ChatServices.API.Mappers
             CreateMap<PatToRecMessage, ChatMessage>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)));
 
+            CreateMap<RecToPatMessage, ChatMessage>()
+                .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)))
+                .ForMember(des => des.ToId, opt => opt.MapFrom(src => src.PatientId));
+
             CreateMap<BaseUser, ChatUserDTO>();
 
             CreateMap<ChatMessage, ChatMessageDTO>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Decode(src.Content)));
+
+            CreateMap<UserInChatBoxOfReception, UserInChatBoxOfReceptionDTO>()
+                .ForMember(des => des.LastMessageCreated, opt => opt.MapFrom(src => src.LastMessage.TimeCreated));
+
 
         }
 

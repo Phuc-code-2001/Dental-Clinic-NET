@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealTimeProcessLayer", "Rea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessorServices", "FileProcessorServices\FileProcessorServices.csproj", "{B9EC3213-A537-419D-841A-5A102B9DA76C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServices.API", "ChatServices.API\ChatServices.API.csproj", "{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatServices.API", "ChatServices.API\ChatServices.API.csproj", "{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
