@@ -15,4 +15,12 @@ namespace Dental_Clinic_NET.API.DTO
         public EnumTypeDTO[] Devices { get; set; } 
 
     }
+
+    public class ServiceDTOLite : BaseEntityDTO
+    {
+        public int Id { get; set; }
+        public string ServiceCode { get; set; }
+        public string ServiceName { get; set; }
+        public string ImageURL { get; set; }
+    }
 }
