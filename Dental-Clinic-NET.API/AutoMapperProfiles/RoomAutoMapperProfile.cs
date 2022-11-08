@@ -24,6 +24,9 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
 
                     return condition_01 || condition_02;
                 }));
+
+            // Lite
+            CreateMap<Room, RoomDTOLite>();
         }
     }
 }

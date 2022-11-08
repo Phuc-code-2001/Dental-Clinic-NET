@@ -107,7 +107,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     Paginated<Appointment> paginated = new Paginated<Appointment>(permissionFiltered, page);
 
                     Appointment[] items = paginated.Items.ToArray();
-                    AppointmentDTO[] itemDTOs = _servicesManager.AutoMapper.Map<AppointmentDTO[]>(items);
+                    AppointmentDTOLite[] itemDTOs = _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items);
 
                     return Ok(new
                     {

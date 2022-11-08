@@ -11,4 +11,12 @@ namespace Dental_Clinic_NET.API.DTO
         public MediaFileDTO Certificate { get; set; }
         public bool Verified { get; set; }
     }
+
+    public class DoctorDTOLite : BaseEntityDTO
+    {
+        public string Id { get; set; }
+        public UserDTOLite BaseUser { get; set; }
+        public EnumTypeDTO Major { get; set; }
+        public bool Verified { get; set; }
+    }
 }

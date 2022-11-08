@@ -45,4 +45,24 @@ namespace Dental_Clinic_NET.API.DTO
         public string PusherChannel { get; set; }
 
     }
+
+    public class UserDTOLite
+    {
+        [Key]
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("username")]
+        public string UserName { get; set; }
+
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
+        [JsonProperty("fullname")]
+        public string FullName { get; set; }
+
+        [JsonProperty("image_url")]
+        public string ImageURL { get; set; }
+
+    }
 }

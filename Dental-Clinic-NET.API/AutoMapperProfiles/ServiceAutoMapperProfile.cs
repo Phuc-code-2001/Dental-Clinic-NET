@@ -28,6 +28,9 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<Service, EnumTypeDTO>()
                 .ForMember(des => des.Name, opt => opt.MapFrom(src => src.ServiceCode));
 
+            // Lite
+            CreateMap<Service, ServiceDTOLite>();
+
         }
     }
 }
