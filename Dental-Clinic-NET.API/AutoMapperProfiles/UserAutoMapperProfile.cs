@@ -25,7 +25,10 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                     return condition_01 || condition_02;
                 }));
 
+            // Patient
             CreateMap<Patient, PatientDTO>();
+            CreateMap<Patient, PatientDTOLite>();
+            CreateMap<BaseUser, UserDTOLite>();
 
         }
 

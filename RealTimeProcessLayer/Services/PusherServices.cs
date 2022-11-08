@@ -15,11 +15,9 @@ namespace RealTimeProcessLayer.Services
     public class PusherServices : Pusher, IPusherServices
     {
 
-        private UserManager<BaseUser> _userManager;
-
         public delegate void CallBack(ITriggerResult result);
 
-        public PusherServices(IConfiguration configuration, UserManager<BaseUser> userManager)
+        public PusherServices(IConfiguration configuration)
         : base(
                 configuration["Pusher:AppId"],
                 configuration["Pusher:Key"],
@@ -31,19 +29,7 @@ namespace RealTimeProcessLayer.Services
                 }
         )
         {
-            _userManager = userManager;
-        }
-
-        public string GenerateUniqueUserChannel()
-        {
-            while(true)
-            {
-                string channel = Guid.NewGuid().ToString();
-                if(!_userManager.Users.Any(user => user.PusherChannel == channel))
-                {
-                    return channel;
-                }
-            }
+            
         }
 
         public async Task PushTo(string[] channels, string actionName, object data, CallBack callBack)

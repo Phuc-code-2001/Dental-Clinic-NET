@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -55,6 +56,18 @@ namespace Dental_Clinic_NET.API.Services.Users
             BaseUser user = _userManager.FindByNameAsync(username).Result;
             return user;
             
+        }
+
+        public string GenerateUniqueUserChannel()
+        {
+            while (true)
+            {
+                string channel = Guid.NewGuid().ToString();
+                if (!_userManager.Users.Any(user => user.PusherChannel == channel))
+                {
+                    return channel;
+                }
+            }
         }
     }
 }

@@ -99,7 +99,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Truyền sai id rồi Hảo moiz");
                 }
 
-                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, patient.BaseUser);
                 
                 if(loggedUser.Type == UserType.Doctor || permission.IsOwner || permission.IsAdmin)

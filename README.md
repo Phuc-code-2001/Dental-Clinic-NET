@@ -59,7 +59,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ## Doctor
 + Receive Appointment (Done)
 + Upload Certificate (Done)
-+ Upload document to appointment (NotYet)
++ Upload document to appointment (Done)
 + Update doctor information (Done)
 
 ## Receptionist
@@ -79,5 +79,5 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + Manage ChatMessage (Update, Delete) (NotYet)
 + Manage Feedback (Update, Delete) (NotYet)
 
-20 (Done)
-8 (NotYet)
+21 (Done)
+7 (NotYet)

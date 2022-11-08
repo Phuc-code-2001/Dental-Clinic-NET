@@ -25,7 +25,9 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 });
 
             CreateMap<Doctor, DoctorDTO>();
-    
+
+            // Lite
+            CreateMap<Doctor, DoctorDTOLite>();
         }
     }
 }
