@@ -1,4 +1,5 @@
 ﻿using DataLayer.Domain;
+using System;
 
 namespace Dental_Clinic_NET.API.DTO
 {
@@ -16,7 +17,7 @@ namespace Dental_Clinic_NET.API.DTO
 
         public string Content { get; set; }
 
-        public string Date { get; set; }
+        public DateTime Date { get; set; }
 
         public string Time { get; set; }
 
