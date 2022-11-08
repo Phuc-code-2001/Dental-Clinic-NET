@@ -1,3 +1,4 @@
+using DataLayer.DataContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -38,6 +39,8 @@ namespace ChatServices.API
                     .AllowAnyHeader());
             });
 
+            services.AddDbContext<AppDbContext>();
+
             // Adding Authentication  
             services.AddAuthentication(options =>
             {
@@ -63,6 +66,8 @@ namespace ChatServices.API
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddTransient<PusherServices>();
 
+            services.AddTransient<ServicesManager>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -84,6 +89,7 @@ namespace ChatServices.API
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
