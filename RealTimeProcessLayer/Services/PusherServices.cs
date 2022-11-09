@@ -3,6 +3,7 @@ using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using PusherServer;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,16 @@ namespace RealTimeProcessLayer.Services
 
         public async Task PushTo(string[] channels, string actionName, object data, CallBack callBack)
         {
-            ITriggerResult result = await TriggerAsync(channels, actionName, data);
+            string json_data = JsonConvert.SerializeObject(data, settings: new JsonSerializerSettings()
+            {
+                ContractResolver = new DefaultContractResolver()
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
+                Formatting = Formatting.Indented
+            });
+
+            ITriggerResult result = await TriggerAsync(channels, actionName, json_data);
             callBack(result);
         }
     }
