@@ -200,5 +200,15 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok(dataset);
         }
 
+        [HttpDelete]
+        public IActionResult DeleteAllAppointment()
+        {
+            var dataset = _context.Appointments.ToArray();
+            _context.Appointments.RemoveRange(dataset);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
     }
 }

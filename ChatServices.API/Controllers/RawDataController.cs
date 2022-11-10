@@ -30,6 +30,7 @@ namespace ChatServices.API.Controllers
         {
             var dataset = _servicesManager.DbContext.ChatMessages.ToArray();
             _servicesManager.DbContext.ChatMessages.RemoveRange(dataset);
+            _servicesManager.DbContext.SaveChanges();
             return Ok(dataset);
         }
 
