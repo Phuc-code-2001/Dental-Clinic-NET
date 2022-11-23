@@ -19,7 +19,8 @@ namespace ChatServices.API.Mappers
             CreateMap<BaseUser, ChatUserDTO>();
 
             CreateMap<ChatMessage, ChatMessageDTO>()
-                .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Decode(src.Content)));
+                .ForMember(des => des.Content, opt => opt.MapFrom(
+                    src => src.IsRemoved ? string.Empty : Base64Decode(src.Content)));
 
             CreateMap<UserInChatBoxOfReception, UserInChatBoxOfReceptionDTO>()
                 .ForMember(des => des.LastMessageCreated, opt => opt.MapFrom(src => src.LastMessage.TimeCreated));

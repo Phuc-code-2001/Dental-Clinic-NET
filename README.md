@@ -6,8 +6,8 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + CE150394 - Huỳnh Tấn Phúc
 + CE150521 - Trần Văn Hảo
 + CE150519 - Nguyễn Khánh Duy
-+ CE150___ - Lý Tuấn Đạt
-+ CE150___ - Đặng Đỗ Hữu Bằng
++ CE150718 - Lý Tuấn Đạt
++ CE150240 - Đặng Đỗ Hữu Bằng
 
 ## Technology
 

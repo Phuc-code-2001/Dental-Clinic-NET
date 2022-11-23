@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace ChatServices.API.Controllers
@@ -142,8 +143,6 @@ namespace ChatServices.API.Controllers
                 if (userChatBoxInfo != null)
                 {
                     userChatBoxInfo.LastMessage = message;
-                    userChatBoxInfo.HasMessageUnRead = false;
-
                     _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
                 }
                 else
@@ -191,7 +190,7 @@ namespace ChatServices.API.Controllers
         }
 
         /// <summary>
-        ///     List User ChatBox by Reception
+        ///     List User ChatBox by Reception. Replaced by '/Messages/ListUsersChatBox/'
         /// </summary>
         /// <returns>
         ///     200: Request success
@@ -206,27 +205,53 @@ namespace ChatServices.API.Controllers
             try
             {
 
-                var queries = _servicesManager.DbContext.ChatMessages
-                    .Include(message => message.FromUser)
-                    .Include(message => message.ToUser)
-                    .Where(message => message.FromUser.Type == UserType.Patient);
-
-                var userGroup = queries.AsEnumerable().GroupBy(message => message.FromUser)
-                    .Select(group => new UserInChatBoxOfReceptionDTO
-                    {
-                        User = _servicesManager.AutoMapper.Map<ChatUserDTO>(group.Key),
-                        HasMessageUnRead = group.Any(message => !message.IsRead),
-                        LastMessageCreated = group.Max(message => message.TimeCreated).Value,
-                    });
-
-                // Đang sai chỗ chỉ group by fromuser, tốn performance, fix sau
                 // 1. Tạo thêm bảng lưu trữ những hộp thoại đang mở
                 // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
                 // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
 
-                return Ok(userGroup);
+                var dataset = _servicesManager.DbContext.UsersInChatBoxOfReception
+                .Include(cb => cb.User)
+                .Include(cb => cb.LastMessage)
+                .ToArray();
+                var datasetDTO = _servicesManager.AutoMapper.Map<UserInChatBoxOfReceptionDTO[]>(dataset);
+
+                return Ok(datasetDTO);
             }
             catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     List User ChatBox by Reception
+        /// </summary>
+        /// <returns>
+        ///     200: Request success
+        ///     401: Unauthorize
+        ///     403: Forbiden
+        ///     500: Server handle error
+        /// </returns>
+        [HttpGet]
+        [Authorize(Roles = nameof(UserType.Receptionist))]
+        public IActionResult ListUsersChatBox()
+        {
+            try
+            {
+
+                // 1. Tạo thêm bảng lưu trữ những hộp thoại đang mở
+                // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
+                // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
+
+                var dataset = _servicesManager.DbContext.UsersInChatBoxOfReception
+                .Include(cb => cb.User)
+                .Include(cb => cb.LastMessage)
+                .ToArray();
+                var datasetDTO = _servicesManager.AutoMapper.Map<UserInChatBoxOfReceptionDTO[]>(dataset);
+
+                return Ok(datasetDTO);
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -323,6 +348,94 @@ namespace ChatServices.API.Controllers
                 });
             }
             catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Mark seen a chat box with user
+        /// </summary>
+        /// <param name="chatBoxId">Chatbox Id</param>
+        /// <returns>
+        ///     404: ChatBox not found
+        ///     401: Unauthorize
+        ///     403: Not allowed
+        ///     500: Server handle error
+        /// </returns>
+        [HttpPut("{chatBoxId}")]
+        [Authorize(Roles = nameof(UserType.Receptionist))]
+        public IActionResult MarkAsSeenChatBox(int chatBoxId)
+        {
+            try
+            {
+                var userChatBox = _servicesManager.DbContext
+                    .UsersInChatBoxOfReception
+                    .FirstOrDefault(cb => cb.Id == chatBoxId);
+
+                if(userChatBox == null)
+                {
+                    return NotFound($"ChatBox {chatBoxId} not found!");
+                }
+
+                userChatBox.HasMessageUnRead = false;
+                _servicesManager.DbContext.Entry(userChatBox).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
+
+                // Push event
+                string[] chanels = _servicesManager.DbContext.Users
+                    .Where(user => user.Id == userChatBox.UserId)
+                    .Select(user => user.PusherChannel).ToArray();
+                string message = "Reception just have been seen your messages.";
+                Task pushEventTask = _servicesManager.PusherServices
+                    .PushTo(chanels, "Chat-MarkAsSeenChatBox", message, result =>
+                    {
+                        Console.WriteLine("Chat-MarkAsSeenChatBox Done at: " + DateTime.Now);
+                        Console.WriteLine("Data: " + message);
+                        Console.WriteLine("To Chanels: ");
+                        foreach (string chanel in chanels)
+                        {
+                            Console.WriteLine(chanel);
+                        }
+                    });
+
+                return Ok($"Just be seen chatbox {userChatBox.Id}.");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete("{messageId}")]
+        [Authorize]
+        public IActionResult RemoveMessage(int messageId)
+        {
+            try
+            {
+                string loggedUserName = User.Identity.Name;
+                BaseUser loggedUser = _servicesManager.DbContext
+                    .Users.FirstOrDefault(u => u.UserName == loggedUserName);
+
+
+                ChatMessage message = _servicesManager.DbContext.ChatMessages
+                    .FirstOrDefault(message => message.Id == messageId);
+
+                if(message == null || message.FromId != loggedUser.Id)
+                {
+                    // Hide messageId from hacker
+                    return StatusCode(403, "Cannot do operation!");
+                }
+
+                message.IsRemoved = true;
+                _servicesManager.DbContext.Entry(message).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok($"Bạn đã thu hồi tin nhắn. Mã: {messageId}!");
+
+            }
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

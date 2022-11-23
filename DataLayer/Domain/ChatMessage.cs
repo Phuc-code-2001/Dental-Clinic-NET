@@ -25,7 +25,7 @@ namespace DataLayer.Domain
         [ForeignKey(nameof(ToId))]
         public BaseUser ToUser { get; set; }
 
-        public bool IsRead { get; set; }
+        public bool IsRemoved { get; set; }
 
     }
 }
