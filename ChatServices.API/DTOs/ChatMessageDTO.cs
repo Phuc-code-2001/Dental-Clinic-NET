@@ -12,7 +12,7 @@ namespace ChatServices.API.DTOs
 
         public ChatUserDTO ToUser { get; set; }
 
-        public bool IsRead { get; set; }
+        public bool IsRemoved { get; set; }
 
         public DateTime? TimeCreated { get; set; }
         public DateTime? LastTimeModified { get; set; }
