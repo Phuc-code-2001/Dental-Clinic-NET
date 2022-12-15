@@ -80,6 +80,8 @@ namespace Dental_Clinic_NET.API.Controllers
                     ImageURL = fbUserInfo.Picture.Data.Url.ToString(),
                 };
 
+                // Generate channel key
+                user.PusherChannel = _userServices.GenerateUniqueUserChannel();
 
                 // Verify Email and PhoneNumber later
 
@@ -144,6 +146,9 @@ namespace Dental_Clinic_NET.API.Controllers
                         errors= new string[] { "This phone have already account" }
                     });
                 }
+
+                // Generate channel key
+                user.PusherChannel = _userServices.GenerateUniqueUserChannel();
 
                 // Verify email or PhoneNumber
 
