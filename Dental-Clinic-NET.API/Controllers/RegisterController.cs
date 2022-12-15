@@ -7,6 +7,7 @@ using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
+using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Services.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -25,20 +26,14 @@ namespace Dental_Clinic_NET.API.Controllers
     public class RegisterController : ControllerBase
     {
         AppDbContext _context;
-
-        private IMapper _mapper;
+        private ServicesManager _servicesManager;
         private UserManager<BaseUser> _userManager;
 
-        private UserServices _userServices;
-        private FacebookServices _facebookServices;
-
-        public RegisterController(UserManager<BaseUser> userManager, FacebookServices facebookServices, UserServices userServices, IMapper mapper, AppDbContext context)
+        public RegisterController(AppDbContext context, ServicesManager servicesManager, UserManager<BaseUser> userManager)
         {
-            _userManager = userManager;
-            _facebookServices = facebookServices;
-            _userServices = userServices;
-            _mapper = mapper;
             _context = context;
+            _servicesManager = servicesManager;
+            _userManager = userManager;
         }
 
         [HttpPost]
@@ -48,18 +43,18 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 string fbToken = request.AccessToken;
-                var result = await _facebookServices.ValidateAccessTokenAsync(fbToken);
+                var result = await _servicesManager.FacebookServices.ValidateAccessTokenAsync(fbToken);
 
                 if (!result.Data.IsValid)
                 {
                     return BadRequest(new
                     {
-                        code=SignUpFailedStatus.FacebookInValidToken,
+                        code=nameof(SignUpFailedStatus.FacebookInValidToken),
                         errors=new string[] {"Invalid Token"}
                     });
                 }
 
-                var fbUserInfo = await _facebookServices.GetUserInfoAsync(fbToken);
+                var fbUserInfo = await _servicesManager.FacebookServices.GetUserInfoAsync(fbToken);
 
                 BaseUser user = await _userManager.Users.Where(u => u.FbConnectedId == fbUserInfo.Id).FirstOrDefaultAsync();
 
@@ -67,7 +62,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return BadRequest(new
                     {
-                        code = SignUpFailedStatus.FacebookAlreadySignUp,
+                        code = nameof(SignUpFailedStatus.FacebookAlreadySignUp),
                         errors = new string[] { "Your facebook have already account." }
                     });
                 }
@@ -78,10 +73,9 @@ namespace Dental_Clinic_NET.API.Controllers
                     FullName = fbUserInfo.Name,
                     FbConnectedId = fbUserInfo.Id,
                     ImageURL = fbUserInfo.Picture.Data.Url.ToString(),
+                    // Generate channel key
+                    PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel(),
                 };
-
-                // Generate channel key
-                user.PusherChannel = _userServices.GenerateUniqueUserChannel();
 
                 // Verify Email and PhoneNumber later
 
@@ -102,15 +96,15 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createUserResult.Succeeded)
                 {
                 
-                    string token = _userServices.CreateSignInToken(user);
+                    string token = _servicesManager.UserServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
                         id = user.Id,
-                        token = token,
+                        token,
                         user = serializer.Serialize(user =>
                         {
-                            return _mapper.Map<UserDTO>(user);
+                            return _servicesManager.AutoMapper.Map<UserDTO>(user);
                         }),
                     });
                 }
@@ -119,7 +113,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 return BadRequest(new
                 {
-                    code = SignUpFailedStatus.FacebookCreateFailed,
+                    code = nameof(SignUpFailedStatus.FacebookCreateFailed),
                     errors = errors
                 });
 
@@ -137,18 +131,20 @@ namespace Dental_Clinic_NET.API.Controllers
 
             try
             {
-                BaseUser user = _mapper.Map<BasicRegisterModel, BaseUser>(request);
-                if(await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == user.PhoneNumber) != null)
+                BaseUser user = _servicesManager.AutoMapper.Map<BasicRegisterModel, BaseUser>(request);
+                bool checkPhoneExisted = _userManager.Users.Any(u => u.PhoneNumber == user.PhoneNumber);
+
+                if (checkPhoneExisted)
                 {
                     return BadRequest(new
                     {
-                        code= SignUpFailedStatus.PhoneNumberAlreadyAccount,
+                        code= nameof(SignUpFailedStatus.PhoneNumberAlreadyAccount),
                         errors= new string[] { "This phone have already account" }
                     });
                 }
 
                 // Generate channel key
-                user.PusherChannel = _userServices.GenerateUniqueUserChannel();
+                user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
                 // Verify email or PhoneNumber
 
@@ -168,7 +164,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(createResult.Succeeded)
                 {
 
-                    string token = _userServices.CreateSignInToken(user);
+                    string token = _servicesManager.UserServices.CreateSignInToken(user);
                     UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
                     return Ok(new
                     {
@@ -176,7 +172,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         token=token,
                         user=serializer.Serialize(user =>
                         {
-                            return _mapper.Map<UserDTO>(user);
+                            return _servicesManager.AutoMapper.Map<UserDTO>(user);
                         }),
                     });
                 }
@@ -185,7 +181,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 return BadRequest(new
                 {
-                    code=SignUpFailedStatus.CreatedFailed,
+                    code=nameof(SignUpFailedStatus.CreatedFailed),
                     errors=errors
                 });
             }
