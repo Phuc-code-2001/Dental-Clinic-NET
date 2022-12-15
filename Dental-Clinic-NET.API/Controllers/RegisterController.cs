@@ -145,6 +145,8 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 }
 
+                // Verify email or PhoneNumber
+
                 // Create Default Actor
                 Patient patient = new Patient()
                 {

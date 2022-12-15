@@ -16,12 +16,13 @@ namespace DataLayer.DataContexts
 
         public AppDbContext(DbContextOptions options) : base(options) { }
 
-        private static string host = "ec2-34-243-101-244.eu-west-1.compute.amazonaws.com";
-        private static string user = "bphhmbwrjoskky";
-        private static string database = "dbvkiobqsmietn";
-        private static string password = "a9d3865a698ba684463ecdde6967134cd34299897dbdf60a02e3252df9358533";
+        private static string host = "postgresql-100446-0.cloudclusters.net";
+        private static string user = "PhucHT";
+        private static string database = "dental-clinic-net";
+        private static string password = "12345678";
+        private static string port = "10128";
 
-        private static string CONNECTION => $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        private static string CONNECTION => $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
