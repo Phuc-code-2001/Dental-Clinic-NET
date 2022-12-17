@@ -22,9 +22,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 4. Ionicons
 
 ### Database
-1. Postgresql
-2. SQL server
-3. Redis
+1. Postgresql: postgresql-database.c1svonawnr25.ap-northeast-1.rds.amazonaws.com
 
 ### Storage
 1. ImageKit
@@ -33,7 +31,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ### Realtime Engine
 1. Pusher
 
-### Deploy 
+### Deploy
 1. API on Heroku
 2. Frontend on GitHub
 
