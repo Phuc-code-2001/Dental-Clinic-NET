@@ -57,7 +57,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        [NonAction]
         public async Task<IActionResult> TestPostImageAsync(IFormFile file)
         {
             try
@@ -79,7 +78,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpDelete]
-        [NonAction]
         public async Task<IActionResult> TestDeleteImageAsync(string imageId)
         {
             try
@@ -183,7 +181,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        [NonAction]
         public async Task<IActionResult> TestDropbox(IFormFile file)
         {
             string result = await _servicesManager.DropboxServices.TestService(file);

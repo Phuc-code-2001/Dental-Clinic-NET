@@ -16,20 +16,18 @@ namespace DataLayer.DataContexts
 
         public AppDbContext(DbContextOptions options) : base(options) { }
 
-        private static string host = "postgresql-100446-0.cloudclusters.net";
-        private static string user = "PhucHT";
-        private static string database = "dental-clinic-net";
+        private static string host = "postgresql-database.c1svonawnr25.ap-northeast-1.rds.amazonaws.com";
+        private static string user = "phucht_admin";
         private static string password = "12345678";
-        private static string port = "10128";
-
-        private static string CONNECTION => $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
-
+        private static string database = "dental_clinic_net";
+        private static string port = "5432";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql(CONNECTION);
+                string connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+                optionsBuilder.UseNpgsql(connectionString);
             }
         }
 
