@@ -207,5 +207,12 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok();
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> TestKickBox(string email)
+        {
+            var result = await _servicesManager.KickboxServices.VerifyEmailAsync(email);
+            return Ok(result);
+        }
     }
 }

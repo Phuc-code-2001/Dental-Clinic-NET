@@ -3,6 +3,7 @@ using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.Users;
 using FileProcessorServices;
 using ImageProcessLayer.Services;
+using MailServices.Services;
 using RealTimeProcessLayer.Services;
 
 namespace Dental_Clinic_NET.API.Services
@@ -18,8 +19,9 @@ namespace Dental_Clinic_NET.API.Services
         public PusherServices PusherServices { get; set; }
 
         public DropboxServices DropboxServices { get; set; }
+        public KickboxServices KickboxServices { get; set; }
 
-        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices, DropboxServices dropboxServices)
+        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices, DropboxServices dropboxServices, KickboxServices kickboxServices)
         {
             AutoMapper = autoMapper;
             UserServices = userServices;
@@ -27,6 +29,7 @@ namespace Dental_Clinic_NET.API.Services
             ImageKitServices = imageKitServices;
             PusherServices = pusherServices;
             DropboxServices = dropboxServices;
+            KickboxServices = kickboxServices;
         }
 
 
