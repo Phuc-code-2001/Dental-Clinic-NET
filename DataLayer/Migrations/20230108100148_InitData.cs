@@ -1,10 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataLayer.Migrations
 {
-    public partial class ResetDb : Migration
+    public partial class InitData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -12,10 +11,10 @@ namespace DataLayer.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -26,30 +25,30 @@ namespace DataLayer.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
-                    ImageURL = table.Column<string>(type: "text", nullable: true),
-                    ImageAvatarId = table.Column<string>(type: "text", nullable: true),
-                    BirthDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Gender = table.Column<string>(type: "text", nullable: true),
-                    Address = table.Column<string>(type: "text", nullable: true),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    FbConnectedId = table.Column<string>(type: "text", nullable: true),
-                    PusherChannel = table.Column<string>(type: "text", nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageAvatarId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    FbConnectedId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PusherChannel = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,16 +59,16 @@ namespace DataLayer.Migrations
                 name: "Contacts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Content = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    State = table.Column<int>(type: "integer", nullable: false),
-                    FinishedTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    State = table.Column<int>(type: "int", nullable: false),
+                    FinishedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -80,12 +79,12 @@ namespace DataLayer.Migrations
                 name: "Files",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FilePath = table.Column<string>(type: "text", nullable: true),
-                    Category = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -96,13 +95,13 @@ namespace DataLayer.Migrations
                 name: "Rooms",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoomCode = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    RoomType = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoomCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RoomType = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -113,16 +112,16 @@ namespace DataLayer.Migrations
                 name: "Services",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ServiceCode = table.Column<string>(type: "text", nullable: true),
-                    ServiceName = table.Column<string>(type: "text", nullable: true),
-                    ImageURL = table.Column<string>(type: "text", nullable: true),
-                    ImageId = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    price = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ServiceCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ServiceName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    price = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -133,11 +132,11 @@ namespace DataLayer.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<string>(type: "text", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -154,11 +153,11 @@ namespace DataLayer.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -175,10 +174,10 @@ namespace DataLayer.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<string>(type: "text", nullable: false)
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,8 +194,8 @@ namespace DataLayer.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    RoleId = table.Column<string>(type: "text", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -219,10 +218,10 @@ namespace DataLayer.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -239,14 +238,14 @@ namespace DataLayer.Migrations
                 name: "ChatMessages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Content = table.Column<string>(type: "text", nullable: true),
-                    FromId = table.Column<string>(type: "text", nullable: true),
-                    ToId = table.Column<string>(type: "text", nullable: true),
-                    IsRemoved = table.Column<bool>(type: "boolean", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FromId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ToId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IsRemoved = table.Column<bool>(type: "bit", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -269,12 +268,12 @@ namespace DataLayer.Migrations
                 name: "Doctors",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Major = table.Column<int>(type: "integer", nullable: false),
-                    CertificateId = table.Column<int>(type: "integer", nullable: true),
-                    Verified = table.Column<bool>(type: "boolean", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Major = table.Column<int>(type: "int", nullable: false),
+                    CertificateId = table.Column<int>(type: "int", nullable: true),
+                    Verified = table.Column<bool>(type: "bit", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -297,10 +296,10 @@ namespace DataLayer.Migrations
                 name: "Patients",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    FileId = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FileId = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -323,18 +322,18 @@ namespace DataLayer.Migrations
                 name: "Devices",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DeviceValue = table.Column<int>(type: "integer", nullable: false),
-                    DeviceName = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    ImageURL = table.Column<string>(type: "text", nullable: true),
-                    ImageId = table.Column<string>(type: "text", nullable: true),
-                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Status = table.Column<bool>(type: "boolean", nullable: false),
-                    RoomId = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DeviceValue = table.Column<int>(type: "int", nullable: false),
+                    DeviceName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -351,11 +350,11 @@ namespace DataLayer.Migrations
                 name: "UsersInChatBoxOfReception",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: true),
-                    HasMessageUnRead = table.Column<bool>(type: "boolean", nullable: false),
-                    LastMessageId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    HasMessageUnRead = table.Column<bool>(type: "bit", nullable: false),
+                    LastMessageId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -378,18 +377,18 @@ namespace DataLayer.Migrations
                 name: "Appointments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DoctorId = table.Column<string>(type: "text", nullable: true),
-                    PatientId = table.Column<string>(type: "text", nullable: true),
-                    RoomId = table.Column<int>(type: "integer", nullable: false),
-                    ServiceId = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Slot = table.Column<int>(type: "integer", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: false),
-                    State = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DoctorId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    ServiceId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Slot = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    State = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -424,8 +423,8 @@ namespace DataLayer.Migrations
                 name: "DeviceService",
                 columns: table => new
                 {
-                    DevicesId = table.Column<int>(type: "integer", nullable: false),
-                    ServicesId = table.Column<int>(type: "integer", nullable: false)
+                    DevicesId = table.Column<int>(type: "int", nullable: false),
+                    ServicesId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -448,14 +447,14 @@ namespace DataLayer.Migrations
                 name: "AppointmentsDocuments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AppointmentId = table.Column<int>(type: "integer", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: true),
-                    DocumentId = table.Column<int>(type: "integer", nullable: true),
-                    Tag = table.Column<int>(type: "integer", nullable: false),
-                    TimeCreated = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastTimeModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppointmentId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocumentId = table.Column<int>(type: "int", nullable: true),
+                    Tag = table.Column<int>(type: "int", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastTimeModified = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -513,7 +512,8 @@ namespace DataLayer.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -539,7 +539,8 @@ namespace DataLayer.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_FromId",
