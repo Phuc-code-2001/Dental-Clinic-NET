@@ -28,6 +28,7 @@ using RealTimeProcessLayer.Services;
 using Dental_Clinic_NET.API.Services;
 using FileProcessorServices;
 using Dental_Clinic_NET.API.Services.Appointments;
+using MailServices.Services;
 
 namespace Dental_Clinic_NET.API
 {
@@ -108,6 +109,7 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<ImageKitServices>();
             services.AddTransient<PusherServices>();
             services.AddTransient<DropboxServices>();
+            services.AddTransient<KickboxServices>();
 
             services.AddTransient<ServicesManager>();
 
