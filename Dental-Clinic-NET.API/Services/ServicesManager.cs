@@ -20,8 +20,9 @@ namespace Dental_Clinic_NET.API.Services
 
         public DropboxServices DropboxServices { get; set; }
         public KickboxServices KickboxServices { get; set; }
+        public EmailSender EmailSender { get; set; }
 
-        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices, DropboxServices dropboxServices, KickboxServices kickboxServices)
+        public ServicesManager(IMapper autoMapper, UserServices userServices, FacebookServices facebookServices, ImageKitServices imageKitServices, PusherServices pusherServices, DropboxServices dropboxServices, KickboxServices kickboxServices, EmailSender emailSender)
         {
             AutoMapper = autoMapper;
             UserServices = userServices;
@@ -30,6 +31,7 @@ namespace Dental_Clinic_NET.API.Services
             PusherServices = pusherServices;
             DropboxServices = dropboxServices;
             KickboxServices = kickboxServices;
+            EmailSender = emailSender;
         }
 
 

@@ -147,6 +147,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
                 // Verify email or PhoneNumber
+                user.EmailConfirmed = false;
+                user.PhoneNumberConfirmed = false;
 
                 // Create Default Actor
                 Patient patient = new Patient()

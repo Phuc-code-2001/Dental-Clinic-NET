@@ -63,6 +63,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 BaseUser user = inputInfo.ToBaseUser_NotIncludePassword();
                 user.Type = UserType.Administrator;
+                user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
                 IdentityResult result = await _userManager.CreateAsync(user, inputInfo.Password);
 
                 if (result.Succeeded)
@@ -175,8 +176,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet]
-        [Authorize(Roles = "Administrator")]
-        [EnableQuery(PageSize = 10)]
+        [Authorize(Roles = nameof(UserType.Administrator))]
         public IActionResult GetUsers(int page = 1)
         {
             try
@@ -214,7 +214,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     200: Update success
         /// </returns>
         [HttpPut]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> ChangeRole(ChangeRoleModel request)
         {
             try
@@ -372,7 +372,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpDelete("{userId}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> DeleteAsync(string userId)
         {
             try

@@ -3,6 +3,7 @@ using MailServices.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ namespace MailServices
         {
 
             services.AddSingleton<KickboxServices>();
+            services.AddSingleton<EmailSender>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

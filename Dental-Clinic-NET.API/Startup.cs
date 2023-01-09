@@ -58,7 +58,7 @@ namespace Dental_Clinic_NET.API
 
             services.AddIdentityCore<BaseUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                // options.SignIn.RequireConfirmedAccount = true;
             })
             .AddEntityFrameworkStores<AppDbContext>();
 
@@ -88,7 +88,7 @@ namespace Dental_Clinic_NET.API
             {
                 // Password settings
                 options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 1;
+                options.Password.RequiredLength = 6;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
@@ -110,7 +110,7 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<PusherServices>();
             services.AddTransient<DropboxServices>();
             services.AddTransient<KickboxServices>();
-
+            services.AddTransient<EmailSender>();
             services.AddTransient<ServicesManager>();
 
             services.AddRouting();
@@ -126,32 +126,32 @@ namespace Dental_Clinic_NET.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Dental_Clinic_NET.API", Version = "v1" });
 
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    Description = $"Bỏ cái access_token vô đây",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
+                //c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                //{
+                //    Description = $"Bỏ cái access_token vô đây",
+                //    Name = "Authorization",
+                //    In = ParameterLocation.Header,
+                //    Type = SecuritySchemeType.ApiKey,
+                //    Scheme = "Bearer"
+                //});
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-                        },
-                        new List<string>()
-                    }
-                });
+                //c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                //{
+                //    {
+                //        new OpenApiSecurityScheme
+                //        {
+                //            Reference = new OpenApiReference
+                //            {
+                //                Type = ReferenceType.SecurityScheme,
+                //                Id = "Bearer"
+                //            },
+                //            Scheme = "oauth2",
+                //            Name = "Bearer",
+                //            In = ParameterLocation.Header,
+                //        },
+                //        new List<string>()
+                //    }
+                //});
             });
         }
 
