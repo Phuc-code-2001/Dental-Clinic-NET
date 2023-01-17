@@ -114,7 +114,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 
                 Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(users.AsQueryable(), page);
                 
-
                 return Ok(new
                 {
                     page=page,

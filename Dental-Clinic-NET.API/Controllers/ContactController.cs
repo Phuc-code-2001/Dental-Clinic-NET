@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,19 +43,16 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var contacts = _context.Contacts.ToList();
-                var contactDTOs = contacts.Select(contact => _servicesManager.AutoMapper.Map<ContactDTO>(contact));
-
-                Paginated<ContactDTO> paginatedContacts = new Paginated<ContactDTO>(contactDTOs.AsQueryable(), page);
-
+                Paginated<Contact> paginatedContacts = new Paginated<Contact>(_context.Contacts, page);
+                var contactDTOs = _servicesManager.AutoMapper.Map<ContactDTO[]>(paginatedContacts.Items.ToArray());
 
                 return Ok(new
                 {
-                    page = page,
+                    page,
                     per_page = paginatedContacts.PageSize,
                     total = paginatedContacts.QueryCount,
                     total_pages = paginatedContacts.PageCount,
-                    data = paginatedContacts.Items
+                    data = contactDTOs
                 });
 
             }
@@ -93,8 +91,6 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                Console.WriteLine("Response done at: " + DateTime.Now);
-
                 return Ok(contactDTO);
 
             }
@@ -132,10 +128,13 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         /// <summary>
-        ///     Change contact state by admin
+        ///     Change contact state by admin.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">id, stateindex</param>
+        /// <returns>
+        ///     404: Not found contact
+        ///     
+        /// </returns>
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         public IActionResult ChangeState(UpdateContact request)

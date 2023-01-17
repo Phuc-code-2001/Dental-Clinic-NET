@@ -41,12 +41,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var devices = _context.Devices
+                IQueryable<Device> devices = _context.Devices
                     .Include(d => d.Services)
-                    .Include(d => d.Room).ToArray();
-                var deviceDTOs = _servicesManager.AutoMapper.Map<DeviceDTO[]>(devices);
+                    .Include(d => d.Room);
+                Paginated<Device> paginatedDevices = new Paginated<Device>(devices, page);
 
-                Paginated<DeviceDTO> paginatedDevices = new Paginated<DeviceDTO>(deviceDTOs.AsQueryable(), page);
+                var deviceDTOs = _servicesManager.AutoMapper.Map<DeviceDTO[]>(paginatedDevices.Items.ToArray());
 
                 return Ok(new
                 {
@@ -54,7 +54,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     per_page = paginatedDevices.PageSize,
                     total = paginatedDevices.QueryCount,
                     total_pages = paginatedDevices.PageCount,
-                    data = paginatedDevices.Items
+                    data = deviceDTOs
                 });
             }
             catch (Exception ex)
@@ -291,7 +291,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 Task pushEventTask = _servicesManager.PusherServices
                     .PushTo(chanels, "Device-Update", device, result =>
                     {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
+                        
                     });
 
                 DeviceDTO deviceDTO = _servicesManager.AutoMapper.Map<DeviceDTO>(device);
