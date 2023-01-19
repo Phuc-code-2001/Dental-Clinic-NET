@@ -46,6 +46,8 @@ namespace DataLayer.DataContexts
 
         public DbSet<UserInChatBoxOfReception> UsersInChatBoxOfReception { get; set; }
 
+        public DbSet<EmailConfirmation> EmailConfirmations { get; set; }
+
         public override int SaveChanges()
         {
 
