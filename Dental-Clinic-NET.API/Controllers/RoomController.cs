@@ -2,7 +2,7 @@
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Contacts;
-using Dental_Clinic_NET.API.Models.Room;
+using Dental_Clinic_NET.API.Models.Rooms;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;

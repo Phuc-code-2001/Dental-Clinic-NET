@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using static DataLayer.Domain.Room;
 
-namespace Dental_Clinic_NET.API.Models.Room
+namespace Dental_Clinic_NET.API.Models.Rooms
 {
     public class CreateRoom
     {

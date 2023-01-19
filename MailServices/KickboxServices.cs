@@ -1,12 +1,11 @@
 ﻿using KickBox.Core;
 using KickBox.Core.Models;
 using Microsoft.Extensions.Configuration;
-
-using MailServices.Services.Models;
 using System.Threading.Tasks;
 using System;
+using MailServices.Models;
 
-namespace MailServices.Services
+namespace MailServices
 {
     public class KickboxServices
     {
@@ -23,12 +22,12 @@ namespace MailServices.Services
         public async Task<EmailVerificationResult> VerifyEmailAsync(string email)
         {
             EmailVerificationResult result = new EmailVerificationResult();
-            
+
             try
             {
                 KickBoxResponse response = await _kickboxClient.VerifyEmail(new System.Net.Mail.MailAddress(email));
-            
-                if(response.Success)
+
+                if (response.Success)
                 {
                     result.IsSucceed = true;
                     result.IsValid = response.Result == Result.Deliverable;
@@ -40,7 +39,7 @@ namespace MailServices.Services
                     result.Details = response;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 result.IsSucceed = false;
                 result.Details = ex.Message;

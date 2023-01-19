@@ -1,14 +1,10 @@
 ﻿using Dropbox.Api;
 using Dropbox.Api.Files;
-using Dropbox.Api.Sharing;
 using FileProcessorServices.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileProcessorServices
@@ -23,12 +19,29 @@ namespace FileProcessorServices
         string app_key = "bdccpj1xfgmkxzg";
         string app_secret = "sws2qqn87npvfce";
 
-
         public DropboxServices()
         {
+
+            //string refresh_token = configuration["DropBox:RefreshToken"];
+            //string access_token = configuration["DropBox:AccessToken"];
+            //string app_key = configuration["DropBox:AppKey"];
+            //string app_secret = configuration["DropBox:AppSecret"];
+
             var config = new DropboxClientConfig();
             _dropBoxClient = new DropboxClient(access_token, refresh_token, app_key, app_secret, config);
         }
+
+        //public DropboxServices(IConfiguration configuration)
+        //{
+
+        //    string refresh_token = configuration["DropBox:RefreshToken"];
+        //    string access_token = configuration["DropBox:AccessToken"];
+        //    string app_key = configuration["DropBox:AppKey"];
+        //    string app_secret = configuration["DropBox:AppSecret"];
+
+        //    var config = new DropboxClientConfig();
+        //    _dropBoxClient = new DropboxClient(access_token, refresh_token, app_key, app_secret, config);
+        //}
 
         public async Task<string> TestService(IFormFile file)
         {

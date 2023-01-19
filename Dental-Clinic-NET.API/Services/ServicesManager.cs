@@ -3,7 +3,7 @@ using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.Users;
 using FileProcessorServices;
 using ImageProcessLayer.Services;
-using MailServices.Services;
+using MailServices;
 using RealTimeProcessLayer.Services;
 
 namespace Dental_Clinic_NET.API.Services

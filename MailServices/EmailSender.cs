@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using MimeKit;
 using MailKit.Net.Smtp;
 
-namespace MailServices.Services
+namespace MailServices
 {
     public class EmailSender : IEmailSender
     {

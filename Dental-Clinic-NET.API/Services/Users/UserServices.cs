@@ -1,6 +1,6 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
-using MailServices.Services;
+using MailServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
