@@ -1,6 +1,6 @@
 ﻿using KickBox.Core.Models;
 
-namespace MailServices.Services.Models
+namespace MailServices.Models
 {
     public class EmailVerificationResult
     {

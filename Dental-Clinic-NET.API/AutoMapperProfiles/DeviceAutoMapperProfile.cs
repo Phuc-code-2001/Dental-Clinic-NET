@@ -2,12 +2,6 @@
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Devices;
-using Dental_Clinic_NET.API.Models.Room;
-using Dental_Clinic_NET.API.Models.Users;
-using ImageProcessLayer.Services;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Linq;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
