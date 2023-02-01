@@ -114,7 +114,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 
                 Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(users.AsQueryable(), page);
                 
-
                 return Ok(new
                 {
                     page=page,
@@ -207,5 +206,12 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok();
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> TestKickBox(string email)
+        {
+            var result = await _servicesManager.KickboxServices.VerifyEmailAsync(email);
+            return Ok(result);
+        }
     }
 }

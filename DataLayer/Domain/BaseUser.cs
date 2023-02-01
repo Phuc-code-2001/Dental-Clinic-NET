@@ -28,6 +28,9 @@ namespace DataLayer.Domain
 
         public string PusherChannel { get; set; }
 
+        // Relationship
+        public EmailConfirmation EmailConfirmation { get; set; }
+
     }
 
     public enum UserType

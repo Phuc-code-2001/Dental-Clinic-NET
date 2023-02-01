@@ -26,17 +26,5 @@ namespace Dental_Clinic_NET.API.Models.Users
         [Required]
         public string Gender { get; set; }
 
-        //public BaseUser ToBaseUser_NotIncludePassword()
-        //{
-        //    return new BaseUser()
-        //    {
-        //        UserName = UserName,
-        //        FullName = FullName,
-        //        Email = Email,
-        //        Gender = Gender,
-        //        PhoneNumber = PhoneNumber,
-        //        BirthDate = BirthDate,
-        //    };
-        //}
     }
 }

@@ -2,7 +2,7 @@
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Models.Contacts;
-using Dental_Clinic_NET.API.Models.Room;
+using Dental_Clinic_NET.API.Models.Rooms;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +33,6 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <returns>
         ///     200: Request success
         ///     500: Server Handle Error
-        ///     
         /// </returns>
         [HttpGet]
         public IActionResult GetAll(int page = 1)
@@ -41,19 +40,18 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 var rooms = _context.Rooms
-                    .Include(r => r.Devices)
-                    .ToArray();
-                RoomDTO[] roomDTOs = _servicesManager.AutoMapper.Map<RoomDTO[]>(rooms);
+                    .Include(r => r.Devices);
+                Paginated<Room> paginatedRooms = new Paginated<Room>(rooms, page);
 
+                RoomDTO[] roomDTOs = _servicesManager.AutoMapper.Map<RoomDTO[]>(paginatedRooms.Items.ToArray());
 
-                Paginated<RoomDTO> paginatedRooms = new Paginated<RoomDTO>(roomDTOs.AsQueryable(), page);
                 return Ok(new
                 {
                     page = page,
                     per_page = paginatedRooms.PageSize,
                     total = paginatedRooms.QueryCount,
                     total_pages = paginatedRooms.PageCount,
-                    data = paginatedRooms.Items
+                    data = roomDTOs
                 });
             }
             catch (Exception ex)
@@ -99,7 +97,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 Task pushEventTask = _servicesManager.PusherServices
                     .PushTo(chanels, "Room-Create", room, result =>
                     {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
+
                     });
 
 

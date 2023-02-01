@@ -9,6 +9,7 @@ using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Services.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -147,6 +148,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
                 // Verify email or PhoneNumber
+                user.EmailConfirmed = false;
+                user.PhoneNumberConfirmed = false;
+                _servicesManager.UserServices.SendEmailToVerifyUser(user);
+
 
                 // Create Default Actor
                 Patient patient = new Patient()
@@ -191,6 +196,55 @@ namespace Dental_Clinic_NET.API.Controllers
             }
 
 
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult RequiredConfirmAccountAsync()
+        {
+            try
+            {
+                BaseUser user = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
+                if(user.EmailConfirmed)
+                {
+                    return BadRequest("Your account already verified.");
+                }
+                _servicesManager.UserServices.SendEmailToVerifyUser(user);
+                return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> EmailVerifyUserAsync([FromQuery] string userId, string code)
+        {
+            BaseUser user = await _userManager.FindByIdAsync(userId);
+            bool succeed = await _servicesManager.UserServices.ConfirmEmailForUser(user, code);
+
+            if(succeed)
+            {
+                user.EmailConfirmed = true;
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                if(updateResult.Succeeded)
+                {
+                    return Ok("Tài khoản của bạn đã được xác thực thành công.");
+                }
+                else
+                {
+                    throw new Exception("Server error!");
+                }
+
+            }
+            else
+            {
+                return BadRequest("Xác thực thất bại. Nguyên nhân có thể do code không đúng hoặc hết hạn.");
+            }
         }
 
     }
