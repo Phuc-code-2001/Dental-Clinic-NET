@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessorServices", "Fi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatServices.API", "ChatServices.API\ChatServices.API.csproj", "{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailServices", "MailServices\MailServices.csproj", "{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

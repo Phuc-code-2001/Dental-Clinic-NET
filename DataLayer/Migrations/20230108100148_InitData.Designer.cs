@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230108100148_InitData")]
+    partial class InitData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,9 +128,6 @@ namespace DataLayer.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("EmailConfirmationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
@@ -188,8 +187,6 @@ namespace DataLayer.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmailConfirmationUserId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -348,28 +345,6 @@ namespace DataLayer.Migrations
                     b.HasIndex("CertificateId");
 
                     b.ToTable("Doctors");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.EmailConfirmation", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("LastRequiredCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ValidTo")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("EmailConfirmations");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.MediaFile", b =>
@@ -695,15 +670,6 @@ namespace DataLayer.Migrations
                         .HasForeignKey("DocumentId");
 
                     b.Navigation("Document");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
-                {
-                    b.HasOne("DataLayer.Domain.EmailConfirmation", "EmailConfirmation")
-                        .WithMany()
-                        .HasForeignKey("EmailConfirmationUserId");
-
-                    b.Navigation("EmailConfirmation");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.ChatMessage", b =>

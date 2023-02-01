@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Dental_Clinic_NET.API.Utils
 {
     public class Paginated<T>
     {
-
+        public int PageIndex;
         public int PageSize = 5;
 
         public bool HasPrevious { get; private set; }
@@ -21,6 +22,7 @@ namespace Dental_Clinic_NET.API.Utils
 
         public Paginated(IQueryable<T> queries, int pageIndex)
         {
+            PageIndex = pageIndex;
             QueryCount = queries.Count<T>();
             PageCount = (int) Math.Ceiling((double) QueryCount / PageSize);
 
@@ -31,7 +33,6 @@ namespace Dental_Clinic_NET.API.Utils
             HasNext = pageIndex + 1 <= PageCount;
             HasPrevious = pageIndex - 1 > 0;
         }
-
         
     }
 }

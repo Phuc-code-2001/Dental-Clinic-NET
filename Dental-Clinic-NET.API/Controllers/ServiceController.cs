@@ -1,6 +1,5 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
-using Dental_Clinic_NET.API.Models.Room;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +9,6 @@ using System.Linq;
 using Dental_Clinic_NET.API.Models.Services;
 using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Dental_Clinic_NET.API.Models.Devices;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 

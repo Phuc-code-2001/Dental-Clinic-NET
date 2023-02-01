@@ -1,17 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity;
@@ -21,13 +14,16 @@ using System.Text;
 using ImageProcessLayer.Services;
 using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.Users;
-using Dental_Clinic_NET.API.Serializers;
-using Dental_Clinic_NET.API.AutoMapperProfiles;
 using Microsoft.AspNetCore.OData;
 using RealTimeProcessLayer.Services;
 using Dental_Clinic_NET.API.Services;
 using FileProcessorServices;
 using Dental_Clinic_NET.API.Services.Appointments;
+using MailServices;
+using AutoMapper;
+using Dental_Clinic_NET.API.AutoMapperProfiles;
+using System.Linq;
+using System.Reflection;
 
 namespace Dental_Clinic_NET.API
 {
@@ -57,7 +53,7 @@ namespace Dental_Clinic_NET.API
 
             services.AddIdentityCore<BaseUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                // options.SignIn.RequireConfirmedAccount = true;
             })
             .AddEntityFrameworkStores<AppDbContext>();
 
@@ -87,7 +83,7 @@ namespace Dental_Clinic_NET.API
             {
                 // Password settings
                 options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 1;
+                options.Password.RequiredLength = 6;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
@@ -98,17 +94,21 @@ namespace Dental_Clinic_NET.API
                 options.User.RequireUniqueEmail = false;
             });
 
-            services.AddHttpClient();
+            services.AddTransient<DropboxServices>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+            services.AddHttpClient();
+            services.AddTransient<FacebookServices>();
 
             services.AddTransient<UserServices>();
             services.AddTransient<AppointmentServices>();
-            services.AddTransient<FacebookServices>();
+
             services.AddTransient<ImageKitServices>();
             services.AddTransient<PusherServices>();
-            services.AddTransient<DropboxServices>();
-
+            
+            services.AddTransient<KickboxServices>();
+            services.AddTransient<EmailSender>();
+            
             services.AddTransient<ServicesManager>();
 
             services.AddRouting();
@@ -123,33 +123,6 @@ namespace Dental_Clinic_NET.API
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Dental_Clinic_NET.API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    Description = $"Bỏ cái access_token vô đây",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-                        },
-                        new List<string>()
-                    }
-                });
             });
         }
 
