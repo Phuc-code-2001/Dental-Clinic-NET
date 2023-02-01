@@ -144,6 +144,16 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 }
 
+                bool checkEmailExist = _userManager.Users.Any(u => u.Email == user.Email && u.EmailConfirmed);
+                if (checkEmailExist)
+                {
+                    return BadRequest(new
+                    {
+                        code = nameof(SignUpFailedStatus.EmailAlreadyAccount),
+                        errors = new string[] { "This email have already account" }
+                    });
+                }
+
                 // Generate channel key
                 user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
@@ -200,7 +210,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
         [HttpPost]
         [Authorize]
-        public IActionResult RequiredConfirmAccountAsync()
+        public async Task<IActionResult> RequiredConfirmAccountAsync([FromForm] string emailRequired = null)
         {
             try
             {
@@ -210,8 +220,29 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return BadRequest("Your account already verified.");
                 }
-                _servicesManager.UserServices.SendEmailToVerifyUser(user);
-                return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
+
+                if(!string.IsNullOrWhiteSpace(emailRequired))
+                {
+
+                    bool duplicate = _userManager.Users.Any(u => u.Email == emailRequired && u.EmailConfirmed);
+                    if (duplicate)
+                    {
+                        return BadRequest($"The email '{emailRequired}' have already account!");
+                    }
+
+                    user.Email = emailRequired;
+                }
+                var checker = await _servicesManager.KickboxServices.VerifyEmailAsync(user.Email);
+                if (checker.IsValid)
+                {
+                    _servicesManager.UserServices.SendEmailToVerifyUser(user);
+                    return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
+                }
+                else
+                {
+                    return BadRequest("Your required email invalid!");
+                }
+
             }
             catch(Exception ex)
             {
@@ -254,6 +285,7 @@ namespace Dental_Clinic_NET.API.Controllers
     {
         CreatedFailed,
         PhoneNumberAlreadyAccount,
+        EmailAlreadyAccount,
 
         FacebookInValidToken,
         FacebookAlreadySignUp,
