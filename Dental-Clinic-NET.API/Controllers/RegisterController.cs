@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using PhoneVerifyServices;
+using PhoneVerifyServices.Models;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -29,12 +31,14 @@ namespace Dental_Clinic_NET.API.Controllers
         AppDbContext _context;
         private ServicesManager _servicesManager;
         private UserManager<BaseUser> _userManager;
+        private PhoneVerifyService _phoneVerifyServices;
 
-        public RegisterController(AppDbContext context, ServicesManager servicesManager, UserManager<BaseUser> userManager)
+        public RegisterController(AppDbContext context, PhoneVerifyService phoneVerifyServices, ServicesManager servicesManager, UserManager<BaseUser> userManager)
         {
             _context = context;
             _servicesManager = servicesManager;
             _userManager = userManager;
+            _phoneVerifyServices = phoneVerifyServices;
         }
 
         [HttpPost]
@@ -245,6 +249,57 @@ namespace Dental_Clinic_NET.API.Controllers
 
             }
             catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> RequiredConfirmPhoneNumberAccountAsync([FromForm] string phoneNumber = null)
+        {
+            try
+            {
+                BaseUser user = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
+                if (user.EmailConfirmed)
+                {
+                    return BadRequest("Your account already verified.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+
+                    bool duplicate = _userManager.Users.Any(u => u.PhoneNumber == phoneNumber && u.PhoneNumberConfirmed);
+                    if (duplicate)
+                    {
+                        return BadRequest($"The phone number '{phoneNumber}' have already account!");
+                    }
+
+                    user.PhoneNumber = phoneNumber;
+                }
+                PhoneRequest phoneRequest = new PhoneRequest()
+                {
+                    Body = "Verify phone number",
+                    From = "+19134239777", //so co dinh xai luon
+                    To = phoneNumber
+                };
+                //gui phone to sms
+                var checker = await _phoneVerifyServices.PhoneVerification(phoneRequest);
+                
+                // code tiep tu day
+                if (checker)
+                {
+                    _servicesManager.UserServices.SendEmailToVerifyUser(user);
+                    return Ok("We just sent an phone number to verify your account.");
+                }
+                else
+                {
+                    return BadRequest("Your required phone number invalid!");
+                }
+
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

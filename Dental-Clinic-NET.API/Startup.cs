@@ -24,6 +24,8 @@ using AutoMapper;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
 using System.Linq;
 using System.Reflection;
+using Twilio;
+using PhoneVerifyServices;
 
 namespace Dental_Clinic_NET.API
 {
@@ -94,6 +96,8 @@ namespace Dental_Clinic_NET.API
                 options.User.RequireUniqueEmail = false;
             });
 
+
+
             services.AddTransient<DropboxServices>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -108,8 +112,10 @@ namespace Dental_Clinic_NET.API
             
             services.AddTransient<KickboxServices>();
             services.AddTransient<EmailSender>();
-            
+
             services.AddTransient<ServicesManager>();
+
+            services.AddTransient<PhoneVerifyService>();
 
             services.AddRouting();
 
