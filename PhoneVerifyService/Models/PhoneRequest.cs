@@ -1,4 +1,4 @@
-﻿namespace MailServices.Models
+﻿namespace PhoneVerifyServices.Models
 {
     public class PhoneRequest
     {

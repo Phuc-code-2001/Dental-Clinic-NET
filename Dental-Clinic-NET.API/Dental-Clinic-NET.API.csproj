@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+    <PackageReference Include="Twilio.AspNet.Core" Version="5.71.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +36,7 @@
     <ProjectReference Include="..\FileProcessorServices\FileProcessorServices.csproj" />
     <ProjectReference Include="..\ImageProcessLayer\ImageProcessLayer.csproj" />
     <ProjectReference Include="..\MailServices\MailServices.csproj" />
+    <ProjectReference Include="..\PhoneVerifyService\PhoneVerifyServices.csproj" />
     <ProjectReference Include="..\RealTimeProcessLayer\RealTimeProcessLayer.csproj" />
   </ItemGroup>
 

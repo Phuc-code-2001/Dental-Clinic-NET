@@ -1,6 +1,4 @@
-﻿using KickBox.Core.Models;
-
-namespace MailServices.Models
+﻿namespace PhoneVerifyServices.Models
 {
     public class PhoneVerificationResult
     {
