@@ -2,8 +2,6 @@
 using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
-using Dental_Clinic_NET.API.Facebooks.Models;
-using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
@@ -36,95 +34,6 @@ namespace Dental_Clinic_NET.API.Controllers
             _servicesManager = servicesManager;
             _userManager = userManager;
         }
-
-        [HttpPost]
-        public async Task<IActionResult> SignUpWithFacebookAsync(FacebookRegisterModel request)
-        {
-
-            try
-            {
-                string fbToken = request.AccessToken;
-                var result = await _servicesManager.FacebookServices.ValidateAccessTokenAsync(fbToken);
-
-                if (!result.Data.IsValid)
-                {
-                    return BadRequest(new
-                    {
-                        code=nameof(SignUpFailedStatus.FacebookInValidToken),
-                        errors=new string[] {"Invalid Token"}
-                    });
-                }
-
-                var fbUserInfo = await _servicesManager.FacebookServices.GetUserInfoAsync(fbToken);
-
-                BaseUser user = await _userManager.Users.Where(u => u.FbConnectedId == fbUserInfo.Id).FirstOrDefaultAsync();
-
-                if (user != null)
-                {
-                    return BadRequest(new
-                    {
-                        code = nameof(SignUpFailedStatus.FacebookAlreadySignUp),
-                        errors = new string[] { "Your facebook have already account." }
-                    });
-                }
-
-                user = new BaseUser()
-                {
-                    UserName = request.UserName,
-                    FullName = fbUserInfo.Name,
-                    FbConnectedId = fbUserInfo.Id,
-                    ImageURL = fbUserInfo.Picture.Data.Url.ToString(),
-                    // Generate channel key
-                    PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel(),
-                };
-
-                // Verify Email and PhoneNumber later
-
-
-
-                // Create Default Actor
-                Patient patient = new Patient()
-                {
-                    BaseUser = user,
-                    MedicalRecordFile = new MediaFile()
-                    {
-                        Category = MediaFile.FileCategory.MedicalRecord
-                    }
-                };
-
-                var createUserResult = await _userManager.CreateAsync(user);
-
-                if(createUserResult.Succeeded)
-                {
-                
-                    string token = _servicesManager.UserServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
-                    return Ok(new
-                    {
-                        id = user.Id,
-                        token,
-                        user = serializer.Serialize(user =>
-                        {
-                            return _servicesManager.AutoMapper.Map<UserDTO>(user);
-                        }),
-                    });
-                }
-
-                var errors = createUserResult.Errors.Select(e => new { e.Code, e.Description });
-
-                return BadRequest(new
-                {
-                    code = nameof(SignUpFailedStatus.FacebookCreateFailed),
-                    errors = errors
-                });
-
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
 
         [HttpPost]
         public async Task<IActionResult> BasicSignUpAsync(BasicRegisterModel request)
