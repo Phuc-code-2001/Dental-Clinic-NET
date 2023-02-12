@@ -2,8 +2,6 @@
 using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
-using Dental_Clinic_NET.API.Facebooks.Models;
-using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
