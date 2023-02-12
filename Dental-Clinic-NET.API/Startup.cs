@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ImageProcessLayer.Services;
-using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Services.Users;
 using Microsoft.AspNetCore.OData;
 using RealTimeProcessLayer.Services;
@@ -98,7 +97,6 @@ namespace Dental_Clinic_NET.API
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddHttpClient();
-            services.AddTransient<FacebookServices>();
 
             services.AddTransient<UserServices>();
             services.AddTransient<AppointmentServices>();

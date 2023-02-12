@@ -2,8 +2,6 @@
 using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTO;
-using Dental_Clinic_NET.API.Facebooks.Models;
-using Dental_Clinic_NET.API.Facebooks.Services;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
@@ -38,95 +36,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SignUpWithFacebookAsync(FacebookRegisterModel request)
-        {
-
-            try
-            {
-                string fbToken = request.AccessToken;
-                var result = await _servicesManager.FacebookServices.ValidateAccessTokenAsync(fbToken);
-
-                if (!result.Data.IsValid)
-                {
-                    return BadRequest(new
-                    {
-                        code=nameof(SignUpFailedStatus.FacebookInValidToken),
-                        errors=new string[] {"Invalid Token"}
-                    });
-                }
-
-                var fbUserInfo = await _servicesManager.FacebookServices.GetUserInfoAsync(fbToken);
-
-                BaseUser user = await _userManager.Users.Where(u => u.FbConnectedId == fbUserInfo.Id).FirstOrDefaultAsync();
-
-                if (user != null)
-                {
-                    return BadRequest(new
-                    {
-                        code = nameof(SignUpFailedStatus.FacebookAlreadySignUp),
-                        errors = new string[] { "Your facebook have already account." }
-                    });
-                }
-
-                user = new BaseUser()
-                {
-                    UserName = request.UserName,
-                    FullName = fbUserInfo.Name,
-                    FbConnectedId = fbUserInfo.Id,
-                    ImageURL = fbUserInfo.Picture.Data.Url.ToString(),
-                    // Generate channel key
-                    PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel(),
-                };
-
-                // Verify Email and PhoneNumber later
-
-
-
-                // Create Default Actor
-                Patient patient = new Patient()
-                {
-                    BaseUser = user,
-                    MedicalRecordFile = new MediaFile()
-                    {
-                        Category = MediaFile.FileCategory.MedicalRecord
-                    }
-                };
-
-                var createUserResult = await _userManager.CreateAsync(user);
-
-                if(createUserResult.Succeeded)
-                {
-                
-                    string token = _servicesManager.UserServices.CreateSignInToken(user);
-                    UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(user, user));
-                    return Ok(new
-                    {
-                        id = user.Id,
-                        token,
-                        user = serializer.Serialize(user =>
-                        {
-                            return _servicesManager.AutoMapper.Map<UserDTO>(user);
-                        }),
-                    });
-                }
-
-                var errors = createUserResult.Errors.Select(e => new { e.Code, e.Description });
-
-                return BadRequest(new
-                {
-                    code = nameof(SignUpFailedStatus.FacebookCreateFailed),
-                    errors = errors
-                });
-
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-
-        [HttpPost]
         public async Task<IActionResult> BasicSignUpAsync(BasicRegisterModel request)
         {
 
@@ -141,6 +50,16 @@ namespace Dental_Clinic_NET.API.Controllers
                     {
                         code= nameof(SignUpFailedStatus.PhoneNumberAlreadyAccount),
                         errors= new string[] { "This phone have already account" }
+                    });
+                }
+
+                bool checkEmailExist = _userManager.Users.Any(u => u.Email == user.Email && u.EmailConfirmed);
+                if (checkEmailExist)
+                {
+                    return BadRequest(new
+                    {
+                        code = nameof(SignUpFailedStatus.EmailAlreadyAccount),
+                        errors = new string[] { "This email have already account" }
                     });
                 }
 
@@ -200,7 +119,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
         [HttpPost]
         [Authorize]
-        public IActionResult RequiredConfirmAccountAsync()
+        public async Task<IActionResult> RequiredConfirmAccountAsync([FromForm] string emailRequired = null)
         {
             try
             {
@@ -210,8 +129,29 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     return BadRequest("Your account already verified.");
                 }
-                _servicesManager.UserServices.SendEmailToVerifyUser(user);
-                return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
+
+                if(!string.IsNullOrWhiteSpace(emailRequired))
+                {
+
+                    bool duplicate = _userManager.Users.Any(u => u.Email == emailRequired && u.EmailConfirmed);
+                    if (duplicate)
+                    {
+                        return BadRequest($"The email '{emailRequired}' have already account!");
+                    }
+
+                    user.Email = emailRequired;
+                }
+                var checker = await _servicesManager.KickboxServices.VerifyEmailAsync(user.Email);
+                if (checker.IsValid)
+                {
+                    _servicesManager.UserServices.SendEmailToVerifyUser(user);
+                    return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
+                }
+                else
+                {
+                    return BadRequest("Your required email invalid!");
+                }
+
             }
             catch(Exception ex)
             {
@@ -254,6 +194,7 @@ namespace Dental_Clinic_NET.API.Controllers
     {
         CreatedFailed,
         PhoneNumberAlreadyAccount,
+        EmailAlreadyAccount,
 
         FacebookInValidToken,
         FacebookAlreadySignUp,
