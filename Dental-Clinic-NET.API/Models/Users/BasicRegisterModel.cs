@@ -14,10 +14,9 @@ namespace Dental_Clinic_NET.API.Models.Users
 
         [Required]
         public string Password { get; set; }
-        [Required]
-        public string Email { get; set; }
 
-        public DateTime BirthDate { get; set; } = DateTime.Now;
+        [EmailAddress]
+        public string Email { get; set; }
 
         [Required]
         [Phone]

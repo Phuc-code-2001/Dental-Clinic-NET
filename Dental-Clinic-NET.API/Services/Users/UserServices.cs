@@ -98,7 +98,7 @@ namespace Dental_Clinic_NET.API.Services.Users
                     user.Email,
                     "Xác nhận email của bạn",
                     $"Đây là mã xác thực email của bạn, mã có hiệu lực trong vòng 3 phút:\n" +
-                    $"Code: {code} " +
+                    $"Code: {code}\n" +
                     $"Vui lòng không cung cấp mã này cho bất kì ai. " +
                     $"Việc xác thực tài khoản giúp bạn có thể thực hiện các tác vụ sau này như quên mật khẩu, ...");
 
