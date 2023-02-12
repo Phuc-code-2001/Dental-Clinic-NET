@@ -21,27 +21,9 @@ namespace FileProcessorServices
 
         public DropboxServices()
         {
-
-            //string refresh_token = configuration["DropBox:RefreshToken"];
-            //string access_token = configuration["DropBox:AccessToken"];
-            //string app_key = configuration["DropBox:AppKey"];
-            //string app_secret = configuration["DropBox:AppSecret"];
-
             var config = new DropboxClientConfig();
             _dropBoxClient = new DropboxClient(access_token, refresh_token, app_key, app_secret, config);
         }
-
-        //public DropboxServices(IConfiguration configuration)
-        //{
-
-        //    string refresh_token = configuration["DropBox:RefreshToken"];
-        //    string access_token = configuration["DropBox:AccessToken"];
-        //    string app_key = configuration["DropBox:AppKey"];
-        //    string app_secret = configuration["DropBox:AppSecret"];
-
-        //    var config = new DropboxClientConfig();
-        //    _dropBoxClient = new DropboxClient(access_token, refresh_token, app_key, app_secret, config);
-        //}
 
         public async Task<string> TestService(IFormFile file)
         {
