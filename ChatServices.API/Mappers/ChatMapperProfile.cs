@@ -5,9 +5,9 @@ using DataLayer.Domain;
 
 namespace ChatServices.API.Mappers
 {
-    public class ChatMappers : Profile
+    public class ChatMapperProfile : Profile
     {
-        public ChatMappers()
+        public ChatMapperProfile()
         {
             CreateMap<PatToRecMessage, ChatMessage>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)));

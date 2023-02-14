@@ -23,21 +23,17 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private AppDbContext _context;
-        private UserManager<BaseUser> _userManager;
         private ServicesManager _servicesManager;
 
-        public PatientController(AppDbContext context, ServicesManager servicesManager, UserManager<BaseUser> userManager)
+        public PatientController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
-            _userManager = userManager;
         }
 
 
         private IQueryable<Patient> FullyQueryPatientFromContext()
         {
-            return _context.Patients
+            return _servicesManager.DbContext.Patients
                 .Include(pat => pat.BaseUser)
                 .Include(pat => pat.MedicalRecordFile)
                 .Where(pat => pat.BaseUser.Type == UserType.Patient);
@@ -148,7 +144,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Patient not found!");
                 }
 
-                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                BaseUser loggedUser = await _servicesManager.UserManager.FindByNameAsync(User.Identity.Name);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, patient.BaseUser);
 
                 if (!permission.IsOwner && !permission.IsAdmin)
@@ -156,9 +152,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     return StatusCode(403, "Only admin or Owner can update medical record!");
                 }
 
-                if (!request.File.ContentType.EndsWith("pdf"))
+                if (!request.File.ContentType.EndsWith("pdf") 
+                    && !request.File.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 {
-                    return BadRequest("Only Accept PDF file!");
+                    return BadRequest("Only Accept PDF or .docx file!");
                 }
 
                 string filename = $"patient_{request.Id}_" + Path.GetExtension(request.File.FileName);
@@ -181,8 +178,8 @@ namespace Dental_Clinic_NET.API.Controllers
                     patient.MedicalRecordFile = mediafile;
                 }
 
-                _context.Patients.Update(patient);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Patients.Update(patient);
+                _servicesManager.DbContext.SaveChanges();
 
                 PatientDTO patientDTO = _servicesManager.AutoMapper.Map<PatientDTO>(patient);
 

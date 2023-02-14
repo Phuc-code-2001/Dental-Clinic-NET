@@ -24,8 +24,6 @@ namespace DataLayer.Domain
 
         public UserType Type { get; set; } = UserType.Patient;
 
-        public string FbConnectedId { get; set; }
-
         public string PusherChannel { get; set; }
 
         // Relationship

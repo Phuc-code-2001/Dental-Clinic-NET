@@ -49,6 +49,10 @@ namespace DataLayer.Domain
             Accept,
             Cancel,
             Doing,
+            Transfer,
+            TransferCancel,
+            TransferDoing,
+            TransferComplete,
             Complete,
         }
 

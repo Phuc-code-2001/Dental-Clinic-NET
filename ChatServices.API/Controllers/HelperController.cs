@@ -8,11 +8,11 @@ namespace ChatServices.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class RawDataController : ControllerBase
+    public class HelperController : ControllerBase
     {
         ServicesManager _servicesManager;
 
-        public RawDataController(ServicesManager servicesManager)
+        public HelperController(ServicesManager servicesManager)
         {
             _servicesManager = servicesManager;
         }

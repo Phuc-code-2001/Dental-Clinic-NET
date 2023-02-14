@@ -20,11 +20,10 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class RoomController : ControllerBase
     {
-        private AppDbContext _context;
         private ServicesManager _servicesManager;
-        public RoomController(AppDbContext context, ServicesManager servicesManager)
+
+        public RoomController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
         }
         /// <summary>
@@ -39,7 +38,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var rooms = _context.Rooms
+                var rooms = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices);
                 Paginated<Room> paginatedRooms = new Paginated<Room>(rooms, page);
 
@@ -77,21 +76,21 @@ namespace Dental_Clinic_NET.API.Controllers
                 Room room = _servicesManager.AutoMapper.Map<Room>(request);
 
                 // Check room code
-                bool duplicateRoomCode = _context.Rooms.Any(r => r.RoomCode == room.RoomCode);
+                bool duplicateRoomCode = _servicesManager.DbContext.Rooms.Any(r => r.RoomCode == room.RoomCode);
                 if (duplicateRoomCode) 
                     return BadRequest("Duplicate room code");
 
-                _context.Rooms.Add(room);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Rooms.Add(room);
+                _servicesManager.DbContext.SaveChanges();
 
-                room = _context.Rooms
+                room = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices)
                     .FirstOrDefault(r => r.Id == room.Id);
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -123,7 +122,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Room room = _context.Rooms
+                Room room = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices)
                     .FirstOrDefault(r => r.Id == id);
 
@@ -152,17 +151,17 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Room room = _context.Rooms.Find(id);
+                Room room = _servicesManager.DbContext.Rooms.Find(id);
                 if (room == null)
                 {
                     return NotFound("Room not found");
                 }
 
-                _context.Entry(room).State = EntityState.Deleted;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(room).State = EntityState.Deleted;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -194,7 +193,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Room room = _context.Rooms.Find(request.Id);
+                Room room = _servicesManager.DbContext.Rooms.Find(request.Id);
                 if (room == null)
                 {
                     return NotFound("Room not found");
@@ -202,11 +201,11 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateRoom, Room>(request, room);
 
-                _context.Entry(room).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(room).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices

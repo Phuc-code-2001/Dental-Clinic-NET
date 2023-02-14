@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using DataLayer.DataContexts;
+using DataLayer.Domain;
+using Dental_Clinic_NET.API.Services.Appointments;
 using Dental_Clinic_NET.API.Services.Users;
 using FileProcessorServices;
 using ImageProcessLayer.Services;
 using MailServices;
+using Microsoft.AspNetCore.Identity;
 using RealTimeProcessLayer.Services;
 
 namespace Dental_Clinic_NET.API.Services
@@ -10,9 +14,11 @@ namespace Dental_Clinic_NET.API.Services
     public class ServicesManager
     {
 
+        public AppDbContext DbContext;
+        public UserManager<BaseUser> UserManager;
+
         public IMapper AutoMapper { get; set; }
 
-        public UserServices UserServices { get; set; }
         public ImageKitServices ImageKitServices { get; set; }
         public PusherServices PusherServices { get; set; }
 
@@ -20,8 +26,23 @@ namespace Dental_Clinic_NET.API.Services
         public KickboxServices KickboxServices { get; set; }
         public EmailSender EmailSender { get; set; }
 
-        public ServicesManager(IMapper autoMapper, UserServices userServices, ImageKitServices imageKitServices, PusherServices pusherServices, DropboxServices dropboxServices, KickboxServices kickboxServices, EmailSender emailSender)
+        public UserServices UserServices { get; set; }
+        public AppointmentServices AppointmentServices { get; set; }
+
+        public ServicesManager(
+            IMapper autoMapper,
+            UserServices userServices,
+            ImageKitServices imageKitServices,
+            PusherServices pusherServices,
+            DropboxServices dropboxServices,
+            KickboxServices kickboxServices,
+            EmailSender emailSender,
+            AppDbContext dbContext,
+            UserManager<BaseUser> userManager,
+            AppointmentServices appointmentServices)
         {
+            DbContext = dbContext;
+            UserManager = userManager;
             AutoMapper = autoMapper;
             UserServices = userServices;
             ImageKitServices = imageKitServices;
@@ -29,6 +50,7 @@ namespace Dental_Clinic_NET.API.Services
             DropboxServices = dropboxServices;
             KickboxServices = kickboxServices;
             EmailSender = emailSender;
+            AppointmentServices = appointmentServices;
         }
 
 

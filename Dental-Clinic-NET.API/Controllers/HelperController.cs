@@ -25,34 +25,31 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class HelperController : ControllerBase
     {
-        private UserManager<BaseUser> _userManager;
         private ServicesManager _servicesManager;
-        private AppDbContext _context;
 
-        public HelperController(UserManager<BaseUser> userManager, ServicesManager servicesManager, AppDbContext context)
+        public HelperController(ServicesManager servicesManager)
         {
-            _userManager = userManager;
             _servicesManager = servicesManager;
-            _context = context;
         }
 
         [HttpPost]
         public async Task<IActionResult> GenerateChannelIfNullAsync()
         {
-            var users = _userManager.Users.ToList();
+            var users = _servicesManager.UserManager.Users.ToList();
             foreach(var user in users)
             {
                 if (String.IsNullOrEmpty(user.PusherChannel))
                 {
                     string channel = _servicesManager.UserServices.GenerateUniqueUserChannel();
                     user.PusherChannel = channel;
-                    await _userManager.UpdateAsync(user);
+                    await _servicesManager.UserManager.UpdateAsync(user);
                 }
             }
 
             var userDTOs = users.Select(user => _servicesManager.AutoMapper.Map<UserDTO>(user)).ToList();
 
             return Ok(userDTOs);
+
         }
 
         [HttpPost]
@@ -100,7 +97,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
 
-                var users = _userManager.Users.AsEnumerable().Select(user =>
+                var users = _servicesManager.UserManager.Users.AsEnumerable().Select(user =>
                 {
                     PermissionOnBaseUser permission = new PermissionOnBaseUser(user, user);
                     UserSerializer serializer = new UserSerializer(permission);
@@ -132,7 +129,7 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public IActionResult GetPatients()
         {
-            var results = _context.Patients.Include(pat => pat.BaseUser).Include(pat => pat.MedicalRecordFile)
+            var results = _servicesManager.DbContext.Patients.Include(pat => pat.BaseUser).Include(pat => pat.MedicalRecordFile)
                 .Select(pat => _servicesManager.AutoMapper.Map<PatientDTO>(pat)).ToList();
 
             return Ok(results);
@@ -141,7 +138,7 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public IActionResult GetFiles()
         {
-            var results = _context.Medias.Select(file => _servicesManager.AutoMapper.Map<MediaFileDTO>(file)).ToList();
+            var results = _servicesManager.DbContext.Medias.Select(file => _servicesManager.AutoMapper.Map<MediaFileDTO>(file)).ToList();
             return Ok(results);
         }
 
@@ -150,11 +147,11 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var users = _userManager.Users.ToList();
+                var users = _servicesManager.UserManager.Users.ToList();
                 int count = 0;
                 users.ForEach(user =>
                 {
-                    Patient patient = _context.Patients.Find(user.Id);
+                    Patient patient = _servicesManager.DbContext.Patients.Find(user.Id);
                     if (patient == null)
                     {
                         patient = new Patient()
@@ -162,13 +159,13 @@ namespace Dental_Clinic_NET.API.Controllers
                             Id = user.Id,
                             MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.MedicalRecord },
                         };
-                        _context.Patients.Add(patient);
+                        _servicesManager.DbContext.Patients.Add(patient);
                         count++;
                     }
 
                 });
 
-                _context.SaveChanges();
+                _servicesManager.DbContext.SaveChanges();
 
                 return Ok($"Mới tạo được {count} thằng.");
             }
@@ -188,7 +185,7 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public IActionResult GetAllDocuments()
         {
-            var dataset = _context.AppointmentsDocuments
+            var dataset = _servicesManager.DbContext.AppointmentsDocuments
                 .Include(d => d.Document)
                 .ToList();
 
@@ -198,9 +195,9 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpDelete]
         public IActionResult DeleteAllAppointment()
         {
-            var dataset = _context.Appointments.ToArray();
-            _context.Appointments.RemoveRange(dataset);
-            _context.SaveChanges();
+            var dataset = _servicesManager.DbContext.Appointments.ToArray();
+            _servicesManager.DbContext.Appointments.RemoveRange(dataset);
+            _servicesManager.DbContext.SaveChanges();
 
             return Ok();
         }

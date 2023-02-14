@@ -21,11 +21,9 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class DeviceController : ControllerBase
     {
-        private AppDbContext _context;
         private ServicesManager _servicesManager;
-        public DeviceController(AppDbContext context, ServicesManager servicesManager)
+        public DeviceController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
         }
         /// <summary>
@@ -41,7 +39,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                IQueryable<Device> devices = _context.Devices
+                IQueryable<Device> devices = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room);
                 Paginated<Device> paginatedDevices = new Paginated<Device>(devices, page);
@@ -102,18 +100,18 @@ namespace Dental_Clinic_NET.API.Controllers
                 device.Services = new List<Service>();
                 foreach(int id in request.ServiceIdList)
                 {
-                    Service service = _context.Services.Find(id);
+                    Service service = _servicesManager.DbContext.Services.Find(id);
                     if(service != null)
                     {
                         device.Services.Add(service);
                     }
                 }
 
-                _context.Devices.Add(device);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Devices.Add(device);
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -123,7 +121,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
 
                 // Include services and room
-                device = _context.Devices
+                device = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room)
                     .FirstOrDefault(d => d.Id == device.Id);
@@ -151,7 +149,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 // Include services and room
-                Device device = _context.Devices
+                Device device = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room)
                     .FirstOrDefault(d => d.Id == id);
@@ -181,17 +179,17 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Device device = _context.Devices.Find(id);
+                Device device = _servicesManager.DbContext.Devices.Find(id);
                 if (device == null)
                 {
                     return NotFound("Device not found");
                 }
 
-                _context.Entry(device).State = EntityState.Deleted;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(device).State = EntityState.Deleted;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -214,7 +212,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Device device = _context.Devices
+                Device device = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room)
                     .FirstOrDefault(d => d.Id == request.Id);
@@ -257,7 +255,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                     foreach(int serviceId in request.ServiceIdList)
                     {
-                        Service service = _context.Services.Find(serviceId);
+                        Service service = _servicesManager.DbContext.Services.Find(serviceId);
                         if(!device.Services.Contains(service)) {
                             serviceToAdd.Add(service);
                         }
@@ -281,11 +279,11 @@ namespace Dental_Clinic_NET.API.Controllers
                     }
                 }
 
-                _context.Entry(device).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(device).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices

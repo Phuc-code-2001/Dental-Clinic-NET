@@ -30,8 +30,6 @@ namespace Dental_Clinic_NET.API.DTO
 
         public string Role { get; set; }
 
-        public string FbConnectedId { get; set; }
-
         public string PusherChannel { get; set; }
 
     }
