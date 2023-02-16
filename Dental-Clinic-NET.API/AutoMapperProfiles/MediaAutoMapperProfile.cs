@@ -15,7 +15,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         {
             
 
-            CreateMap<MediaFile, MediaFileDTO>()
+            CreateMap<FileMedia, MediaFileDTO>()
                 .ForMember(des => des.Category, act => act.MapFrom(src => src.Category.ToString()))
                 .ForMember(des => des.FileURL, act => act.MapFrom(src => GetLink(src.FilePath)));
         }

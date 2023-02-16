@@ -30,9 +30,9 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 .ForAllMembers(opt => opt.Condition((des, src, field) => field != null));
 
             // Appointment document
-            CreateMap<AddDocumentModel, AppointmentDocument>();
+            CreateMap<AddDocumentModel, Document>();
 
-            CreateMap<AppointmentDocument, AppointmentDocumentDTO>()
+            CreateMap<Document, DocumentDTO>()
                 .ForMember(des => des.Tag, opt => opt.MapFrom(src => src.Tag.ToString()));
 
             // Appointment Lite

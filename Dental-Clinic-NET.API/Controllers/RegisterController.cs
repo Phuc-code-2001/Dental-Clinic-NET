@@ -72,9 +72,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 Patient patient = new Patient()
                 {
                     BaseUser = user,
-                    MedicalRecordFile = new MediaFile()
+                    MedicalRecordFile = new FileMedia()
                     {
-                        Category = MediaFile.FileCategory.MedicalRecord
+                        Category = FileMedia.FileCategory.MedicalRecord
                     }
                 };
 
