@@ -134,14 +134,14 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 Patient patient = FullyQueryPatientFromContext().FirstOrDefault(p => p.Id == request.Id);
 
-                if (patient.BaseUser.Type != UserType.Patient)
-                {
-                    return BadRequest("This user is not patient!");
-                }
-
                 if (patient == null)
                 {
                     return NotFound("Patient not found!");
+                }
+
+                if (patient.BaseUser.Type != UserType.Patient)
+                {
+                    return BadRequest("This user is not patient!");
                 }
 
                 BaseUser loggedUser = await _servicesManager.UserManager.FindByNameAsync(User.Identity.Name);
