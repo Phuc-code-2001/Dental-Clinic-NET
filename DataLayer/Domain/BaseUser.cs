@@ -36,7 +36,8 @@ namespace DataLayer.Domain
         Patient,
         Doctor,
         Receptionist,
-        Technical,
+        Technican,
+        Expert,
         Administrator,
     }
 }
