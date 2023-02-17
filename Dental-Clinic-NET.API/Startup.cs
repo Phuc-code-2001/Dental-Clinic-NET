@@ -66,7 +66,13 @@ namespace Dental_Clinic_NET.API
                 // User settings
                 options.User.RequireUniqueEmail = false;
             })
-            .AddEntityFrameworkStores<AppDbContext>();
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddTokenProvider<DataProtectorTokenProvider<BaseUser>>(TokenOptions.DefaultProvider);
+
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromMinutes(3);
+            });
 
             // Adding Authentication  
             services.AddAuthentication(options =>
@@ -96,6 +102,7 @@ namespace Dental_Clinic_NET.API
             services.AddHttpClient();
 
             services.AddTransient<UserServices>();
+
             services.AddTransient<AppointmentServices>();
 
             services.AddTransient<ImageKitServices>();
