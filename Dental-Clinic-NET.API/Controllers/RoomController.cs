@@ -199,6 +199,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("Room not found");
                 }
 
+                bool duplicatedCode = _servicesManager.DbContext.Rooms
+                    .Any(r => r.Id != room.Id && r.RoomCode == room.RoomCode);
+                
+                if(duplicatedCode)
+                {
+                    return BadRequest($"RoomCode '{room.Id}' have already exist!");
+                }
+
                 _servicesManager.AutoMapper.Map<UpdateRoom, Room>(request, room);
 
                 _servicesManager.DbContext.Entry(room).State = EntityState.Modified;
