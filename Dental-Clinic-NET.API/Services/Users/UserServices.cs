@@ -80,7 +80,6 @@ namespace Dental_Clinic_NET.API.Services.Users
             }
         }
 
-
         private static Dictionary<string, EmailConfirmation> EmailConfirmarionCache = new Dictionary<string, EmailConfirmation>();
 
         public async void SendEmailToVerifyUser(BaseUser user, Action<EmailConfirmation> callback = null)

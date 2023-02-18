@@ -47,6 +47,7 @@ namespace DataLayer.DataContexts
         public DbSet<Conversation> Conversations { get; set; }
 
         public DbSet<EmailConfirmation> EmailConfirmations { get; set; }
+        public DbSet<UserLock> UserLocks { get; set; }
 
         public override int SaveChanges()
         {
