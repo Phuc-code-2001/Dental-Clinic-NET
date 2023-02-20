@@ -18,5 +18,8 @@ namespace DataLayer.Domain
 
         public bool IsLocked { get; set; }
         public DateTime Expired { get; set; }
+
+
+        public bool IsLockCalculated => (IsLocked && Expired >= DateTime.Now);
     }
 }

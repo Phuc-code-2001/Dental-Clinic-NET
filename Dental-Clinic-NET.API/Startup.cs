@@ -22,7 +22,13 @@ using MailServices;
 using AutoMapper;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
 using System.Linq;
-using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Dental_Clinic_NET.API.CustomPolicy;
 
 namespace Dental_Clinic_NET.API
 {
@@ -80,6 +86,7 @@ namespace Dental_Clinic_NET.API
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
             })
             // Adding Jwt Bearer  
             .AddJwtBearer(options =>
@@ -145,6 +152,8 @@ namespace Dental_Clinic_NET.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<UserLockMiddleware>();
+            
 
             app.UseEndpoints(endpoints =>
             {

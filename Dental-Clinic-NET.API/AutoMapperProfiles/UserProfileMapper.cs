@@ -8,13 +8,14 @@ using System.Linq;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class UserAutoMapperProfile : Profile
+    public class UserProfileMapper : Profile
     {
-        public UserAutoMapperProfile()
+        public UserProfileMapper()
         {
             CreateMap<BasicRegisterModel, BaseUser>();
 
             CreateMap<BaseUser, UserDTO>()
+                .ForMember(des => des.IsLock, act => act.MapFrom(src => src.UserLock.IsLockCalculated))
                 .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()));
 
             CreateMap<UpdateUserModel, BaseUser>()

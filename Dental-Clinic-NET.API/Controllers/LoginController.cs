@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {

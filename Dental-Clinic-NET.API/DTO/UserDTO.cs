@@ -32,6 +32,8 @@ namespace Dental_Clinic_NET.API.DTO
 
         public string PusherChannel { get; set; }
 
+        public bool IsLock { get; set; }
+
     }
 
     public class UserDTOLite

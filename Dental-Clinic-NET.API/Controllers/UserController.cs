@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -185,19 +186,19 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var users = _servicesManager.UserManager.Users.ToList();
-                var usersDTO = users.Select(user => _servicesManager.AutoMapper.Map<UserDTO>(user)).ToList();
+                var query = _servicesManager.DbContext.Users.Include(user => user.UserLock);
+                var paginatedQuery = new Paginated<BaseUser>(query, page);
 
-                Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(usersDTO.AsQueryable(), page);
-
+                var users = paginatedQuery.Items.ToArray();
+                var userDTOs = _servicesManager.AutoMapper.Map<UserDTO[]>(users);
 
                 return Ok(new
                 {
                     page = page,
-                    per_page = paginatedUsers.PageSize,
-                    total = paginatedUsers.QueryCount,
-                    total_pages = paginatedUsers.PageCount,
-                    data = paginatedUsers.Items
+                    per_page = paginatedQuery.PageSize,
+                    total = paginatedQuery.QueryCount,
+                    total_pages = paginatedQuery.PageCount,
+                    data = userDTOs,
                 });
 
             }
