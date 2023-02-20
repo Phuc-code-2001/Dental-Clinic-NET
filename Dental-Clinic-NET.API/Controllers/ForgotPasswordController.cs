@@ -44,7 +44,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         email: verifiedEmail,
                         subject: "Reset password instruction\n",
                         htmlMessage: $"We just receive your reset password request for account '{requiredUser.UserName}'.\n" +
-                        $"Click this link to submit new password: {prefixUrl}?secret={secret}\n" +
+                        $"Click this link to submit new password:\n{prefixUrl}?secret={secret}&userName={requiredUser.UserName}\n" +
                         $"Please keep this link and do not share with anyone. This link is valid in 3 minutes."
                     );
 

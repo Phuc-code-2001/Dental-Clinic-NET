@@ -16,7 +16,7 @@ namespace DataLayer.Domain
         public string ImageId { get; set; }
 
         public string Description { get; set; }
-        public int price { get; set; }
+        public int Price { get; set; }
         public ICollection<Device> Devices { get; set; }
     }
 }
