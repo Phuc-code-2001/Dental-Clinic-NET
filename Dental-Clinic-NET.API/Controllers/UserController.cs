@@ -266,11 +266,11 @@ namespace Dental_Clinic_NET.API.Controllers
 
             try
             {
-                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(request.userId);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(request.UserId);
                 
                 if(requiredUser == null)
                 {
-                    return NotFound($"User not found. Id='{request.userId}'");
+                    return NotFound($"User not found. Id='{request.UserId}'");
                 }
                 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
@@ -354,7 +354,7 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("{UserId}")]
         [Authorize]
         public async Task<IActionResult> GetAsync(string userId)
         {
@@ -387,7 +387,7 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpDelete("{userId}")]
+        [HttpDelete("{UserId}")]
         [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> DeleteAsync(string userId)
         {

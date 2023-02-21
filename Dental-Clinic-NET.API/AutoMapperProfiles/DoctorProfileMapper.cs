@@ -13,18 +13,19 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         {
 
             CreateMap<UpdateDoctor, Doctor>()
-                .ForMember(des => des.Verified, opt => opt.MapFrom(src => src.Verified.Value))
-                .ForAllMembers(opt =>
+                .AfterMap((src, dest) =>
                 {
-                    opt.Condition((src, des, member) =>
-                    {
-                        return member != null;
-                    });
+                    if(!string.IsNullOrWhiteSpace(src.FullName)) dest.BaseUser.FullName = src.FullName;
+                    if(!string.IsNullOrWhiteSpace(src.Address)) dest.BaseUser.Address = src.Address;
+                    if(!string.IsNullOrWhiteSpace(src.Gender)) dest.BaseUser.Gender = src.Gender;
+                    if(!string.IsNullOrWhiteSpace(src.Major)) dest.Major = src.Major;
+                    if(!string.IsNullOrWhiteSpace(src.Phone)) dest.BaseUser.PhoneNumber = src.Phone;
+                    if(!string.IsNullOrWhiteSpace(src.Email)) dest.BaseUser.Email = src.Email;
+                    if (src.BirthDate != null) dest.BaseUser.BirthDate = src.BirthDate.Value;
+                    if (src.Verified != null) dest.Verified = src.Verified.Value;
                 });
 
             CreateMap<Doctor, DoctorDTO>();
-
-            // Lite
             CreateMap<Doctor, DoctorDTOLite>();
         }
     }

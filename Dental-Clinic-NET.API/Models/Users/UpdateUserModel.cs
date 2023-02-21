@@ -6,7 +6,7 @@ namespace Dental_Clinic_NET.API.Models.Users
     public class UpdateUserModel
     {
         [Required]
-        public string userId { get; set; }
+        public string UserId { get; set; }
         public string FullName { get; set; }
         public DateTime? BirthDate { get; set; }
         public string Gender { get; set; }
