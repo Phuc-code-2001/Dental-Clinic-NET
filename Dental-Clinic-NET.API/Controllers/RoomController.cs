@@ -200,11 +200,11 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 bool duplicatedCode = _servicesManager.DbContext.Rooms
-                    .Any(r => r.Id != room.Id && r.RoomCode == room.RoomCode);
+                    .Any(r => r.Id != room.Id && r.RoomCode == request.RoomCode);
                 
                 if(duplicatedCode)
                 {
-                    return BadRequest($"RoomCode '{room.Id}' have already exist!");
+                    return BadRequest($"RoomCode '{request.RoomCode}' have already exist!");
                 }
 
                 _servicesManager.AutoMapper.Map<UpdateRoom, Room>(request, room);
