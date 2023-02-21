@@ -44,9 +44,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Include(d => d.BaseUser);
 
                 Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
-
                 Doctor[] doctors = paginated.Items.ToArray();
-
                 DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
 
                 return Ok(new
@@ -144,7 +142,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Doctor doctor = _servicesManager.DbContext.Doctors.Find(request.Id);
+                Doctor doctor = _servicesManager.DbContext.Doctors
+                    .Include(d => d.BaseUser).FirstOrDefault(d => d.Id == request.Id);
 
                 if (doctor == null)
                 {
@@ -153,57 +152,20 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateDoctor, Doctor>(request, doctor);
 
-                BaseUser user = _servicesManager.DbContext.Users.Find(doctor.Id);
-                if(!doctor.Verified)
-                {
-                    if(user != null && user.Type == UserType.Doctor)
-                    {
-                        user.Type = UserType.Patient;
-                        _servicesManager.DbContext.Entry(user).State = EntityState.Modified;
-                    }
-                }
-                else
-                {
-                    if(user != null && user.Type != UserType.Doctor)
-                    {
-                        user.Type = UserType.Doctor;
-                        _servicesManager.DbContext.Entry(user).State = EntityState.Modified;
-                    }
-                }
-
-                // < Xử lý file
                 if (request.CertificateFile != null)
                 {
-                    if (request.CertificateFile.ContentType.EndsWith("pdf"))
+                    string filename = $"doctor_{doctor.BaseUser.UserName}" + Path.GetExtension(request.CertificateFile.FileName);
+                    try
                     {
-                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
-                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
-
-                        FileMedia cirtificatefile = doctor.Certificate;
-
-                        if (cirtificatefile != null)
-                        {
-                            cirtificatefile.FilePath = uploadResult.UploadPath;
-                        }
-                        else
-                        {
-                            cirtificatefile = new FileMedia()
-                            {
-                                FilePath = uploadResult.UploadPath,
-                                Category = FileMedia.FileCategory.DoctorCertificate
-                            };
-
-                            doctor.Certificate = cirtificatefile;
-                        }
-
+                        doctor.Certificate = await _servicesManager.DoctorServices
+                            .UploadCertificateAsync(request.CertificateFile, filename);
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        return BadRequest("File format must be *.pdf");
+                        return BadRequest(ex.Message);
                     }
                 }
 
-                // Xử lý file />
                 _servicesManager.DbContext.Entry(doctor).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
