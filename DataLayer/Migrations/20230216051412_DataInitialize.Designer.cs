@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230118155709_AddEmailConfirmation")]
-    partial class AddEmailConfirmation
+    [Migration("20230216051412_DataInitialize")]
+    partial class DataInitialize
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -72,40 +72,6 @@ namespace DataLayer.Migrations
                     b.ToTable("Appointments");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.AppointmentDocument", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("AppointmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DocumentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Tag")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.HasIndex("DocumentId");
-
-                    b.ToTable("AppointmentsDocuments");
-                });
-
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
                 {
                     b.Property<string>("Id")
@@ -133,9 +99,6 @@ namespace DataLayer.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("FbConnectedId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -204,40 +167,6 @@ namespace DataLayer.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.ChatMessage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FromId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsRemoved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ToId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromId");
-
-                    b.HasIndex("ToId");
-
-                    b.ToTable("ChatMessages");
-                });
-
             modelBuilder.Entity("DataLayer.Domain.Contact", b =>
                 {
                     b.Property<int>("Id")
@@ -277,6 +206,31 @@ namespace DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("HasMessageUnRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LastMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastMessageId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Device", b =>
@@ -352,6 +306,40 @@ namespace DataLayer.Migrations
                     b.ToTable("Doctors");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.Document", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FileId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Tag")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("Documents");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.EmailConfirmation", b =>
                 {
                     b.Property<string>("UserId")
@@ -374,7 +362,7 @@ namespace DataLayer.Migrations
                     b.ToTable("EmailConfirmations");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.MediaFile", b =>
+            modelBuilder.Entity("DataLayer.Domain.FileMedia", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -396,6 +384,40 @@ namespace DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FromId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ToId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromId");
+
+                    b.HasIndex("ToId");
+
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
@@ -474,37 +496,12 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("price")
+                    b.Property<int>("Price")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.UserInChatBoxOfReception", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool>("HasMessageUnRead")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LastMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LastMessageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UsersInChatBoxOfReception");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -684,21 +681,6 @@ namespace DataLayer.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.AppointmentDocument", b =>
-                {
-                    b.HasOne("DataLayer.Domain.Appointment", null)
-                        .WithMany("Documents")
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataLayer.Domain.MediaFile", "Document")
-                        .WithMany()
-                        .HasForeignKey("DocumentId");
-
-                    b.Navigation("Document");
-                });
-
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
                 {
                     b.HasOne("DataLayer.Domain.EmailConfirmation", "EmailConfirmation")
@@ -708,19 +690,21 @@ namespace DataLayer.Migrations
                     b.Navigation("EmailConfirmation");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.ChatMessage", b =>
+            modelBuilder.Entity("DataLayer.Domain.Conversation", b =>
                 {
-                    b.HasOne("DataLayer.Domain.BaseUser", "FromUser")
+                    b.HasOne("DataLayer.Domain.Message", "LastMessage")
                         .WithMany()
-                        .HasForeignKey("FromId");
+                        .HasForeignKey("LastMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("DataLayer.Domain.BaseUser", "ToUser")
+                    b.HasOne("DataLayer.Domain.BaseUser", "User")
                         .WithMany()
-                        .HasForeignKey("ToId");
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("FromUser");
+                    b.Navigation("LastMessage");
 
-                    b.Navigation("ToUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Device", b =>
@@ -736,7 +720,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.Doctor", b =>
                 {
-                    b.HasOne("DataLayer.Domain.MediaFile", "Certificate")
+                    b.HasOne("DataLayer.Domain.FileMedia", "Certificate")
                         .WithMany()
                         .HasForeignKey("CertificateId");
 
@@ -751,9 +735,39 @@ namespace DataLayer.Migrations
                     b.Navigation("Certificate");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.Document", b =>
+                {
+                    b.HasOne("DataLayer.Domain.Appointment", null)
+                        .WithMany("Documents")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataLayer.Domain.FileMedia", "File")
+                        .WithMany()
+                        .HasForeignKey("FileId");
+
+                    b.Navigation("File");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.Message", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromId");
+
+                    b.HasOne("DataLayer.Domain.BaseUser", "ToUser")
+                        .WithMany()
+                        .HasForeignKey("ToId");
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("ToUser");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
                 {
-                    b.HasOne("DataLayer.Domain.MediaFile", "MedicalRecordFile")
+                    b.HasOne("DataLayer.Domain.FileMedia", "MedicalRecordFile")
                         .WithMany()
                         .HasForeignKey("FileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -768,23 +782,6 @@ namespace DataLayer.Migrations
                     b.Navigation("BaseUser");
 
                     b.Navigation("MedicalRecordFile");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.UserInChatBoxOfReception", b =>
-                {
-                    b.HasOne("DataLayer.Domain.ChatMessage", "LastMessage")
-                        .WithMany()
-                        .HasForeignKey("LastMessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataLayer.Domain.BaseUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("LastMessage");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DeviceService", b =>

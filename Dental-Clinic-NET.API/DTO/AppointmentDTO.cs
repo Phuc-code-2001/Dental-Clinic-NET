@@ -23,7 +23,7 @@ namespace Dental_Clinic_NET.API.DTO
 
         public string State { get; set; }
 
-        public AppointmentDocumentDTO[] Documents { get; set; }
+        public DocumentDTO[] Documents { get; set; }
     }
 
     public class AppointmentDTOLite : BaseEntityDTO

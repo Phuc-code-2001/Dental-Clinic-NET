@@ -45,11 +45,11 @@ namespace ChatServices.API.Controllers
                 BaseUser loggedUser = _servicesManager.DbContext
                     .Users.FirstOrDefault(u => u.UserName == loggedUserName);
 
-                ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
+                Message message = _servicesManager.AutoMapper.Map<Message>(request);
                 message.FromId = loggedUser.Id;
 
                 var userChatBoxInfo = _servicesManager.DbContext
-                    .UsersInChatBoxOfReception
+                    .Conversations
                     .FirstOrDefault(cb => cb.UserId == loggedUser.Id);
 
                 if(userChatBoxInfo != null)
@@ -61,14 +61,14 @@ namespace ChatServices.API.Controllers
                 }
                 else
                 {
-                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    userChatBoxInfo = new Conversation()
                     {
                         UserId = message.FromId,
                         HasMessageUnRead = true,
                         LastMessage = message,
                     };
 
-                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                    _servicesManager.DbContext.Conversations.Add(userChatBoxInfo);
                 }
                 
                 _servicesManager.DbContext.Add(message);
@@ -133,11 +133,11 @@ namespace ChatServices.API.Controllers
                 BaseUser loggedUser = _servicesManager.DbContext
                     .Users.FirstOrDefault(u => u.UserName == loggedUserName);
 
-                ChatMessage message = _servicesManager.AutoMapper.Map<ChatMessage>(request);
+                Message message = _servicesManager.AutoMapper.Map<Message>(request);
                 message.FromId = loggedUser.Id;
 
                 var userChatBoxInfo = _servicesManager.DbContext
-                    .UsersInChatBoxOfReception
+                    .Conversations
                     .FirstOrDefault(cb => cb.UserId == toPatient.Id);
 
                 if (userChatBoxInfo != null)
@@ -147,14 +147,14 @@ namespace ChatServices.API.Controllers
                 }
                 else
                 {
-                    userChatBoxInfo = new UserInChatBoxOfReception()
+                    userChatBoxInfo = new Conversation()
                     {
                         UserId = message.ToId,
                         HasMessageUnRead = false,
                         LastMessage = message,
                     };
 
-                    _servicesManager.DbContext.UsersInChatBoxOfReception.Add(userChatBoxInfo);
+                    _servicesManager.DbContext.Conversations.Add(userChatBoxInfo);
                 }
 
                 _servicesManager.DbContext.Add(message);
@@ -190,40 +190,6 @@ namespace ChatServices.API.Controllers
         }
 
         /// <summary>
-        ///     List User ChatBox by Reception. Replaced by '/Messages/ListUsersChatBox/'
-        /// </summary>
-        /// <returns>
-        ///     200: Request success
-        ///     401: Unauthorize
-        ///     403: Forbiden
-        ///     500: Server handle error
-        /// </returns>
-        [HttpGet]
-        [Authorize(Roles = nameof(UserType.Receptionist))]
-        public IActionResult ListUsersHasMessage()
-        {
-            try
-            {
-
-                // 1. Tạo thêm bảng lưu trữ những hộp thoại đang mở
-                // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
-                // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
-
-                var dataset = _servicesManager.DbContext.UsersInChatBoxOfReception
-                .Include(cb => cb.User)
-                .Include(cb => cb.LastMessage)
-                .ToArray();
-                var datasetDTO = _servicesManager.AutoMapper.Map<UserInChatBoxOfReceptionDTO[]>(dataset);
-
-                return Ok(datasetDTO);
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
         ///     List User ChatBox by Reception
         /// </summary>
         /// <returns>
@@ -243,11 +209,11 @@ namespace ChatServices.API.Controllers
                 // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
                 // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
 
-                var dataset = _servicesManager.DbContext.UsersInChatBoxOfReception
+                var dataset = _servicesManager.DbContext.Conversations
                 .Include(cb => cb.User)
                 .Include(cb => cb.LastMessage)
                 .ToArray();
-                var datasetDTO = _servicesManager.AutoMapper.Map<UserInChatBoxOfReceptionDTO[]>(dataset);
+                var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
 
                 return Ok(datasetDTO);
             }
@@ -282,7 +248,7 @@ namespace ChatServices.API.Controllers
                     .Where(message => message.FromUser.Id == loggedUser.Id || message.ToUser.Id == loggedUser.Id)
                     .OrderByDescending(message => message.TimeCreated);
 
-                var paginated = new Paginated<ChatMessage>(queries, page);
+                var paginated = new Paginated<Message>(queries, page);
 
                 ChatMessageDTO[] datasetDTO = _servicesManager.AutoMapper
                     .Map<ChatMessageDTO[]>(paginated.Items.ToArray());
@@ -333,7 +299,7 @@ namespace ChatServices.API.Controllers
                     .Where(message => message.FromUser.Id == patientId || message.ToUser.Id == patientId)
                     .OrderByDescending(message => message.TimeCreated);
 
-                var paginated = new Paginated<ChatMessage>(queries, page);
+                var paginated = new Paginated<Message>(queries, page);
 
                 ChatMessageDTO[] datasetDTO = _servicesManager.AutoMapper
                     .Map<ChatMessageDTO[]>(paginated.Items.ToArray());
@@ -370,7 +336,7 @@ namespace ChatServices.API.Controllers
             try
             {
                 var userChatBox = _servicesManager.DbContext
-                    .UsersInChatBoxOfReception
+                    .Conversations
                     .FirstOrDefault(cb => cb.Id == chatBoxId);
 
                 if(userChatBox == null)
@@ -419,7 +385,7 @@ namespace ChatServices.API.Controllers
                     .Users.FirstOrDefault(u => u.UserName == loggedUserName);
 
 
-                ChatMessage message = _servicesManager.DbContext.ChatMessages
+                Message message = _servicesManager.DbContext.ChatMessages
                     .FirstOrDefault(message => message.Id == messageId);
 
                 if(message == null || message.FromId != loggedUser.Id)

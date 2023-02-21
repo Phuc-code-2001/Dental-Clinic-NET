@@ -22,7 +22,13 @@ using MailServices;
 using AutoMapper;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
 using System.Linq;
-using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Dental_Clinic_NET.API.CustomPolicy;
 
 namespace Dental_Clinic_NET.API
 {
@@ -53,8 +59,26 @@ namespace Dental_Clinic_NET.API
             services.AddIdentityCore<BaseUser>(options =>
             {
                 // options.SignIn.RequireConfirmedAccount = true;
+
+                // Password settings
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequiredUniqueChars = 1;
+
+
+                // User settings
+                options.User.RequireUniqueEmail = false;
             })
-            .AddEntityFrameworkStores<AppDbContext>();
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddTokenProvider<DataProtectorTokenProvider<BaseUser>>(TokenOptions.DefaultProvider);
+
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromMinutes(3);
+            });
 
             // Adding Authentication  
             services.AddAuthentication(options =>
@@ -62,6 +86,7 @@ namespace Dental_Clinic_NET.API
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
             })
             // Adding Jwt Bearer  
             .AddJwtBearer(options =>
@@ -78,27 +103,13 @@ namespace Dental_Clinic_NET.API
                 };
             });
 
-            services.Configure<IdentityOptions>(options =>
-            {
-                // Password settings
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequiredUniqueChars = 1;
-
-
-                // User settings
-                options.User.RequireUniqueEmail = false;
-            });
-
             services.AddTransient<DropboxServices>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddHttpClient();
 
             services.AddTransient<UserServices>();
+
             services.AddTransient<AppointmentServices>();
 
             services.AddTransient<ImageKitServices>();
@@ -141,6 +152,8 @@ namespace Dental_Clinic_NET.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<UserLockMiddleware>();
+            
 
             app.UseEndpoints(endpoints =>
             {

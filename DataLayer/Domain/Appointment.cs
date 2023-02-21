@@ -56,7 +56,7 @@ namespace DataLayer.Domain
             Complete,
         }
 
-        public ICollection<AppointmentDocument> Documents { get; set; } = new HashSet<AppointmentDocument>();
+        public ICollection<Document> Documents { get; set; } = new HashSet<Document>();
         
     }
     

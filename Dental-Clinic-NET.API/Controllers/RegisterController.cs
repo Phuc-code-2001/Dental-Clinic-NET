@@ -38,7 +38,8 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser user = _servicesManager.AutoMapper.Map<BasicRegisterModel, BaseUser>(request);
-                bool checkPhoneExisted = _servicesManager.UserManager.Users.Any(u => u.PhoneNumber == user.PhoneNumber);
+                bool checkPhoneExisted = _servicesManager.UserManager.Users
+                    .Any(u => u.PhoneNumber == user.PhoneNumber && u.PhoneNumberConfirmed);
 
                 if (checkPhoneExisted)
                 {
@@ -62,7 +63,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 // Generate channel key
                 user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
-                // Verify email or PhoneNumber
+                // Verify email
                 user.EmailConfirmed = false;
                 user.PhoneNumberConfirmed = false;
                 _servicesManager.UserServices.SendEmailToVerifyUser(user);
@@ -72,9 +73,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 Patient patient = new Patient()
                 {
                     BaseUser = user,
-                    MedicalRecordFile = new MediaFile()
+                    MedicalRecordFile = new FileMedia()
                     {
-                        Category = MediaFile.FileCategory.MedicalRecord
+                        Category = FileMedia.FileCategory.MedicalRecord
                     }
                 };
 
@@ -109,8 +110,6 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-
-
         }
 
         

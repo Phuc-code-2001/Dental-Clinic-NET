@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class AppointmentDocument : BaseEntity
+    public class Document : BaseEntity
     {
         public int Id { get; set; }
 
@@ -15,7 +15,7 @@ namespace DataLayer.Domain
         public int AppointmentId { get; set; }
 
         public string Title { get; set; }
-        public MediaFile Document { get; set; }
+        public FileMedia File { get; set; }
 
         public DocumentTags Tag { get; set; }
 

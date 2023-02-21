@@ -106,7 +106,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
                         var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
 
-                        MediaFile cirtificatefile = doctor.Certificate;
+                        FileMedia cirtificatefile = doctor.Certificate;
 
                         if (cirtificatefile != null)
                         {
@@ -114,10 +114,10 @@ namespace Dental_Clinic_NET.API.Controllers
                         }
                         else
                         {
-                            cirtificatefile = new MediaFile()
+                            cirtificatefile = new FileMedia()
                             {
                                 FilePath = uploadResult.UploadPath,
-                                Category = MediaFile.FileCategory.DoctorCertificate
+                                Category = FileMedia.FileCategory.DoctorCertificate
                             };
 
                             doctor.Certificate = cirtificatefile;
@@ -225,10 +225,10 @@ namespace Dental_Clinic_NET.API.Controllers
                         string filename = $"doctor_{request.UserName}_" + Path.GetExtension(request.CertificateFile.FileName);
                         var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
 
-                        MediaFile cirtificate = new MediaFile()
+                        FileMedia cirtificate = new FileMedia()
                         {
                             FilePath = uploadResult.UploadPath,
-                            Category = MediaFile.FileCategory.DoctorCertificate,
+                            Category = FileMedia.FileCategory.DoctorCertificate,
                         };
 
                         doctor.Certificate = cirtificate;
@@ -305,7 +305,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
                         var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
 
-                        MediaFile cirtificatefile = doctor.Certificate;
+                        FileMedia cirtificatefile = doctor.Certificate;
 
                         if (cirtificatefile != null)
                         {
@@ -313,10 +313,10 @@ namespace Dental_Clinic_NET.API.Controllers
                         }
                         else
                         {
-                            cirtificatefile = new MediaFile()
+                            cirtificatefile = new FileMedia()
                             {
                                 FilePath = uploadResult.UploadPath,
-                                Category = MediaFile.FileCategory.DoctorCertificate
+                                Category = FileMedia.FileCategory.DoctorCertificate
                             };
 
                             doctor.Certificate = cirtificatefile;

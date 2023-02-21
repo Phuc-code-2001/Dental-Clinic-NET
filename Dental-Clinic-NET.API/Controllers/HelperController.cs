@@ -138,7 +138,7 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public IActionResult GetFiles()
         {
-            var results = _servicesManager.DbContext.Medias.Select(file => _servicesManager.AutoMapper.Map<MediaFileDTO>(file)).ToList();
+            var results = _servicesManager.DbContext.FileMedias.Select(file => _servicesManager.AutoMapper.Map<MediaFileDTO>(file)).ToList();
             return Ok(results);
         }
 
@@ -157,7 +157,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         patient = new Patient()
                         {
                             Id = user.Id,
-                            MedicalRecordFile = new MediaFile() { Category = MediaFile.FileCategory.MedicalRecord },
+                            MedicalRecordFile = new FileMedia() { Category = FileMedia.FileCategory.MedicalRecord },
                         };
                         _servicesManager.DbContext.Patients.Add(patient);
                         count++;
@@ -185,8 +185,8 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public IActionResult GetAllDocuments()
         {
-            var dataset = _servicesManager.DbContext.AppointmentsDocuments
-                .Include(d => d.Document)
+            var dataset = _servicesManager.DbContext.Documents
+                .Include(d => d.File)
                 .ToList();
 
             return Ok(dataset);

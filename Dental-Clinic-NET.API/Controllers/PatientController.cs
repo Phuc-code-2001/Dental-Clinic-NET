@@ -161,7 +161,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 string filename = $"patient_{request.Id}_" + Path.GetExtension(request.File.FileName);
                 var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.File, filename);
 
-                MediaFile mediafile = patient.MedicalRecordFile;
+                FileMedia mediafile = patient.MedicalRecordFile;
 
                 if(mediafile != null)
                 {
@@ -169,10 +169,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
                 else
                 {
-                    mediafile = new MediaFile() 
+                    mediafile = new FileMedia() 
                     { 
                         FilePath = uploadResult.UploadPath,
-                        Category = MediaFile.FileCategory.MedicalRecord
+                        Category = FileMedia.FileCategory.MedicalRecord
                     };
 
                     patient.MedicalRecordFile = mediafile;

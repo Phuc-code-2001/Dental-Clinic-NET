@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Imagekit;
 using ImageProcessLayer.ImageKitResult;
 using Microsoft.AspNetCore.Http;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace ImageProcessLayer.Services
 {
@@ -29,8 +31,7 @@ namespace ImageProcessLayer.Services
 
         public async Task<ImageKitUploadResult> UploadImageAsync(byte[] file, string filename)
         {
-            Transformation transformation = new Transformation().Width(MaxWidth).Height(MaxHeight);
-            ImagekitResponse resp = await imagekit.Url(transformation).FileName(filename).UploadAsync(file);
+            ImagekitResponse resp = await imagekit.FileName(filename).UploadAsync(file);
             return new ImageKitUploadResult() { ImageId=resp.FileId, URL=resp.URL };
         }
 
@@ -50,17 +51,60 @@ namespace ImageProcessLayer.Services
         {
             if (file.Length > 0)
             {
-                using (var ms = new MemoryStream())
-                {
-                    file.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-
-                    ImageKitUploadResult result = await UploadImageAsync(fileBytes, filename);
-                    return result;
-                }
+                // Convert the image to PNG format
+                var stream = file.OpenReadStream();
+                var pngStream = ConvertToPng(stream);
+                
+                var fileBytes = pngStream.ToArray();
+                string ext = ".png";
+                ImageKitUploadResult result = await UploadImageAsync(fileBytes, filename + ext);
+                return result;
+                
             }
 
             throw new Exception("Something went wrong while upload image");
+        }
+
+        private MemoryStream ConvertToPng(Stream stream)
+        {
+            // Convert the image to PNG format
+            var image = Image.FromStream(stream);
+            image = ResizeImage(image);
+            var pngStream = new MemoryStream();
+            image.Save(pngStream, System.Drawing.Imaging.ImageFormat.Png);
+            pngStream.Position = 0;
+            return pngStream;
+        }
+
+        private Image ResizeImage(Image image)
+        {
+            int targetWidth = MaxWidth;
+            int targetHeight = MaxHeight;
+            int width, height;
+
+            // Determine the width and height of the image
+            if (image.Width > image.Height)
+            {
+                width = targetWidth;
+                height = (int)(image.Height * ((float)targetWidth / image.Width));
+            }
+            else
+            {
+                width = (int)(image.Width * ((float)targetHeight / image.Height));
+                height = targetHeight;
+            }
+
+            // Create a new image with the target size
+            Image newImage = new Bitmap(targetWidth, targetHeight);
+
+            // Resize the image
+            using (Graphics graphics = Graphics.FromImage(newImage))
+            {
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage(image, 0, 0, width, height);
+            }
+
+            return newImage;
         }
 
         public bool IsImage(IFormFile file)

@@ -18,7 +18,7 @@ namespace DataLayer.Domain
 
         public Majors Major { get; set; } = Majors.Unknown;
         
-        public MediaFile Certificate { get; set; }
+        public FileMedia Certificate { get; set; }
 
         public bool Verified { get; set; }
 

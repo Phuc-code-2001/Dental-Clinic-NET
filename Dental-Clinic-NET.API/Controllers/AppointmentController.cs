@@ -39,7 +39,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .Include(apt => apt.Service.Devices)
                 .Include(apt => apt.Room.Devices)
                 .Include(apt => apt.Documents)
-                .ThenInclude(d => d.Document);
+                .ThenInclude(d => d.File);
         }
 
         /// <summary>
@@ -133,21 +133,21 @@ namespace Dental_Clinic_NET.API.Controllers
                     // < Xử lý file >
                     if(!request.Document.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                     {
-                        return BadRequest("Document file must be *.docx format!");
+                        return BadRequest("File file must be *.docx format!");
                     }
 
-                    AppointmentDocument document = new AppointmentDocument();
+                    Document document = new Document();
                     document.Title = "Medical Record Profile for Appontment";
-                    document.Tag = AppointmentDocument.DocumentTags.Patient;
-                    document.Document = new MediaFile()
+                    document.Tag = Document.DocumentTags.Patient;
+                    document.File = new FileMedia()
                     {
-                        Category = MediaFile.FileCategory.AppointmentDocument
+                        Category = FileMedia.FileCategory.AppointmentDocument
                     };
 
                     string filename = $"apm_{entity.Id}_Patient+{DateTime.Now.Ticks}" + Path.GetExtension(request.Document.FileName);
                     var result = await _servicesManager.DropboxServices.UploadAsync(request.Document, filename);
 
-                    document.Document.FilePath = result.UploadPath;
+                    document.File.FilePath = result.UploadPath;
                     
                     entity.Documents.Add(document);
 
@@ -421,31 +421,31 @@ namespace Dental_Clinic_NET.API.Controllers
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
-                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                Document document = _servicesManager.AutoMapper.Map<Document>(requestModel);
                 if(string.IsNullOrWhiteSpace(document.Title))
                 {
                     document.Title = "Doctor document for appointment";
                 }
 
-                document.Tag = AppointmentDocument.DocumentTags.Doctor;
+                document.Tag = Document.DocumentTags.Doctor;
 
                 IFormFile file = requestModel.DocumentFile;
 
                 // < Xử lý file >
                 if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 {
-                    return BadRequest("Document file must be *.docx format!");
+                    return BadRequest("File file must be *.docx format!");
                 }
 
-                document.Document = new MediaFile()
+                document.File = new FileMedia()
                 {
-                    Category = MediaFile.FileCategory.AppointmentDocument
+                    Category = FileMedia.FileCategory.AppointmentDocument
                 };
 
                 string filename = $"apm_{entity.Id}_Doctor+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
                 var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
 
-                document.Document.FilePath = result.UploadPath;
+                document.File.FilePath = result.UploadPath;
 
                 entity.Documents.Add(document);
                 _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
@@ -494,31 +494,31 @@ namespace Dental_Clinic_NET.API.Controllers
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
-                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                Document document = _servicesManager.AutoMapper.Map<Document>(requestModel);
                 if (string.IsNullOrWhiteSpace(document.Title))
                 {
                     document.Title = "Adding document by Patient";
                 }
 
-                document.Tag = AppointmentDocument.DocumentTags.Patient;
+                document.Tag = Document.DocumentTags.Patient;
 
                 IFormFile file = requestModel.DocumentFile;
 
                 // < Xử lý file >
                 if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 {
-                    return BadRequest("Document file must be *.docx format!");
+                    return BadRequest("File file must be *.docx format!");
                 }
 
-                document.Document = new MediaFile()
+                document.File = new FileMedia()
                 {
-                    Category = MediaFile.FileCategory.AppointmentDocument
+                    Category = FileMedia.FileCategory.AppointmentDocument
                 };
 
                 string filename = $"apm_{entity.Id}Patient+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
                 var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
 
-                document.Document.FilePath = result.UploadPath;
+                document.File.FilePath = result.UploadPath;
 
                 entity.Documents.Add(document);
                 _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
@@ -547,17 +547,17 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                AppointmentDocument entity = _servicesManager.DbContext.AppointmentsDocuments.Find(id);
+                Document entity = _servicesManager.DbContext.Documents.Find(id);
 
                 if(entity == null)
                 {
-                    return NotFound("Document not found!");
+                    return NotFound("File not found!");
                 }
 
-                _servicesManager.DbContext.AppointmentsDocuments.Remove(entity);
+                _servicesManager.DbContext.Documents.Remove(entity);
                 _servicesManager.DbContext.SaveChanges();
 
-                return Ok($"Removed Document '{entity.Title}' of Appointment '{entity.AppointmentId}'");
+                return Ok($"Removed File '{entity.Title}' of Appointment '{entity.AppointmentId}'");
             }
             catch(Exception ex)
             {

@@ -2,7 +2,7 @@
 
 namespace ChatServices.API.DTOs
 {
-    public class UserInChatBoxOfReceptionDTO
+    public class ConversationDTO
     {
         public int Id { get; set; }
 

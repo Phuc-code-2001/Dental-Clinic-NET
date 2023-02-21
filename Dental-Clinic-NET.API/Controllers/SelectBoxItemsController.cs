@@ -149,5 +149,18 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public IActionResult GetUserRoles()
+        {
+            try
+            {
+                var roles = _servicesManager.AutoMapper.Map<EnumTypeDTO[]>(Enum.GetValues<UserType>());
+                return Ok(roles);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
