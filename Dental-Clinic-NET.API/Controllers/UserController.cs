@@ -399,8 +399,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound($"User not found. Id='{userId}'");
                 }
 
-                await _servicesManager.UserManager.DeleteAsync(requiredUser);
-                return Ok();
+                var result = await _servicesManager.UserManager.DeleteAsync(requiredUser);
+                if(result.Succeeded)
+                {
+                    return Ok();
+                }
+                
+                var errors = result.Errors.Select(e => new { e.Code, e.Description });
+                return BadRequest(errors);
 
             }
             catch (Exception ex)
