@@ -7,7 +7,7 @@ namespace Dental_Clinic_NET.API.Models.Doctors
     {
         public string UserName { get; set; }
         public string FullName { get; set; }
-        public Majors Major { get; set; }
+        public string Major { get; set; }
         public IFormFile CertificateFile { get; set; }
         public string Gender { get; set; }
 

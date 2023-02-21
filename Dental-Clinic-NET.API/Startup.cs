@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Dental_Clinic_NET.API.CustomPolicy;
+using Dental_Clinic_NET.API.Services.Doctors;
 
 namespace Dental_Clinic_NET.API
 {
@@ -109,6 +110,7 @@ namespace Dental_Clinic_NET.API
             services.AddHttpClient();
 
             services.AddTransient<UserServices>();
+            services.AddTransient<DoctorServices>();
 
             services.AddTransient<AppointmentServices>();
 
