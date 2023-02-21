@@ -20,11 +20,9 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class DoctorController : Controller
     {
-        private AppDbContext _context;
         private ServicesManager _servicesManager;
-        public DoctorController(AppDbContext context, ServicesManager servicesManager)
+        public DoctorController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
         }
 
@@ -41,14 +39,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var queries = _context.Doctors
+                var queries = _servicesManager.DbContext.Doctors
                     .Include(d => d.Certificate)
                     .Include(d => d.BaseUser);
 
                 Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
-
                 Doctor[] doctors = paginated.Items.ToArray();
-
                 DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
 
                 return Ok(new
@@ -67,96 +63,66 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        /// <summary>
-        ///  Make an account become a doctor
-        /// </summary>
-        /// <param name="request">Doctor info</param>
-        /// <returns>
-        /// 
-        /// </returns>
         [HttpPost]
-        [Authorize(Roles = "Administrator")]
-        public async Task<IActionResult> RequestToBecomeDoctorAsync([FromForm] RequestDoctor request)
+        [Authorize(Roles = nameof(UserType.Administrator))]
+        public async Task<IActionResult> CreateDoctorAsync([FromForm] CreateDoctor request)
         {
             try
             {
-                BaseUser user = _context.Users.Find(request.Id);
-                if (user == null)
+                BaseUser baseUser = await _servicesManager.UserManager.FindByNameAsync(request.UserName);
+                if (baseUser != null)
                 {
-                    return NotFound("User not found!");
+                    return BadRequest("Username already exist!");
                 }
+                // User Info
+                baseUser = new BaseUser();
+                baseUser.UserName = request.UserName;
+                baseUser.FullName = request.FullName;
+                baseUser.Gender = request.Gender;
+                baseUser.Type = UserType.Doctor;
 
-                Doctor doctor = _context.Doctors.Find(request.Id);
-
-                if (doctor != null)
+                // Doctor Info
+                Doctor doctor = new Doctor()
                 {
-                    return BadRequest("This user already request doctor!");
-                }
+                    Id = baseUser.Id,
+                    BaseUser = baseUser,
+                    Major = request.Major,
+                    Verified = true,
+                };
 
-                doctor = _servicesManager.AutoMapper.Map<Doctor>(request);
-                
-                if(doctor.Verified)
-                {
-                    user.Type = UserType.Doctor;
-                }
-                
-                // < Xử lý file
                 if(request.CertificateFile != null)
                 {
-                    if(request.CertificateFile.ContentType.EndsWith("pdf"))
+                    string filename = $"certificate_{request.UserName}" + Path.GetExtension(request.CertificateFile.FileName);
+                    try
                     {
-                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
-                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
-
-                        MediaFile cirtificatefile = doctor.Certificate;
-
-                        if (cirtificatefile != null)
-                        {
-                            cirtificatefile.FilePath = uploadResult.UploadPath;
-                        }
-                        else
-                        {
-                            cirtificatefile = new MediaFile()
-                            {
-                                FilePath = uploadResult.UploadPath,
-                                Category = MediaFile.FileCategory.DoctorCertificate
-                            };
-
-                            doctor.Certificate = cirtificatefile;
-                        }
-
+                        doctor.Certificate = await _servicesManager.DoctorServices
+                            .UploadCertificateAsync(request.CertificateFile, filename);
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        return BadRequest("File format must be *.pdf");
+                        return BadRequest(ex.Message);
                     }
                 }
 
-                // Xử lý file />
+                _servicesManager.DbContext.Doctors.Add(doctor);
+                var createdResult = await _servicesManager.UserManager.CreateAsync(baseUser, request.Password);
+                if(!createdResult.Succeeded)
+                {
+                    var errors = createdResult.Errors.Select(e => e.Description);
+                    return BadRequest(errors);
+                }
 
-                _context.Doctors.Add(doctor);
-                _context.SaveChanges();
+                doctor = await _servicesManager.DbContext.Doctors.Include(d => d.BaseUser)
+                    .FirstOrDefaultAsync(d => d.Id == baseUser.Id);
 
-                // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
+                return Ok(new
+                {
+                    message = $"The verified doctor with id='{baseUser.Id}' created.",
+                    data = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor)
+                });
 
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "User to Doctor", doctor, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                doctor = _context.Doctors
-                    .Include(d => d.BaseUser)
-                    .Include(d => d.Certificate)
-                    .FirstOrDefault(d => d.Id == doctor.Id);
-
-                DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
-
-                return Ok(doctorDTO);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -176,7 +142,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Doctor doctor = _context.Doctors.Find(request.Id);
+                Doctor doctor = _servicesManager.DbContext.Doctors
+                    .Include(d => d.BaseUser).FirstOrDefault(d => d.Id == request.Id);
 
                 if (doctor == null)
                 {
@@ -185,63 +152,25 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateDoctor, Doctor>(request, doctor);
 
-                BaseUser user = _context.Users.Find(doctor.Id);
-                if(!doctor.Verified)
-                {
-                    if(user != null && user.Type == UserType.Doctor)
-                    {
-                        user.Type = UserType.Patient;
-                        _context.Entry(user).State = EntityState.Modified;
-                    }
-                }
-                else
-                {
-                    if(user != null && user.Type != UserType.Doctor)
-                    {
-                        user.Type = UserType.Doctor;
-                        _context.Entry(user).State = EntityState.Modified;
-                    }
-                }
-
-                // < Xử lý file
                 if (request.CertificateFile != null)
                 {
-                    if (request.CertificateFile.ContentType.EndsWith("pdf"))
+                    string filename = $"doctor_{doctor.BaseUser.UserName}" + Path.GetExtension(request.CertificateFile.FileName);
+                    try
                     {
-                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
-                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
-
-                        MediaFile cirtificatefile = doctor.Certificate;
-
-                        if (cirtificatefile != null)
-                        {
-                            cirtificatefile.FilePath = uploadResult.UploadPath;
-                        }
-                        else
-                        {
-                            cirtificatefile = new MediaFile()
-                            {
-                                FilePath = uploadResult.UploadPath,
-                                Category = MediaFile.FileCategory.DoctorCertificate
-                            };
-
-                            doctor.Certificate = cirtificatefile;
-                        }
-
+                        doctor.Certificate = await _servicesManager.DoctorServices
+                            .UploadCertificateAsync(request.CertificateFile, filename);
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        return BadRequest("File format must be *.pdf");
+                        return BadRequest(ex.Message);
                     }
                 }
 
-                // Xử lý file />
-
-                _context.Entry(doctor).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(doctor).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -250,7 +179,7 @@ namespace Dental_Clinic_NET.API.Controllers
                         Console.WriteLine("Push event done at: " + DateTime.Now);
                     });
 
-                doctor = _context.Doctors
+                doctor = _servicesManager.DbContext.Doctors
                     .Include(d => d.BaseUser)
                     .Include(d => d.Certificate)
                     .FirstOrDefault(d => d.Id == doctor.Id);
@@ -278,7 +207,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Doctor doctor = _context.Doctors
+                Doctor doctor = _servicesManager.DbContext.Doctors
                     .Include(d => d.BaseUser)
                     .Include(d => d.Certificate)
                     .FirstOrDefault(d => d.Id == id);

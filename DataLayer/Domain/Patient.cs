@@ -17,7 +17,7 @@ namespace DataLayer.Domain
         public BaseUser BaseUser { get; set; }
 
         [ForeignKey("FileId")]
-        public MediaFile MedicalRecordFile { get; set; }
+        public FileMedia MedicalRecordFile { get; set; }
         [ForeignKey("MediaFile")]
         public int FileId { get; set; }
     }

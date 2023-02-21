@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230218092231_UpdatePolicy")]
+    partial class UpdatePolicy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -293,8 +295,8 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Major")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Major")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
@@ -490,9 +492,6 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
                     b.Property<string>("ServiceCode")
                         .HasColumnType("nvarchar(max)");
 
@@ -501,6 +500,9 @@ namespace DataLayer.Migrations
 
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

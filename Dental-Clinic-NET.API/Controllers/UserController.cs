@@ -13,9 +13,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,17 +28,11 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private IMapper _mapper;
-        private UserManager<BaseUser> _userManager;
-        private ImageKitServices _imageKitServices;
-
+        
         private ServicesManager _servicesManager;
 
-        public UserController(UserManager<BaseUser> userManager, ImageKitServices imageKitServices, IMapper mapper, ServicesManager servicesManager)
+        public UserController(ServicesManager servicesManager)
         {
-            _userManager = userManager;
-            _imageKitServices = imageKitServices;
-            _mapper = mapper;
             _servicesManager = servicesManager;
         }
 
@@ -56,19 +53,25 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
 
-                if (_userManager.Users.Any(user => user.Type == UserType.Administrator))
+                if (_servicesManager.UserManager.Users.Any(user => user.Type == UserType.Administrator))
                 {
                     return BadRequest("Superuser already exist...");
                 }
 
-                BaseUser user = inputInfo.ToBaseUser_NotIncludePassword();
-                user.Type = UserType.Administrator;
-                user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
-                IdentityResult result = await _userManager.CreateAsync(user, inputInfo.Password);
+                BaseUser user = new BaseUser()
+                {
+                    UserName = inputInfo.UserName,
+                    FullName = inputInfo.FullName,
+                    Type = UserType.Administrator,
+                    PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel(),
+                };
+                
+                IdentityResult result = await _servicesManager.UserManager
+                    .CreateAsync(user, inputInfo.Password);
 
                 if (result.Succeeded)
                 {
-                    return Ok(_mapper.Map<UserDTO>(user));
+                    return Ok(_servicesManager.AutoMapper.Map<UserDTO>(user));
                 }
 
                 var errors = result.Errors.Select(er => new { er.Code, er.Description });
@@ -94,18 +97,12 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize]
-        [EnableQuery]
-        public async Task<IActionResult> GetAuthorizeAsync()
+        public IActionResult GetAuthorizeAsync()
         {
             try
             {
-                BaseUser loggedUser = await _userManager.FindByIdAsync(User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "");
-                UserSerializer serializer = new UserSerializer(new PermissionOnBaseUser(loggedUser, loggedUser));
-
-                return Ok(serializer.Serialize(user =>
-                {
-                    return _mapper.Map<UserDTO>(user);
-                }));
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                return Ok(_servicesManager.AutoMapper.Map<UserDTO>(loggedUser));
             }
             catch (Exception ex)
             {
@@ -123,40 +120,48 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     401: not is_admin, not is_owner, not is_authenticated
         ///     400: Image file invalid
         ///     500: ImageKit server error || Server handle error
-        ///     200: { string: newImage, UserDTO: user }
+        ///     200: { string: newImage, UserDTO: requiredUser }
         /// </returns>
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> UpdateAvatarAsync(string userId, IFormFile image)
+        public async Task<IActionResult> UpdateAvatarAsync([FromForm] string userId, [FromForm] IFormFile image)
         {
             try
             {
-                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
-                BaseUser loginUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(userId);
+                
+                if (requiredUser == null)
+                {
+                    return NotFound($"User not found. Id='{userId}'");
+                }
 
-                PermissionOnBaseUser permission = new PermissionOnBaseUser(loginUser, requiredUser);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
+                PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
 
                 if (!permission.IsAdmin && !permission.IsOwner)
                 {
                     return Unauthorized("Cann't do this operation");
                 }
 
-                if (_imageKitServices.IsImage(image))
+                if (_servicesManager.ImageKitServices.IsImage(image))
                 {
-                    var result = await _imageKitServices.UploadImageAsync(image, image.FileName);
+                    string imgName = "avatar_" + requiredUser.UserName;
+                    var result = await _servicesManager.ImageKitServices.UploadImageAsync(image, imgName);
+                    
                     if (requiredUser.ImageAvatarId != null)
                     {
-                        await _imageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
+                        await _servicesManager.ImageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
                     }
                     requiredUser.ImageURL = result.URL;
                     requiredUser.ImageAvatarId = result.ImageId;
-                    await _userManager.UpdateAsync(requiredUser);
+                    await _servicesManager.UserManager.UpdateAsync(requiredUser);
 
                     UserSerializer serializer = new UserSerializer(permission);
                     return Ok(new
                     {
                         newImage = requiredUser.ImageURL,
-                        user = serializer.Serialize(user => _mapper.Map<UserDTO>(user))
+                        user = serializer.Serialize(user => _servicesManager.AutoMapper.Map<UserDTO>(user))
                     });
                 }
 
@@ -181,19 +186,19 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var users = _userManager.Users.ToList();
-                var usersDTO = users.Select(user => _mapper.Map<UserDTO>(user)).ToList();
+                var query = _servicesManager.DbContext.Users.Include(user => user.UserLock);
+                var paginatedQuery = new Paginated<BaseUser>(query, page);
 
-                Paginated<UserDTO> paginatedUsers = new Paginated<UserDTO>(usersDTO.AsQueryable(), page);
-
+                var users = paginatedQuery.Items.ToArray();
+                var userDTOs = _servicesManager.AutoMapper.Map<UserDTO[]>(users);
 
                 return Ok(new
                 {
                     page = page,
-                    per_page = paginatedUsers.PageSize,
-                    total = paginatedUsers.QueryCount,
-                    total_pages = paginatedUsers.PageCount,
-                    data = paginatedUsers.Items
+                    per_page = paginatedQuery.PageSize,
+                    total = paginatedQuery.QueryCount,
+                    total_pages = paginatedQuery.PageCount,
+                    data = userDTOs,
                 });
 
             }
@@ -204,11 +209,11 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         /// <summary>
-        ///  Change role of specific user
+        ///  Change role of specific requiredUser
         /// </summary>
         /// <param name="request">Info need to change role</param>
         /// <returns>
-        ///     404: user not found
+        ///     404: requiredUser not found
         ///     400: something went wrong so cannot update
         ///     500: Server handle error
         ///     200: Update success
@@ -219,11 +224,14 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser user = await _userManager.FindByIdAsync(request.UserId);
-                if (user == null) return NotFound("User not found");
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(request.UserId);
+                if (requiredUser == null)
+                {
+                    return NotFound($"User not found, Id='{request.UserId}'");
+                }
 
-                user.Type = request.RoleId;
-                var result = await _userManager.UpdateAsync(user);
+                requiredUser.Type = request.RoleId;
+                var result = await _servicesManager.UserManager.UpdateAsync(requiredUser);
 
                 if (!result.Succeeded)
                 {
@@ -231,7 +239,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest(errors);
                 }
 
-                UserDTO userDTO = _servicesManager.AutoMapper.Map<UserDTO>(user);
+                UserDTO userDTO = _servicesManager.AutoMapper.Map<UserDTO>(requiredUser);
                 return Ok(userDTO);
 
             }
@@ -258,17 +266,24 @@ namespace Dental_Clinic_NET.API.Controllers
 
             try
             {
-                BaseUser requiredUser = await _userManager.FindByIdAsync(request.userId);
-                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(request.UserId);
+                
+                if(requiredUser == null)
+                {
+                    return NotFound($"User not found. Id='{request.UserId}'");
+                }
+                
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
 
                 if (!permission.IsOwner && !permission.IsAdmin)
                 {
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
+
                 _servicesManager.AutoMapper.Map<UpdateUserModel, BaseUser>(request, requiredUser);
 
-                IdentityResult updateResult = await _userManager.UpdateAsync(requiredUser);
+                IdentityResult updateResult = await _servicesManager.UserManager.UpdateAsync(requiredUser);
 
                 if (updateResult.Succeeded)
                 {
@@ -291,11 +306,11 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         /// <summary>
-        ///   Update password for specific user
+        ///   Update password for specific requiredUser
         /// </summary>
         /// <param name="request">Info needed to update password</param>
         /// <returns>
-        ///     404: Not found user
+        ///     404: Not found requiredUser
         ///     403: Forbiden
         ///     400: an invalid or error while update
         ///     500: Server handle error
@@ -307,20 +322,21 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser requiredUser = await _userManager.FindByIdAsync(request.userId);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(request.userId);
                 if(requiredUser == null)
                 {
-                    return NotFound("Truyền sai userId rồi ba");
+                    return NotFound($"User not found. Id='{request.userId}'");
                 }
 
-                BaseUser loggedUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, requiredUser);
                 if(!permission.IsAdmin && !permission.IsOwner)
                 {
                     return StatusCode(403);
                 }
 
-                IdentityResult updateResult = await _userManager.ChangePasswordAsync(requiredUser, request.OldPassword, request.NewPassword);
+                IdentityResult updateResult = await _servicesManager.UserManager
+                    .ChangePasswordAsync(requiredUser, request.OldPassword, request.NewPassword);
 
                 if(updateResult.Succeeded)
                 {
@@ -338,16 +354,16 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("{UserId}")]
         [Authorize]
         public async Task<IActionResult> GetAsync(string userId)
         {
             try
             {
-                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(userId);
                 if (requiredUser == null)
                 {
-                    return NotFound("Truyền sai userId rồi ba");
+                    return NotFound($"User not found. Id='{userId}'");
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
@@ -371,20 +387,26 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpDelete("{userId}")]
+        [HttpDelete("{UserId}")]
         [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> DeleteAsync(string userId)
         {
             try
             {
-                BaseUser requiredUser = await _userManager.FindByIdAsync(userId);
+                BaseUser requiredUser = await _servicesManager.UserManager.FindByIdAsync(userId);
                 if (requiredUser == null)
                 {
-                    return NotFound("Truyền sai userId rồi ba");
+                    return NotFound($"User not found. Id='{userId}'");
                 }
 
-                await _userManager.DeleteAsync(requiredUser);
-                return Ok();
+                var result = await _servicesManager.UserManager.DeleteAsync(requiredUser);
+                if(result.Succeeded)
+                {
+                    return Ok();
+                }
+                
+                var errors = result.Errors.Select(e => new { e.Code, e.Description });
+                return BadRequest(errors);
 
             }
             catch (Exception ex)

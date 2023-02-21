@@ -18,7 +18,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessorServices", "Fi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatServices.API", "ChatServices.API\ChatServices.API.csproj", "{21869E17-9C1D-4E06-A6EB-675FE17AEA9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailServices", "MailServices\MailServices.csproj", "{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailServices", "MailServices\MailServices.csproj", "{DE4F4C39-83EB-4BD7-9255-E11EEE4DF2D2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APIs", "APIs", "{BD0EBCC7-94B6-4BF5-B5B2-7C9B4611DD67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0E2C838F-9550-4135-A052-943E74B447BC} = {BD0EBCC7-94B6-4BF5-B5B2-7C9B4611DD67}
+		{21869E17-9C1D-4E06-A6EB-675FE17AEA9B} = {BD0EBCC7-94B6-4BF5-B5B2-7C9B4611DD67}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {94138E3F-6064-49A5-AD61-B8A9B0243123}

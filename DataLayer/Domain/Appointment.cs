@@ -49,10 +49,14 @@ namespace DataLayer.Domain
             Accept,
             Cancel,
             Doing,
+            Transfer,
+            TransferCancel,
+            TransferDoing,
+            TransferComplete,
             Complete,
         }
 
-        public ICollection<AppointmentDocument> Documents { get; set; } = new HashSet<AppointmentDocument>();
+        public ICollection<Document> Documents { get; set; } = new HashSet<Document>();
         
     }
     

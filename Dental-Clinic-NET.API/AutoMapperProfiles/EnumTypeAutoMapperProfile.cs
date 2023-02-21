@@ -13,11 +13,11 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 .ForMember(des => des.Id, act => act.MapFrom(src => src))
                 .ForMember(des => des.Name, act => act.MapFrom(src => src.ToString()));
 
-            CreateMap<Doctor.Majors, EnumTypeDTO>()
+            CreateMap<Room.RoomTypes, EnumTypeDTO>()
                 .ForMember(des => des.Id, act => act.MapFrom(src => src))
                 .ForMember(des => des.Name, act => act.MapFrom(src => src.ToString()));
 
-            CreateMap<Room.RoomTypes, EnumTypeDTO>()
+            CreateMap<UserType, EnumTypeDTO>()
                 .ForMember(des => des.Id, act => act.MapFrom(src => src))
                 .ForMember(des => des.Name, act => act.MapFrom(src => src.ToString()));
 

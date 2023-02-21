@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DataLayer.Domain
 {
     [Table("Files")]
-    public class MediaFile : BaseEntity
+    public class FileMedia : BaseEntity
     {
         [Key]
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
+using Dental_Clinic_NET.API.Permissions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace Dental_Clinic_NET.API.Services.Appointments
 {
-    public class AppointmentServices : IAppointmentServices
+    public class AppointmentServices
     {
 
         AppDbContext _context;
@@ -15,6 +16,41 @@ namespace Dental_Clinic_NET.API.Services.Appointments
         public AppointmentServices(AppDbContext context)
         {
             _context = context;
+        }
+
+        public bool CanRead(Appointment entity, BaseUser user)
+        {
+            var permission = new PermissionOnAppointment(user, entity);
+            bool c1 = permission.IsAdmin;
+            bool c2 = permission.IsOwner;
+            bool c3 = permission.LoggedUser.Type == UserType.Receptionist;
+            return c1 || c2 || c3;
+        }
+
+        public bool CanWrite(Appointment entity, BaseUser user)
+        {
+            var permission = new PermissionOnAppointment(user, entity);
+
+            switch (user.Type)
+            {
+                case UserType.Patient:
+                    // Only allowed in upload document
+                    return permission.IsOwner;
+
+                case UserType.Doctor:
+                    return permission.IsOwner
+                        && entity.State == Appointment.States.Accept
+                        && entity.State == Appointment.States.Doing;
+
+                case UserType.Receptionist:
+                    return entity.State == Appointment.States.NotYet;
+
+                case UserType.Administrator:
+                    return true;
+            }
+
+            return false;
+
         }
 
         public Doctor FindDoctorForAppointment(Appointment appointment)

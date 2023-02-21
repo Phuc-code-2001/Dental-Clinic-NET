@@ -14,12 +14,10 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class SelectBoxItemsController : ControllerBase
     {
-        AppDbContext _context;
         ServicesManager _servicesManager;
 
-        public SelectBoxItemsController(AppDbContext context, ServicesManager servicesManager)
+        public SelectBoxItemsController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
         }
 
@@ -51,7 +49,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var types = _context.Services.Select(sv => new
+                var types = _servicesManager.DbContext.Services.Select(sv => new
                 {
                     Id=sv.Id,
                     Name=sv.ServiceName,
@@ -71,7 +69,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var types = _context.Devices.Select(dv => new
+                var types = _servicesManager.DbContext.Devices.Select(dv => new
                 {
                     Id=dv.Id,
                     Name=dv.DeviceName,
@@ -91,7 +89,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var types = _context.Rooms.Select(r => new
+                var types = _servicesManager.DbContext.Rooms.Select(r => new
                 {
                     Id=r.Id,
                     Code=r.RoomCode,
@@ -105,21 +103,6 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpGet]
-        public IActionResult GetMajors()
-        {
-            try
-            {
-                var types = _servicesManager.AutoMapper
-                    .Map<EnumTypeDTO[]>(Enum.GetValues<Doctor.Majors>());
-
-                return Ok(types);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
 
         [HttpGet]
         public IActionResult GetAppointmentStates()
@@ -151,5 +134,18 @@ namespace Dental_Clinic_NET.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public IActionResult GetUserRoles()
+        {
+            try
+            {
+                var roles = _servicesManager.AutoMapper.Map<EnumTypeDTO[]>(Enum.GetValues<UserType>());
+                return Ok(roles);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

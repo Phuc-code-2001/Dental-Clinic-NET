@@ -5,24 +5,24 @@ using DataLayer.Domain;
 
 namespace ChatServices.API.Mappers
 {
-    public class ChatMappers : Profile
+    public class ChatMapperProfile : Profile
     {
-        public ChatMappers()
+        public ChatMapperProfile()
         {
-            CreateMap<PatToRecMessage, ChatMessage>()
+            CreateMap<PatToRecMessage, Message>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)));
 
-            CreateMap<RecToPatMessage, ChatMessage>()
+            CreateMap<RecToPatMessage, Message>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)))
                 .ForMember(des => des.ToId, opt => opt.MapFrom(src => src.PatientId));
 
             CreateMap<BaseUser, ChatUserDTO>();
 
-            CreateMap<ChatMessage, ChatMessageDTO>()
+            CreateMap<Message, ChatMessageDTO>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(
                     src => src.IsRemoved ? string.Empty : Base64Decode(src.Content)));
 
-            CreateMap<UserInChatBoxOfReception, UserInChatBoxOfReceptionDTO>()
+            CreateMap<Conversation, ConversationDTO>()
                 .ForMember(des => des.LastMessageCreated, opt => opt.MapFrom(src => src.LastMessage.TimeCreated));
 
 

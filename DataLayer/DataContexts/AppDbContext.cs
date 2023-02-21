@@ -17,9 +17,9 @@ namespace DataLayer.DataContexts
         public AppDbContext(DbContextOptions options) : base(options) { }
 
         private static string host = "sql.bsite.net\\MSSQL2016";
-        private static string user = "phucht2022_DentalClinicNET";
+        private static string user = "phucht2022_DentalClinicNET_V2";
         private static string password = "12345678";
-        private static string database = "phucht2022_DentalClinicNET";
+        private static string database = "phucht2022_DentalClinicNET_V2";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -32,7 +32,7 @@ namespace DataLayer.DataContexts
 
         public DbSet<Contact> Contacts { get; set; }
 
-        public DbSet<MediaFile> Medias { get; set; }
+        public DbSet<FileMedia> FileMedias { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Device> Devices { get; set; }
@@ -40,13 +40,14 @@ namespace DataLayer.DataContexts
 
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<AppointmentDocument> AppointmentsDocuments { get; set; }
+        public DbSet<Document> Documents { get; set; }
 
-        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Message> ChatMessages { get; set; }
 
-        public DbSet<UserInChatBoxOfReception> UsersInChatBoxOfReception { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
 
         public DbSet<EmailConfirmation> EmailConfirmations { get; set; }
+        public DbSet<UserLock> UserLocks { get; set; }
 
         public override int SaveChanges()
         {

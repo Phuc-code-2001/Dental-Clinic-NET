@@ -22,20 +22,16 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class AppointmentController : ControllerBase
     {
-        AppDbContext _context;
         ServicesManager _servicesManager;
-        AppointmentServices _appointmentServices;
 
-        public AppointmentController(AppDbContext context, ServicesManager servicesManager, AppointmentServices appointmentServices)
+        public AppointmentController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
-            _appointmentServices = appointmentServices;
         }
 
         private IQueryable<Appointment> QueryAll()
         {
-            return _context.Appointments
+            return _servicesManager.DbContext.Appointments
                 .Include(apt => apt.Patient.BaseUser)
                 .Include(apt => apt.Patient.MedicalRecordFile)
                 .Include(apt => apt.Doctor.BaseUser)
@@ -43,42 +39,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .Include(apt => apt.Service.Devices)
                 .Include(apt => apt.Room.Devices)
                 .Include(apt => apt.Documents)
-                .ThenInclude(d => d.Document);
-        }
-
-        private static bool CanRead(Appointment entity, BaseUser user)
-        {
-            var permission = new PermissionOnAppointment(user, entity);
-            bool c1 = permission.IsAdmin;
-            bool c2 = permission.IsOwner;
-            bool c3 = permission.LoggedUser.Type == UserType.Receptionist;
-            return c1 || c2 || c3;
-        }
-
-        private static bool CanWrite(Appointment entity, BaseUser user)
-        {
-            var permission = new PermissionOnAppointment(user, entity);
-
-            switch(user.Type)
-            {
-                case UserType.Patient:
-                    // Only allowed in upload document
-                    return permission.IsOwner;
-
-                case UserType.Doctor:
-                    return permission.IsOwner 
-                        && entity.State == Appointment.States.Accept
-                        && entity.State == Appointment.States.Doing;
-
-                case UserType.Receptionist:
-                    return entity.State == Appointment.States.NotYet;
-
-                case UserType.Administrator:
-                    return true;
-            }
-
-            return false;
-
+                .ThenInclude(d => d.File);
         }
 
         /// <summary>
@@ -100,7 +61,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 var queryAll = QueryAll();
                 var filtered = filter.Filter(queryAll);
                 var permissionFiltered = filtered.AsEnumerable()
-                    .Where(entity => CanRead(entity, loggedUser)).AsQueryable();
+                    .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
 
                 if(page != -1)
                 {
@@ -162,7 +123,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Check Service
-                if(_context.Services.Find(request.ServiceId) == null)
+                if(_servicesManager.DbContext.Services.Find(request.ServiceId) == null)
                 {
                     return BadRequest("Truyền sai serviceId rồi => Service not found");
                 }
@@ -172,32 +133,32 @@ namespace Dental_Clinic_NET.API.Controllers
                     // < Xử lý file >
                     if(!request.Document.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                     {
-                        return BadRequest("Document file must be *.docx format!");
+                        return BadRequest("File file must be *.docx format!");
                     }
 
-                    AppointmentDocument document = new AppointmentDocument();
+                    Document document = new Document();
                     document.Title = "Medical Record Profile for Appontment";
-                    document.Tag = AppointmentDocument.DocumentTags.Patient;
-                    document.Document = new MediaFile()
+                    document.Tag = Document.DocumentTags.Patient;
+                    document.File = new FileMedia()
                     {
-                        Category = MediaFile.FileCategory.AppointmentDocument
+                        Category = FileMedia.FileCategory.AppointmentDocument
                     };
 
                     string filename = $"apm_{entity.Id}_Patient+{DateTime.Now.Ticks}" + Path.GetExtension(request.Document.FileName);
                     var result = await _servicesManager.DropboxServices.UploadAsync(request.Document, filename);
 
-                    document.Document.FilePath = result.UploadPath;
+                    document.File.FilePath = result.UploadPath;
                     
                     entity.Documents.Add(document);
 
                     // </ Xử lý file >
                 }
 
-                entity.Doctor = _appointmentServices.FindDoctorForAppointment(entity);
-                entity.Room = _appointmentServices.FindRoomForAppointment(entity);
+                entity.Doctor = _servicesManager.AppointmentServices.FindDoctorForAppointment(entity);
+                entity.Room = _servicesManager.AppointmentServices.FindRoomForAppointment(entity);
 
-                _context.Appointments.Add(entity);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Appointments.Add(entity);
+                _servicesManager.DbContext.SaveChanges();
 
                 entity = QueryAll().FirstOrDefault(e => e.Id == entity.Id);
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
@@ -233,7 +194,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
 
-                if(!CanRead(entity, loggedUser))
+                if(!_servicesManager.AppointmentServices.CanRead(entity, loggedUser))
                 {
                     return StatusCode(403, "Quyền đâu mà xem!");
                 }
@@ -278,14 +239,14 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if(!CanWrite(entity, loggedUser))
+                if(!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Accept;
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
@@ -322,14 +283,14 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Cancel;
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
@@ -366,14 +327,14 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Doing;
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
@@ -410,14 +371,14 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
                 entity.State = Appointment.States.Complete;
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
@@ -455,40 +416,40 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
-                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                Document document = _servicesManager.AutoMapper.Map<Document>(requestModel);
                 if(string.IsNullOrWhiteSpace(document.Title))
                 {
                     document.Title = "Doctor document for appointment";
                 }
 
-                document.Tag = AppointmentDocument.DocumentTags.Doctor;
+                document.Tag = Document.DocumentTags.Doctor;
 
                 IFormFile file = requestModel.DocumentFile;
 
                 // < Xử lý file >
                 if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 {
-                    return BadRequest("Document file must be *.docx format!");
+                    return BadRequest("File file must be *.docx format!");
                 }
 
-                document.Document = new MediaFile()
+                document.File = new FileMedia()
                 {
-                    Category = MediaFile.FileCategory.AppointmentDocument
+                    Category = FileMedia.FileCategory.AppointmentDocument
                 };
 
                 string filename = $"apm_{entity.Id}_Doctor+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
                 var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
 
-                document.Document.FilePath = result.UploadPath;
+                document.File.FilePath = result.UploadPath;
 
                 entity.Documents.Add(document);
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
                 // </ Xử lý file >
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
@@ -528,40 +489,40 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
 
-                AppointmentDocument document = _servicesManager.AutoMapper.Map<AppointmentDocument>(requestModel);
+                Document document = _servicesManager.AutoMapper.Map<Document>(requestModel);
                 if (string.IsNullOrWhiteSpace(document.Title))
                 {
                     document.Title = "Adding document by Patient";
                 }
 
-                document.Tag = AppointmentDocument.DocumentTags.Patient;
+                document.Tag = Document.DocumentTags.Patient;
 
                 IFormFile file = requestModel.DocumentFile;
 
                 // < Xử lý file >
                 if (!file.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 {
-                    return BadRequest("Document file must be *.docx format!");
+                    return BadRequest("File file must be *.docx format!");
                 }
 
-                document.Document = new MediaFile()
+                document.File = new FileMedia()
                 {
-                    Category = MediaFile.FileCategory.AppointmentDocument
+                    Category = FileMedia.FileCategory.AppointmentDocument
                 };
 
                 string filename = $"apm_{entity.Id}Patient+{DateTime.Now.Ticks}" + Path.GetExtension(file.FileName);
                 var result = await _servicesManager.DropboxServices.UploadAsync(file, filename);
 
-                document.Document.FilePath = result.UploadPath;
+                document.File.FilePath = result.UploadPath;
 
                 entity.Documents.Add(document);
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
                 // </ Xử lý file >
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
@@ -586,17 +547,17 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                AppointmentDocument entity = _context.AppointmentsDocuments.Find(id);
+                Document entity = _servicesManager.DbContext.Documents.Find(id);
 
                 if(entity == null)
                 {
-                    return NotFound("Document not found!");
+                    return NotFound("File not found!");
                 }
 
-                _context.AppointmentsDocuments.Remove(entity);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Documents.Remove(entity);
+                _servicesManager.DbContext.SaveChanges();
 
-                return Ok($"Removed Document '{entity.Title}' of Appointment '{entity.AppointmentId}'");
+                return Ok($"Removed File '{entity.Title}' of Appointment '{entity.AppointmentId}'");
             }
             catch(Exception ex)
             {
@@ -611,7 +572,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Appointment entity = _context.Appointments.Find(requestModel.Id);
+                Appointment entity = _servicesManager.DbContext.Appointments.Find(requestModel.Id);
                 if(entity == null)
                 {
                     return NotFound("Appointment not found!");
@@ -619,8 +580,8 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateAppointment, Appointment>(requestModel, entity);
 
-                _context.Entry(entity).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 entity = QueryAll().FirstOrDefault(a => a.Id == entity.Id);
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);

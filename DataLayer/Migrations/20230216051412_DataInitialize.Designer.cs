@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230216051412_DataInitialize")]
+    partial class DataInitialize
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,9 +148,6 @@ namespace DataLayer.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserLockUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -164,8 +163,6 @@ namespace DataLayer.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("UserLockUserId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -293,8 +290,8 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Major")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Major")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
@@ -490,9 +487,6 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
                     b.Property<string>("ServiceCode")
                         .HasColumnType("nvarchar(max)");
 
@@ -502,34 +496,12 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Expired")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastTimeModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("TimeCreated")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("UserLocks");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -715,13 +687,7 @@ namespace DataLayer.Migrations
                         .WithMany()
                         .HasForeignKey("EmailConfirmationUserId");
 
-                    b.HasOne("DataLayer.Domain.UserLock", "UserLock")
-                        .WithMany()
-                        .HasForeignKey("UserLockUserId");
-
                     b.Navigation("EmailConfirmation");
-
-                    b.Navigation("UserLock");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Conversation", b =>

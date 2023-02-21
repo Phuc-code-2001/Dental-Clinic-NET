@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class ChatMessage : BaseEntity
+    public class Message : BaseEntity
     {
         [Key]
         public int Id { get; set; }
@@ -26,6 +26,8 @@ namespace DataLayer.Domain
         public BaseUser ToUser { get; set; }
 
         public bool IsRemoved { get; set; }
+
+
 
     }
 }

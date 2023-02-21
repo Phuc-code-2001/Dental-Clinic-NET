@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,12 +25,11 @@ namespace DataLayer.Domain
 
         public UserType Type { get; set; } = UserType.Patient;
 
-        public string FbConnectedId { get; set; }
-
         public string PusherChannel { get; set; }
 
         // Relationship
         public EmailConfirmation EmailConfirmation { get; set; }
+        public UserLock UserLock { get; set; }
 
     }
 
@@ -38,7 +38,8 @@ namespace DataLayer.Domain
         Patient,
         Doctor,
         Receptionist,
-        Technical,
+        Technican,
+        Expert,
         Administrator,
     }
 }

@@ -24,15 +24,11 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class RegisterController : ControllerBase
     {
-        AppDbContext _context;
-        private ServicesManager _servicesManager;
-        private UserManager<BaseUser> _userManager;
+        ServicesManager _servicesManager;
 
-        public RegisterController(AppDbContext context, ServicesManager servicesManager, UserManager<BaseUser> userManager)
+        public RegisterController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
-            _userManager = userManager;
         }
 
         [HttpPost]
@@ -42,7 +38,8 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser user = _servicesManager.AutoMapper.Map<BasicRegisterModel, BaseUser>(request);
-                bool checkPhoneExisted = _userManager.Users.Any(u => u.PhoneNumber == user.PhoneNumber);
+                bool checkPhoneExisted = _servicesManager.UserManager.Users
+                    .Any(u => u.PhoneNumber == user.PhoneNumber && u.PhoneNumberConfirmed);
 
                 if (checkPhoneExisted)
                 {
@@ -53,7 +50,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     });
                 }
 
-                bool checkEmailExist = _userManager.Users.Any(u => u.Email == user.Email && u.EmailConfirmed);
+                bool checkEmailExist = _servicesManager.UserManager.Users.Any(u => u.Email == user.Email && u.EmailConfirmed);
                 if (checkEmailExist)
                 {
                     return BadRequest(new
@@ -66,7 +63,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 // Generate channel key
                 user.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
-                // Verify email or PhoneNumber
+                // Verify email
                 user.EmailConfirmed = false;
                 user.PhoneNumberConfirmed = false;
                 _servicesManager.UserServices.SendEmailToVerifyUser(user);
@@ -76,15 +73,15 @@ namespace Dental_Clinic_NET.API.Controllers
                 Patient patient = new Patient()
                 {
                     BaseUser = user,
-                    MedicalRecordFile = new MediaFile()
+                    MedicalRecordFile = new FileMedia()
                     {
-                        Category = MediaFile.FileCategory.MedicalRecord
+                        Category = FileMedia.FileCategory.MedicalRecord
                     }
                 };
 
-                _context.Patients.Add(patient);
+                _servicesManager.DbContext.Patients.Add(patient);
 
-                var createResult = await _userManager.CreateAsync(user, request.Password);
+                var createResult = await _servicesManager.UserManager.CreateAsync(user, request.Password);
                 if(createResult.Succeeded)
                 {
 
@@ -113,80 +110,9 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-
-
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> RequiredConfirmAccountAsync([FromForm] string emailRequired = null)
-        {
-            try
-            {
-                BaseUser user = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-
-                if(user.EmailConfirmed)
-                {
-                    return BadRequest("Your account already verified.");
-                }
-
-                if(!string.IsNullOrWhiteSpace(emailRequired))
-                {
-
-                    bool duplicate = _userManager.Users.Any(u => u.Email == emailRequired && u.EmailConfirmed);
-                    if (duplicate)
-                    {
-                        return BadRequest($"The email '{emailRequired}' have already account!");
-                    }
-
-                    user.Email = emailRequired;
-                }
-                var checker = await _servicesManager.KickboxServices.VerifyEmailAsync(user.Email);
-                if (checker.IsValid)
-                {
-                    _servicesManager.UserServices.SendEmailToVerifyUser(user);
-                    return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
-                }
-                else
-                {
-                    return BadRequest("Your required email invalid!");
-                }
-
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> EmailVerifyUserAsync([FromQuery] string userId, string code)
-        {
-            BaseUser user = await _userManager.FindByIdAsync(userId);
-            bool succeed = await _servicesManager.UserServices.ConfirmEmailForUser(user, code);
-
-            if(succeed)
-            {
-                user.EmailConfirmed = true;
-                var updateResult = await _userManager.UpdateAsync(user);
-
-                if(updateResult.Succeeded)
-                {
-                    return Ok("Tài khoản của bạn đã được xác thực thành công.");
-                }
-                else
-                {
-                    throw new Exception("Server error!");
-                }
-
-            }
-            else
-            {
-                return BadRequest("Xác thực thất bại. Nguyên nhân có thể do code không đúng hoặc hết hạn.");
-            }
-        }
-
+        
     }
 
 
@@ -195,10 +121,6 @@ namespace Dental_Clinic_NET.API.Controllers
         CreatedFailed,
         PhoneNumberAlreadyAccount,
         EmailAlreadyAccount,
-
-        FacebookInValidToken,
-        FacebookAlreadySignUp,
-        FacebookCreateFailed,
     }
     
 

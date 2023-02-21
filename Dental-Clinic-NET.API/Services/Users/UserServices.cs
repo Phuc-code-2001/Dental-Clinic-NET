@@ -18,11 +18,11 @@ using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Services.Users
 {
-    public class UserServices : IUserServices
+    public class UserServices
     {
 
-        private AppDbContext _dbContext;
         private IConfiguration _configuration;
+        private AppDbContext _dbContext;
         private UserManager<BaseUser> _userManager;
         private EmailSender _emailSender;
 
@@ -79,7 +79,6 @@ namespace Dental_Clinic_NET.API.Services.Users
                 }
             }
         }
-
 
         private static Dictionary<string, EmailConfirmation> EmailConfirmarionCache = new Dictionary<string, EmailConfirmation>();
 

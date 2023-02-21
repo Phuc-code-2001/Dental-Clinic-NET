@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer.Domain
 {
-    public class UserInChatBoxOfReception
+    public class Conversation
     {
         [Key]
         public int Id { get; set; }
@@ -19,9 +19,9 @@ namespace DataLayer.Domain
 
         public bool HasMessageUnRead { get; set; }
 
-        [ForeignKey(nameof(ChatMessage))]
+        [ForeignKey(nameof(Message))]
         public int LastMessageId { get; set; }
         [ForeignKey(nameof(LastMessageId))]
-        public ChatMessage LastMessage { get; set; }
+        public Message LastMessage { get; set; }
     }
 }

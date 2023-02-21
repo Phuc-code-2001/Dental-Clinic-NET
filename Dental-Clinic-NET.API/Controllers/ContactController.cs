@@ -20,12 +20,10 @@ namespace Dental_Clinic_NET.API.Controllers
     [ApiController]
     public class ContactController : ControllerBase
     {
-        private AppDbContext _context;
         private ServicesManager _servicesManager;
 
-        public ContactController(AppDbContext context, ServicesManager servicesManager)
+        public ContactController(ServicesManager servicesManager)
         {
-            _context = context;
             _servicesManager = servicesManager;
         }
 
@@ -43,7 +41,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Paginated<Contact> paginatedContacts = new Paginated<Contact>(_context.Contacts, page);
+                Paginated<Contact> paginatedContacts = new Paginated<Contact>(_servicesManager.DbContext.Contacts, page);
                 var contactDTOs = _servicesManager.AutoMapper.Map<ContactDTO[]>(paginatedContacts.Items.ToArray());
 
                 return Ok(new
@@ -76,13 +74,13 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 Contact contact = _servicesManager.AutoMapper.Map<Contact>(request);
-                _context.Contacts.Add(contact);
-                _context.SaveChanges();
+                _servicesManager.DbContext.Contacts.Add(contact);
+                _servicesManager.DbContext.SaveChanges();
 
                 ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
@@ -114,7 +112,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Contact contact = _context.Contacts.Find(id);
+                Contact contact = _servicesManager.DbContext.Contacts.Find(id);
                 if(contact == null) return NotFound("Contact not found.");
 
                 ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
@@ -141,7 +139,7 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Contact contact = _context.Contacts.Find(request.Id);
+                Contact contact = _servicesManager.DbContext.Contacts.Find(request.Id);
                 if(contact == null)
                 {
                     return NotFound("Contact not found");
@@ -156,11 +154,11 @@ namespace Dental_Clinic_NET.API.Controllers
                 {
                     contact.FinishedTime = null;
                 }
-                _context.Entry(contact).State = EntityState.Modified;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(contact).State = EntityState.Modified;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
@@ -194,17 +192,17 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Contact contact = _context.Contacts.Find(id);
+                Contact contact = _servicesManager.DbContext.Contacts.Find(id);
                 if (contact == null)
                 {
                     return NotFound("Contact not found");
                 }
 
-                _context.Entry(contact).State = EntityState.Deleted;
-                _context.SaveChanges();
+                _servicesManager.DbContext.Entry(contact).State = EntityState.Deleted;
+                _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _context.Users.Where(user => user.Type == UserType.Administrator)
+                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices

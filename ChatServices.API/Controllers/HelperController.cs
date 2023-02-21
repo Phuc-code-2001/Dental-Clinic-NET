@@ -8,11 +8,11 @@ namespace ChatServices.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class RawDataController : ControllerBase
+    public class HelperController : ControllerBase
     {
         ServicesManager _servicesManager;
 
-        public RawDataController(ServicesManager servicesManager)
+        public HelperController(ServicesManager servicesManager)
         {
             _servicesManager = servicesManager;
         }
@@ -37,11 +37,11 @@ namespace ChatServices.API.Controllers
         [HttpGet]
         public IActionResult GetAllUserBoxChat()
         {
-            var dataset = _servicesManager.DbContext.UsersInChatBoxOfReception
+            var dataset = _servicesManager.DbContext.Conversations
                 .Include(cb => cb.User)
                 .Include(cb => cb.LastMessage)
                 .ToArray();
-            var datasetDTO = _servicesManager.AutoMapper.Map<UserInChatBoxOfReceptionDTO[]>(dataset);
+            var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
 
             return Ok(datasetDTO);
         }

@@ -10,6 +10,8 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using Dental_Clinic_NET.API.Models.Users;
+using Dental_Clinic_NET.API.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -18,13 +20,11 @@ namespace Dental_Clinic_NET.API.Controllers
     public class LoginController : ControllerBase
     {
 
-        private UserManager<BaseUser> _userManager;
-        private UserServices _userServices;
+        ServicesManager _servicesManager;
 
-        public LoginController(UserManager<BaseUser> userManager, UserServices userServices)
+        public LoginController(ServicesManager servicesManager)
         {
-            _userManager = userManager;
-            _userServices = userServices;
+            _servicesManager = servicesManager;
         }
 
         [HttpPost]
@@ -32,23 +32,35 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser user = await _userManager.FindByNameAsync(loginModel.UserName);
-                if (user != null)
+                BaseUser user = await _servicesManager.UserManager.FindByNameAsync(loginModel.UserName);
+                if (user == null)
                 {
-                    bool isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginModel.Password);
-                    if (isPasswordCorrect)
-                    {
-                        string token = _userServices.CreateSignInToken(user);
+                    return Unauthorized("UserName or Password incorrect...");
+                }
 
-                        return Ok(new
-                        {
-                            token = token
-                        });
+                UserLock userLock = _servicesManager.DbContext.UserLocks.Find(user.Id);
+                if (userLock != null)
+                {
+                    bool isLock = userLock.IsLocked && userLock.Expired >= DateTime.Now;
+                    if(isLock)
+                    {
+                        string expired = userLock.Expired.ToString("HH'h'mm dd/MM/yyyy");
+                        return Unauthorized($"Your account is lock until {expired}");
                     }
                 }
 
-                return Unauthorized("UserName or Password incorrect...");
+                bool isPasswordCorrect = await _servicesManager.UserManager.CheckPasswordAsync(user, loginModel.Password);
+                if (isPasswordCorrect)
+                {
+                    string token = _servicesManager.UserServices.CreateSignInToken(user);
 
+                    return Ok(new
+                    {
+                        token
+                    });
+                }
+
+                return Unauthorized("UserName or Password incorrect...");
             }
             catch (Exception ex)
             {
