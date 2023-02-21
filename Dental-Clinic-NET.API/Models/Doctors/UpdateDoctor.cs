@@ -10,8 +10,8 @@ namespace Dental_Clinic_NET.API.Models.Doctors
         [Required]
         public string Id { get; set; }
 
-        public Nullable<Majors> Major { get; set; }
+        public string Major { get; set; }
         public IFormFile CertificateFile { get; set; }
-        public Nullable<bool> Verified { get; set; }
+        public bool? Verified { get; set; }
     }
 }

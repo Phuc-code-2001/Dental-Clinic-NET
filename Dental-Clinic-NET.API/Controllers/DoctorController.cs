@@ -65,137 +65,6 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        /// <summary>
-        ///  Make an account become a doctor
-        /// </summary>
-        /// <param name="request">Doctor info</param>
-        /// <returns>
-        /// 
-        /// </returns>
-        [HttpPost]
-        [Authorize(Roles = "Administrator")]
-        public async Task<IActionResult> RequestToBecomeDoctorAsync([FromForm] RequestDoctor request)
-        {
-            try
-            {
-                BaseUser user = _servicesManager.DbContext.Users.Find(request.Id);
-                if (user == null)
-                {
-                    return NotFound("User not found!");
-                }
-
-                Doctor doctor = _servicesManager.DbContext.Doctors.Find(request.Id);
-
-                if (doctor != null)
-                {
-                    return BadRequest("This user already request doctor!");
-                }
-
-                doctor = _servicesManager.AutoMapper.Map<Doctor>(request);
-                
-                if(doctor.Verified)
-                {
-                    user.Type = UserType.Doctor;
-                }
-                
-                // < Xử lý file
-                if(request.CertificateFile != null)
-                {
-                    if(request.CertificateFile.ContentType.EndsWith("pdf"))
-                    {
-                        string filename = $"doctor_{request.Id}_" + Path.GetExtension(request.CertificateFile.FileName);
-                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
-
-                        FileMedia cirtificatefile = doctor.Certificate;
-
-                        if (cirtificatefile != null)
-                        {
-                            cirtificatefile.FilePath = uploadResult.UploadPath;
-                        }
-                        else
-                        {
-                            cirtificatefile = new FileMedia()
-                            {
-                                FilePath = uploadResult.UploadPath,
-                                Category = FileMedia.FileCategory.DoctorCertificate
-                            };
-
-                            doctor.Certificate = cirtificatefile;
-                        }
-
-                    }
-                    else
-                    {
-                        return BadRequest("File format must be *.pdf");
-                    }
-                }
-
-                // Xử lý file />
-
-                _servicesManager.DbContext.Doctors.Add(doctor);
-                _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Request-Doctor", doctor, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                doctor = _servicesManager.DbContext.Doctors
-                    .Include(d => d.BaseUser)
-                    .Include(d => d.Certificate)
-                    .FirstOrDefault(d => d.Id == doctor.Id);
-
-                DoctorDTO doctorDTO = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor);
-
-                return Ok(doctorDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Accept the request of become doctor
-        /// </summary>
-        /// <param name="doctorId">doctor id</param>
-        /// <returns></returns>
-        [HttpPost("{doctorId}")]
-        [Authorize(Roles = nameof(UserType.Administrator))]
-        public async Task<IActionResult> AcceptRequestAsync(string doctorId)
-        {
-            try
-            {
-                Doctor doctor = await _servicesManager.DbContext.Doctors
-                    .Include(doctor => doctor.BaseUser)
-                    .FirstOrDefaultAsync(d => d.Id == doctorId);
-                if(doctor == null)
-                {
-                    return NotFound("Doctor not found!");
-                }
-
-                if(doctor.Verified)
-                {
-                    return BadRequest("Doctor already accepted!");
-                }
-
-                doctor.Verified = true;
-                doctor.BaseUser.Type = UserType.Doctor;
-                _servicesManager.DbContext.Doctors.Update(doctor);
-                await _servicesManager.DbContext.SaveChangesAsync();
-                return Ok("Success!");
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> CreateDoctorAsync([FromForm] CreateDoctor request)
@@ -203,43 +72,41 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser baseUser = await _servicesManager.UserManager.FindByNameAsync(request.UserName);
-                if (baseUser != null) return BadRequest("Username already exist!");
-
+                if (baseUser != null)
+                {
+                    return BadRequest("Username already exist!");
+                }
+                // User Info
                 baseUser = new BaseUser();
                 baseUser.UserName = request.UserName;
                 baseUser.FullName = request.FullName;
                 baseUser.Gender = request.Gender;
-                baseUser.Type = UserType.Patient;
+                baseUser.Type = UserType.Doctor;
 
+                // Doctor Info
                 Doctor doctor = new Doctor()
                 {
+                    Id = baseUser.Id,
                     BaseUser = baseUser,
                     Major = request.Major,
-                    Verified = false,
+                    Verified = true,
                 };
 
                 if(request.CertificateFile != null)
                 {
-                    if (request.CertificateFile.ContentType.EndsWith("pdf"))
+                    string filename = $"certificate_{request.UserName}" + Path.GetExtension(request.CertificateFile.FileName);
+                    try
                     {
-                        string filename = $"doctor_{request.UserName}_" + Path.GetExtension(request.CertificateFile.FileName);
-                        var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.CertificateFile, filename);
-
-                        FileMedia cirtificate = new FileMedia()
-                        {
-                            FilePath = uploadResult.UploadPath,
-                            Category = FileMedia.FileCategory.DoctorCertificate,
-                        };
-
-                        doctor.Certificate = cirtificate;
-
+                        doctor.Certificate = await _servicesManager.DoctorServices
+                            .UploadCertificateAsync(request.CertificateFile, filename);
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        return BadRequest("File format must be *.pdf");
+                        return BadRequest(ex.Message);
                     }
                 }
 
+                _servicesManager.DbContext.Doctors.Add(doctor);
                 var createdResult = await _servicesManager.UserManager.CreateAsync(baseUser, request.Password);
                 if(!createdResult.Succeeded)
                 {
@@ -247,7 +114,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest(errors);
                 }
 
-                return Ok($"The unverified doctor with id='{baseUser.Id}' created.");
+                doctor = await _servicesManager.DbContext.Doctors.Include(d => d.BaseUser)
+                    .FirstOrDefaultAsync(d => d.Id == baseUser.Id);
+
+                return Ok(new
+                {
+                    message = $"The verified doctor with id='{baseUser.Id}' created.",
+                    data = _servicesManager.AutoMapper.Map<DoctorDTO>(doctor)
+                });
 
             }
             catch(Exception ex)
@@ -330,7 +204,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Xử lý file />
-
                 _servicesManager.DbContext.Entry(doctor).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 

@@ -6,15 +6,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class MediaAutoMapperProfile : Profile
+    public class MediaProfileMapper : Profile
     {
 
         DropboxServices dropboxServices = new DropboxServices();
 
-        public MediaAutoMapperProfile()
+        public MediaProfileMapper()
         {
-            
-
             CreateMap<FileMedia, MediaFileDTO>()
                 .ForMember(des => des.Category, act => act.MapFrom(src => src.Category.ToString()))
                 .ForMember(des => des.FileURL, act => act.MapFrom(src => GetLink(src.FilePath)));
