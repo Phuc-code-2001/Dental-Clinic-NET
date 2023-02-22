@@ -206,6 +206,16 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
         
+        /// <summary>
+        /// Update the device information
+        /// </summary>
+        /// <param name="request">Update expected data</param>
+        /// <returns>
+        ///     200: DeviceDTO
+        ///     404: string
+        ///     400: string
+        ///     500: string
+        /// </returns>
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         public IActionResult Update([FromForm] UpdateDevice request)
