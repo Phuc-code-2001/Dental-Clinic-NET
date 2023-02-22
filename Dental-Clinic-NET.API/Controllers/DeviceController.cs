@@ -248,34 +248,20 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.AutoMapper.Map<UpdateDevice, Device>(request, device);
 
 
-                if(request.ServiceIdList != null)
+                if(request.ServiceIdList.Count > 0)
                 {
-                    List<Service> serviceToAdd = new List<Service>();
-                    List<Service> serviceToRemove = new List<Service>();
+                    IEnumerable<int> currentServiceListId = device.Services.Select(s => s.Id);
+                    IEnumerable<int> serviceToAddListId = request.ServiceIdList.Except(currentServiceListId);
+                    IEnumerable<int> serviceToRemoveListId = currentServiceListId.Except(request.ServiceIdList);
 
-                    foreach(int serviceId in request.ServiceIdList)
+                    device.Services = device.Services.Where(s => !serviceToRemoveListId.Contains(s.Id)).ToList();
+                    foreach(int serviceId in serviceToAddListId)
                     {
-                        Service service = _servicesManager.DbContext.Services.Find(serviceId);
-                        if(!device.Services.Contains(service)) {
-                            serviceToAdd.Add(service);
-                        }
-                    }
-
-                    foreach(Service service in device.Services)
-                    {
-                        if(!request.ServiceIdList.Contains(service.Id))
+                        Service serviceToAdd = _servicesManager.DbContext.Services.Find(serviceId);
+                        if(serviceToAdd != null)
                         {
-                            serviceToRemove.Add(service);
+                            device.Services.Add(serviceToAdd);
                         }
-                    }
-
-                    foreach(Service service in serviceToAdd)
-                    {
-                        device.Services.Add(service);
-                    }
-                    foreach(Service service in serviceToRemove)
-                    {
-                        device.Services.Remove(service);
                     }
                 }
 
