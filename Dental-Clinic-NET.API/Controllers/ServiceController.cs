@@ -113,16 +113,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Services.Add(service);
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Create", service, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);
 
                 return Ok(serviceDTO);
@@ -184,17 +174,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(service).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Delete", new { Id = service.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
 
                 return Ok($"You just have completely delete service with id='{id}' success");
             }
@@ -292,16 +271,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 //Save
                 _servicesManager.DbContext.Entry(service).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Update", service, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 // Map View
                 ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);

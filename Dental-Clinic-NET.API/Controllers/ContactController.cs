@@ -79,16 +79,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-Create", contactDTO, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 return Ok(contactDTO);
 
             }
@@ -157,19 +147,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(contact).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-ChangeState", contactDTO, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                Console.WriteLine("Response done at: " + DateTime.Now);
                 return Ok($"Change state of contact to '{request.StateIndex}' success");
             }
             catch(Exception ex)
@@ -200,18 +177,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(contact).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-Delete", new { Id = contact.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                Console.WriteLine("Response done at: " + DateTime.Now);
 
                 return Ok($"You just have completely delete contact with id='{id}' success");
             }
