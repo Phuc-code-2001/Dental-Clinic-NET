@@ -12,8 +12,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ## Technology
 
 ### Backend
-1. Python + Django restframework
-2. C# dotnet 5.0 + ASP.NET Core + EntityFrameworkCore
+1. C# dotnet 5.0 + ASP.NET Core + EntityFrameworkCore
 
 ### Frontend
 1. ReactJs
@@ -22,7 +21,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 4. Ionicons
 
 ### Database
-1. Postgresql: postgresql-database.c1svonawnr25.ap-northeast-1.rds.amazonaws.com
+1. SQLServer: https://freeasphosting.net/cp/databases.aspx (Không connect được nếu dùng wifi trường FPT)
 
 ### Storage
 1. ImageKit
@@ -31,9 +30,11 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ### Realtime Engine
 1. Pusher
 
+### Check Email
+1. KickBox
+
 ### Deploy
-1. API on Heroku
-2. Frontend on GitHub
+1. localhost
 
 ## Feature Until 6/11/2022
 
