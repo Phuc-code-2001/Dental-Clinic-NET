@@ -110,16 +110,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Devices.Add(device);
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Create", device, result =>
-                    {
-                        
-                    });
-
                 // Include services and room
                 device = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
@@ -188,16 +178,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(device).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Delete", new { Id = device.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 return Ok($"You just have completely delete service with id='{id}' success");
             }
             catch (Exception ex)
@@ -206,6 +186,16 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
         
+        /// <summary>
+        /// Update the device information
+        /// </summary>
+        /// <param name="request">Update expected data</param>
+        /// <returns>
+        ///     200: DeviceDTO
+        ///     404: string
+        ///     400: string
+        ///     500: string
+        /// </returns>
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         public IActionResult Update([FromForm] UpdateDevice request)
@@ -267,16 +257,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(device).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Update", device, result =>
-                    {
-                        
-                    });
 
                 DeviceDTO deviceDTO = _servicesManager.AutoMapper.Map<DeviceDTO>(device);
 

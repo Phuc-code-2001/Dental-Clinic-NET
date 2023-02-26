@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230226084414_UpdateUserLock")]
+    partial class UpdateUserLock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,6 +148,9 @@ namespace DataLayer.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserLockUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -161,6 +166,8 @@ namespace DataLayer.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("UserLockUserId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -504,13 +511,11 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("BaseUserId")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BaseUser")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Expired")
                         .HasColumnType("datetime2");
@@ -527,9 +532,7 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("BaseUserId");
+                    b.HasKey("UserId");
 
                     b.ToTable("UserLocks");
                 });
@@ -717,7 +720,13 @@ namespace DataLayer.Migrations
                         .WithMany()
                         .HasForeignKey("EmailConfirmationUserId");
 
+                    b.HasOne("DataLayer.Domain.UserLock", "UserLock")
+                        .WithMany()
+                        .HasForeignKey("UserLockUserId");
+
                     b.Navigation("EmailConfirmation");
+
+                    b.Navigation("UserLock");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Conversation", b =>
@@ -814,13 +823,6 @@ namespace DataLayer.Migrations
                     b.Navigation("MedicalRecordFile");
                 });
 
-            modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
-                {
-                    b.HasOne("DataLayer.Domain.BaseUser", null)
-                        .WithMany("UserLocks")
-                        .HasForeignKey("BaseUserId");
-                });
-
             modelBuilder.Entity("DeviceService", b =>
                 {
                     b.HasOne("DataLayer.Domain.Device", null)
@@ -890,11 +892,6 @@ namespace DataLayer.Migrations
             modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
                 {
                     b.Navigation("Documents");
-                });
-
-            modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
-                {
-                    b.Navigation("UserLocks");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Room", b =>

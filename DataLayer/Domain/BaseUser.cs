@@ -29,7 +29,7 @@ namespace DataLayer.Domain
 
         // Relationship
         public EmailConfirmation EmailConfirmation { get; set; }
-        public UserLock UserLock { get; set; }
+        public List<UserLock> UserLocks { get; set; }
 
     }
 

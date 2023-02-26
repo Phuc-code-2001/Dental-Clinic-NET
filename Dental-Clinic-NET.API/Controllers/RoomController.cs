@@ -89,17 +89,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Create", room, result =>
-                    {
-
-                    });
-
-
                 return Ok(roomDTO);
 
             }
@@ -160,16 +149,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(room).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Delete", new { Id = room.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 return Ok($"You just have completely delete room with id='{id}' success");
 
             }
@@ -211,16 +190,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(room).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Update", room, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
 

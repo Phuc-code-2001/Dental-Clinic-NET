@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230226090042_UpdateUserLock_001")]
+    partial class UpdateUserLock_001
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -527,6 +529,9 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BaseUserId");
@@ -817,7 +822,7 @@ namespace DataLayer.Migrations
             modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
                 {
                     b.HasOne("DataLayer.Domain.BaseUser", null)
-                        .WithMany("UserLocks")
+                        .WithMany("UserLock")
                         .HasForeignKey("BaseUserId");
                 });
 
@@ -894,7 +899,7 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
                 {
-                    b.Navigation("UserLocks");
+                    b.Navigation("UserLock");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Room", b =>

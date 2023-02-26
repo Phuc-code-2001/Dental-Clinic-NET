@@ -106,7 +106,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpPost]
-        [Authorize(Roles = nameof(UserType.Patient) + "," + nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Patient) + "," + nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public async Task<IActionResult> CreateAsync([FromForm] CreateAppointment request)
         {
 
@@ -117,7 +117,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 var permission = new PermissionOnAppointment(loggedUser, entity);
 
-                if(!permission.IsOwner && !permission.IsAdmin)
+                if(!permission.IsOwner && !permission.IsAdmin && loggedUser.Type != UserType.Receptionist)
                 {
                     return StatusCode(403, "Hành động bị chặn do sai quyền!");
                 }
