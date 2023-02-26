@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
@@ -34,22 +36,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("User not found!");
                 }
 
-                UserLock userLock = _serviceManager.DbContext.UserLocks.Find(requiredUser.Id);
-                if(userLock == null)
-                {
-                    userLock = _serviceManager.AutoMapper.Map<UserLock>(form);
-                    _serviceManager.DbContext.Entry(userLock).State = EntityState.Added;
-                }
-                else
-                {
-                    _serviceManager.AutoMapper.Map<CreateUserLock, UserLock>(form, userLock);
-                    _serviceManager.DbContext.Entry(userLock).State = EntityState.Modified;
-                }
-
+                UserLock userLock = _serviceManager.AutoMapper.Map<CreateUserLock, UserLock>(form);
                 userLock.IsLocked = true;
+
+                _serviceManager.DbContext.UserLocks.Add(userLock);
                 _serviceManager.DbContext.SaveChanges();
 
-                return Ok($"The user '{requiredUser.UserName}' is lock until '{userLock.Expired.ToShortTimeString()}'");
+                string strLockTo = $"{userLock.Expired.ToShortTimeString()} {userLock.Expired.ToShortDateString()}";
+                return Ok($"The user '{requiredUser.UserName}' is lock until '{strLockTo}'");
 
             }
             catch(Exception ex)
@@ -58,7 +52,7 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Roles = nameof(UserType.Administrator))]
         public async Task<IActionResult> UnlockAsync(UnlockUserForm form)
         {
@@ -71,17 +65,50 @@ namespace Dental_Clinic_NET.API.Controllers
                     return NotFound("User not found!");
                 }
 
-                UserLock userLock = _serviceManager.DbContext.UserLocks.Find(requiredUser.Id);
+                UserLock userLock = await _serviceManager.DbContext.UserLocks
+                    .OrderBy(e => e.TimeCreated)
+                    .LastOrDefaultAsync(ulock => ulock.BaseUserId == requiredUser.Id);
+
                 if(userLock == null || !userLock.IsLocked || userLock.Expired < DateTime.Now)
                 {
                     return BadRequest("This user is available");
                 }
 
-                userLock.IsLocked = false;
-                _serviceManager.DbContext.Entry(userLock).State = EntityState.Modified;
+                userLock = new UserLock()
+                {
+                    BaseUserId = requiredUser.Id,
+                    IsLocked = false,
+                };
+
+                _serviceManager.DbContext.UserLocks.Add(userLock);
                 _serviceManager.DbContext.SaveChanges();
 
                 return Ok($"The user '{requiredUser.UserName}' is unlock");
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = nameof(UserType.Administrator))]
+        public async Task<IActionResult> UserLockHistories(string userId)
+        {
+            try
+            {
+                BaseUser requiredUser = await _serviceManager.DbContext.Users.
+                    Include(u => u.UserLocks)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                if(requiredUser == null )
+                {
+                    return NotFound("User not found!");
+                }
+
+                var LockHistories = requiredUser.UserLocks;
+
+                return Ok(LockHistories);
 
             }
             catch(Exception ex)

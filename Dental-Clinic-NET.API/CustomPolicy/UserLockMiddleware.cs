@@ -27,7 +27,8 @@ namespace Dental_Clinic_NET.API.CustomPolicy
             
 
             BaseUser user = await _userManager.FindByNameAsync(context.User.Identity.Name);
-            UserLock userLock = _dbContext.UserLocks.Find(user.Id);
+            UserLock userLock = await _dbContext.UserLocks
+                .FirstOrDefaultAsync(l => l.BaseUserId == user.Id);
 
             return userLock != null && userLock.IsLockCalculated;
         }

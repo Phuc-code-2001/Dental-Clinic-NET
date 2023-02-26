@@ -186,11 +186,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                var query = _servicesManager.DbContext.Users.Include(user => user.UserLock);
-                var paginatedQuery = new Paginated<BaseUser>(query, page);
 
-                var users = paginatedQuery.Items.ToArray();
-                var userDTOs = _servicesManager.AutoMapper.Map<UserDTO[]>(users);
+                var query = _servicesManager.DbContext.Users.Include(user => user.UserLocks);
+                Paginated<BaseUser> paginatedQuery = new Paginated<BaseUser>(query, page);
+
+                BaseUser[] users = paginatedQuery.Items.ToArray();
+                UserDTO[] userDTOs = _servicesManager.AutoMapper.Map<UserDTO[]>(users);
 
                 return Ok(new
                 {
