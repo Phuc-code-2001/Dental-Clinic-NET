@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Services;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {

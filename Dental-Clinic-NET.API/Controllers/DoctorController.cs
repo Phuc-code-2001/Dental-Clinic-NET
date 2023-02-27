@@ -9,10 +9,10 @@ using Dental_Clinic_NET.API.Models.Doctors;
 using DataLayer.DataContexts;
 using Dental_Clinic_NET.API.Models.Users;
 using System.Linq;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
