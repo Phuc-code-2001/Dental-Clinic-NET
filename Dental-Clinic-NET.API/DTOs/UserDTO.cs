@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Dental_Clinic_NET.API.DTO
+namespace Dental_Clinic_NET.API.DTOs
 {
     public class UserDTO
     {

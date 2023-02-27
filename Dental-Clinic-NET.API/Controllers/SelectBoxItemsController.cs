@@ -1,7 +1,7 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.AutoMapperProfiles;
-using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

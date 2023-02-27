@@ -1,7 +1,7 @@
 ﻿using DataLayer.Domain;
 using System.Collections.Generic;
 
-namespace Dental_Clinic_NET.API.DTO
+namespace Dental_Clinic_NET.API.DTOs
 {
     public class RoomDTO : BaseEntityDTO
     {

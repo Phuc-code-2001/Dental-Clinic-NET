@@ -1,7 +1,7 @@
 ﻿using DataLayer.Domain;
 using static DataLayer.Domain.Doctor;
 
-namespace Dental_Clinic_NET.API.DTO
+namespace Dental_Clinic_NET.API.DTOs
 {
     public class DoctorDTO : BaseEntityDTO
     {

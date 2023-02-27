@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Devices;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dental_Clinic_NET.API.Models.Users;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {

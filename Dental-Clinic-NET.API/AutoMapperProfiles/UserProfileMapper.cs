@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Users;
 using System;
 using System.Collections.Generic;
