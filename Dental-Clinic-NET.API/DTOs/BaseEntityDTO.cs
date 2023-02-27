@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dental_Clinic_NET.API.DTO
+namespace Dental_Clinic_NET.API.DTOs
 {
     public abstract class BaseEntityDTO
     {

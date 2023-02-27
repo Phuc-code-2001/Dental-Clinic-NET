@@ -1,7 +1,7 @@
 ﻿using DataLayer.Domain;
 using System.Collections.Generic;
 
-namespace Dental_Clinic_NET.API.DTO
+namespace Dental_Clinic_NET.API.DTOs
 {
     public class ServiceDTO : BaseEntityDTO
     {
@@ -12,7 +12,7 @@ namespace Dental_Clinic_NET.API.DTO
         public string Description { get; set; }
         public int Price { get; set; }
 
-        public EnumTypeDTO[] Devices { get; set; } 
+        public EnumTypeDTO[] Devices { get; set; }
 
     }
 

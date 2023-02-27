@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
