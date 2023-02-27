@@ -20,11 +20,11 @@ namespace Dental_Clinic_NET.API.Utils
 
         public IQueryable<T> Items;
 
-        public Paginated(IQueryable<T> queries, int pageIndex)
+        public void Init(IQueryable<T> queries, int pageIndex)
         {
             PageIndex = pageIndex;
             QueryCount = queries.Count<T>();
-            PageCount = (int) Math.Ceiling((double) QueryCount / PageSize);
+            PageCount = (int)Math.Ceiling((double)QueryCount / PageSize);
 
             // Page 1 => pageSize first elements
             // Page 2 => skip pageSize * 1 element, take pageSize element
@@ -32,6 +32,19 @@ namespace Dental_Clinic_NET.API.Utils
 
             HasNext = pageIndex + 1 <= PageCount;
             HasPrevious = pageIndex - 1 > 0;
+        }
+
+        public Paginated(IQueryable<T> queries, int pageIndex)
+        {
+            Init(queries, pageIndex);
+        }
+
+        public Paginated(IQueryable<T> queries, int pageIndex, int pageSize)
+        {
+            if (pageSize < 1) throw new Exception("PageSize must be positive!");
+            PageSize = pageSize;
+
+            Init(queries, pageIndex);
         }
         
     }

@@ -49,6 +49,8 @@ namespace DataLayer.DataContexts
         public DbSet<EmailConfirmation> EmailConfirmations { get; set; }
         public DbSet<UserLock> UserLocks { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
+
         public override int SaveChanges()
         {
 

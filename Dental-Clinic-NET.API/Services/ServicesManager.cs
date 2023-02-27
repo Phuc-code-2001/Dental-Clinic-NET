@@ -3,6 +3,7 @@ using DataLayer.DataContexts;
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.Services.Appointments;
 using Dental_Clinic_NET.API.Services.Doctors;
+using Dental_Clinic_NET.API.Services.Notifications;
 using Dental_Clinic_NET.API.Services.Users;
 using FileProcessorServices;
 using ImageProcessLayer.Services;
@@ -15,8 +16,8 @@ namespace Dental_Clinic_NET.API.Services
     public class ServicesManager
     {
 
-        public AppDbContext DbContext;
-        public UserManager<BaseUser> UserManager;
+        public AppDbContext DbContext { get; set; }
+        public UserManager<BaseUser> UserManager { get; set; }
 
         public IMapper AutoMapper { get; set; }
 
@@ -31,6 +32,8 @@ namespace Dental_Clinic_NET.API.Services
         public AppointmentServices AppointmentServices { get; set; }
         public DoctorServices DoctorServices { get; set; }
 
+        public NotificationServices NotificationServices { get; set; }
+
         public ServicesManager(
             IMapper autoMapper,
             UserServices userServices,
@@ -42,7 +45,8 @@ namespace Dental_Clinic_NET.API.Services
             AppDbContext dbContext,
             UserManager<BaseUser> userManager,
             AppointmentServices appointmentServices,
-            DoctorServices doctorServices)
+            DoctorServices doctorServices,
+            NotificationServices notificationServices)
         {
             DbContext = dbContext;
             UserManager = userManager;
@@ -55,6 +59,7 @@ namespace Dental_Clinic_NET.API.Services
             EmailSender = emailSender;
             AppointmentServices = appointmentServices;
             DoctorServices = doctorServices;
+            NotificationServices = notificationServices;
         }
 
 
