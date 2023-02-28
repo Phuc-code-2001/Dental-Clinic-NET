@@ -7,8 +7,10 @@ using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -44,6 +46,30 @@ namespace Dental_Clinic_NET.API.Controllers
                 var dtos = _servicesManager.AutoMapper.Map<NotificationDTO[]>(paginated.Items.ToArray());
 
                 return Ok(dtos);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetAsync(int id)
+        {
+            try
+            {
+                Notification entity = await _servicesManager.NotificationServices.QueryAll()
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if(entity == null)
+                {
+                    return NotFound("Object not found!");
+                }
+
+                NotificationDTO dto = _servicesManager.AutoMapper.Map<NotificationDTO>(entity);
+                return Ok(dto);
+
             }
             catch(Exception ex)
             {

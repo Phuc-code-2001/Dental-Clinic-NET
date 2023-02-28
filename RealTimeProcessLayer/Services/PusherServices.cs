@@ -33,7 +33,7 @@ namespace RealTimeProcessLayer.Services
             
         }
 
-        public async Task PushTo(string[] channels, string actionName, object data, CallBack callBack)
+        public async Task PushToAsync(string[] channels, string actionName, object data, CallBack callBack = null)
         {
             string json_data = JsonConvert.SerializeObject(data, settings: new JsonSerializerSettings()
             {
@@ -45,7 +45,7 @@ namespace RealTimeProcessLayer.Services
             });
 
             ITriggerResult result = await TriggerAsync(channels, actionName, json_data);
-            callBack(result);
+            if(callBack != null) callBack(result);
         }
     }
 }

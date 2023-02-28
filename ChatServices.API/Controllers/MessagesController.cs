@@ -82,7 +82,7 @@ namespace ChatServices.API.Controllers
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Chat-PatToRec", messageDTO, result =>
+                    .PushToAsync(chanels, "Chat-PatToRec", messageDTO, result =>
                     {
                         Console.WriteLine("Chat-PatToRec Done at: " + DateTime.Now);
                         Console.WriteLine("Data: " + JsonConvert.SerializeObject(messageDTO, Formatting.Indented));
@@ -168,7 +168,7 @@ namespace ChatServices.API.Controllers
                     .Select(user => user.PusherChannel).ToArray();
 
                 Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Chat-RecToPat", messageDTO, result =>
+                    .PushToAsync(chanels, "Chat-RecToPat", messageDTO, result =>
                     {
                         Console.WriteLine("Chat-PatToRec Done at: " + DateTime.Now);
                         Console.WriteLine("Data: " + JsonConvert.SerializeObject(messageDTO, Formatting.Indented));
@@ -354,7 +354,7 @@ namespace ChatServices.API.Controllers
                     .Select(user => user.PusherChannel).ToArray();
                 string message = "Reception just have been seen your messages.";
                 Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Chat-MarkAsSeenChatBox", message, result =>
+                    .PushToAsync(chanels, "Chat-MarkAsSeenChatBox", message, result =>
                     {
                         Console.WriteLine("Chat-MarkAsSeenChatBox Done at: " + DateTime.Now);
                         Console.WriteLine("Data: " + message);
