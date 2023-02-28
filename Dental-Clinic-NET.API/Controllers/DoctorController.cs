@@ -41,7 +41,8 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 var queries = _servicesManager.DbContext.Doctors
                     .Include(d => d.Certificate)
-                    .Include(d => d.BaseUser);
+                    .Include(d => d.BaseUser)
+                    .ThenInclude(user => user.UserLocks);
 
                 Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
                 Doctor[] doctors = paginated.Items.ToArray();
@@ -198,8 +199,9 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 Doctor doctor = _servicesManager.DbContext.Doctors
-                    .Include(d => d.BaseUser)
                     .Include(d => d.Certificate)
+                    .Include(d => d.BaseUser)
+                    .ThenInclude(user => user.UserLocks)
                     .FirstOrDefault(d => d.Id == id);
 
                 if(doctor == null)
