@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Dental_Clinic_NET.API.CustomPolicy;
 using Dental_Clinic_NET.API.Services.Doctors;
+using Dental_Clinic_NET.API.Services.Notifications;
 
 namespace Dental_Clinic_NET.API
 {
@@ -119,7 +120,8 @@ namespace Dental_Clinic_NET.API
             
             services.AddTransient<KickboxServices>();
             services.AddTransient<EmailSender>();
-            
+            services.AddTransient<NotificationServices>();
+
             services.AddTransient<ServicesManager>();
 
             services.AddRouting();

@@ -10,6 +10,6 @@ namespace RealTimeProcessLayer.Services
 {
     public interface IPusherServices
     {
-        public Task PushTo(string[] channels, string actionName, object data, CallBack callBack);
+        public Task PushToAsync(string[] channels, string actionName, object data, CallBack callBack);
     }
 }
