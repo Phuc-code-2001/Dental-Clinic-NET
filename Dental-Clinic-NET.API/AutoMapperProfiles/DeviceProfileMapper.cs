@@ -5,9 +5,9 @@ using Dental_Clinic_NET.API.Models.Devices;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class DeviceAutoMapperProfile : Profile
+    public class DeviceProfileMapper : Profile
     {
-        public DeviceAutoMapperProfile()
+        public DeviceProfileMapper()
         {
             CreateMap<CreateDevice, Device>();
 

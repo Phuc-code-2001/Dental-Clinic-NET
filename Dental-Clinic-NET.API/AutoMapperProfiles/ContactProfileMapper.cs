@@ -5,9 +5,9 @@ using Dental_Clinic_NET.API.Models.Contacts;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class ContactAutoMapperProfile : Profile
+    public class ContactProfileMapper : Profile
     {
-        public ContactAutoMapperProfile()
+        public ContactProfileMapper()
         {
             CreateMap<CreateContact, Contact>();
             CreateMap<Contact, ContactDTO>()
