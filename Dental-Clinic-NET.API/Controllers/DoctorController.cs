@@ -4,10 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System;
-using Dental_Clinic_NET.API.Models.Devices;
 using Dental_Clinic_NET.API.Models.Doctors;
-using DataLayer.DataContexts;
-using Dental_Clinic_NET.API.Models.Users;
 using System.Linq;
 using Dental_Clinic_NET.API.Utils;
 using System.IO;
@@ -35,7 +32,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
@@ -44,18 +41,11 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Include(d => d.BaseUser)
                     .ThenInclude(user => user.UserLocks);
 
-                Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
-                Doctor[] doctors = paginated.Items.ToArray();
-                DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
+                Paginated<Doctor> paginated = new Paginated<Doctor>(queries, filter.Page, filter.PageSize);
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginated.PageSize,
-                    total = paginated.QueryCount,
-                    total_pages = paginated.PageCount,
-                    data = doctorDTOs
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DoctorDTO[]>(items.ToArray()));
+
+                return Ok(dataset);
 
             }
             catch (Exception ex)

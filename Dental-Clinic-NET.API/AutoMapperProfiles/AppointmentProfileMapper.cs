@@ -7,12 +7,12 @@ using static DataLayer.Domain.TimeManager;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class AppointmentAutoMapperProfile : Profile
+    public class AppointmentProfileMapper : Profile
     {
-        public AppointmentAutoMapperProfile()
+        public AppointmentProfileMapper()
         {
             CreateMap<Appointment, AppointmentDTO>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => ConvertSlotToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
             CreateMap<Appointment.States, EnumTypeDTO>()
@@ -37,20 +37,10 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
 
             // Appointment Lite
             CreateMap<Appointment, AppointmentDTOLite>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => ConvertSlotToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
         }
 
-        public static string ConvertSlotToStrTime(Slot slot)
-        {
-            if(TimeManager.Instance.ContainsKey(slot))
-            {
-                TimeSpan timer = TimeManager.Instance[slot].Value;
-                return $"{timer.Hours.ToString("00")}:{timer.Minutes.ToString("00")}";
-            }
-
-            return "No defined";
-        }
     }
 }

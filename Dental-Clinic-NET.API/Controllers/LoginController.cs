@@ -1,17 +1,11 @@
 ﻿using DataLayer.Domain;
-using Dental_Clinic_NET.API.Services.Users;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Services;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Dental_Clinic_NET.API.Controllers
 {

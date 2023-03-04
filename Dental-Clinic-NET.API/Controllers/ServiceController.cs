@@ -1,9 +1,7 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Services;
@@ -34,27 +32,17 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
-                var services = _servicesManager.DbContext.Services.Include(d => d.Devices).ToArray();
-                var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
+                var services = _servicesManager.DbContext.Services
+                    .Include(s => s.Devices);
+                // var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
+                var paginated = new Paginated<Service>(services, filter.Page, filter.PageSize);
 
-                if(page != -1)
-                {
-                    Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
-                    return Ok(new
-                    {
-                        page = page,
-                        per_page = paginatedServices.PageSize,
-                        total = paginatedServices.QueryCount,
-                        total_pages = paginatedServices.PageCount,
-                        data = paginatedServices.Items
-                    });
-                }
-
-                return Ok(serviceDTOs);
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ServiceDTO[]>(items.ToArray()));
+                return Ok(dataset);
 
             }
             catch (Exception ex)

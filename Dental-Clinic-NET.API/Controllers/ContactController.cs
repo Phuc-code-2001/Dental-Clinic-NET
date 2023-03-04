@@ -1,18 +1,13 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -37,21 +32,16 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
-                Paginated<Contact> paginatedContacts = new Paginated<Contact>(_servicesManager.DbContext.Contacts, page);
-                var contactDTOs = _servicesManager.AutoMapper.Map<ContactDTO[]>(paginatedContacts.Items.ToArray());
+                var contacts = _servicesManager.DbContext.Contacts;
+                Paginated<Contact> paginated = new Paginated<Contact>(contacts, filter.Page, filter.PageSize);
 
-                return Ok(new
-                {
-                    page,
-                    per_page = paginatedContacts.PageSize,
-                    total = paginatedContacts.QueryCount,
-                    total_pages = paginatedContacts.PageCount,
-                    data = contactDTOs
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ContactDTO[]>(items.ToArray()));
+
+                return Ok(dataset);
 
             }
             catch(Exception ex)

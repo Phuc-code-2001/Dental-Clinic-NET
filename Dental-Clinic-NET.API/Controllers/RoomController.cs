@@ -1,18 +1,13 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
-using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Models.Rooms;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -34,24 +29,17 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 var rooms = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices);
-                Paginated<Room> paginatedRooms = new Paginated<Room>(rooms, page);
+                Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
 
-                RoomDTO[] roomDTOs = _servicesManager.AutoMapper.Map<RoomDTO[]>(paginatedRooms.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<RoomDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginatedRooms.PageSize,
-                    total = paginatedRooms.QueryCount,
-                    total_pages = paginatedRooms.PageCount,
-                    data = roomDTOs
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {

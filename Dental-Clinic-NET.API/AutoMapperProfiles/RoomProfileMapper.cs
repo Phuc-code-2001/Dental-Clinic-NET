@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class RoomAutoMapperProfile : Profile
+    public class RoomProfileMapper : Profile
     {
-        public RoomAutoMapperProfile()
+        public RoomProfileMapper()
         {
             CreateMap<CreateRoom, Room>();
 

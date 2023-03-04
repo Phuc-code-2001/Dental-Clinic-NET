@@ -1,14 +1,11 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Appointments;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Services;
-using Dental_Clinic_NET.API.Services.Appointments;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -53,7 +50,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize]
-        public IActionResult GetAll([FromQuery] AppointmentFilter filter, int page = 1)
+        public IActionResult GetAll([FromQuery] AppointmentFilter filter)
         {
             try
             {
@@ -63,28 +60,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 var permissionFiltered = filtered.AsEnumerable()
                     .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
 
-                if(page != -1)
-                {
-                    Paginated<Appointment> paginated = new Paginated<Appointment>(permissionFiltered, page);
+                Paginated<Appointment> paginated = new Paginated<Appointment>(permissionFiltered, filter.Page, filter.PageSize);
 
-                    Appointment[] items = paginated.Items.ToArray();
-                    AppointmentDTOLite[] itemDTOs = _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items);
-
-                    return Ok(new
-                    {
-                        page = page,
-                        per_page = paginated.PageSize,
-                        total = paginated.QueryCount,
-                        total_pages = paginated.PageCount,
-                        data = itemDTOs
-                    });
-                }
-                else
-                {
-                    AppointmentDTO[] itemDTOs = _servicesManager.AutoMapper.Map<AppointmentDTO[]>(permissionFiltered.ToArray());
-                    return Ok(itemDTOs);
-
-                }
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items.ToArray()));
+                return Ok(dataset);
 
             }
             catch(Exception ex)
@@ -207,16 +186,15 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if(!_servicesManager.AppointmentServices.CanRead(entity, loggedUser))
                 {
-                    return StatusCode(403, "Quyền đâu mà xem!");
+                    return StatusCode(403, "Current user cannot read this object!");
                 }
 
                 if(entity == null)
                 {
-                    return NotFound("Truyền sai id rồi => Appointment not found!");
+                    return NotFound($"Appointment not found with id='{id}'!");
                 }
 
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
-
                 return Ok(entityDTO);
             }
             catch(Exception ex)
@@ -246,7 +224,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (entity == null)
                 {
-                    return NotFound("Truyền sai id rồi => Appointment not found!");
+                    return NotFound("Appointment not found!");
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);

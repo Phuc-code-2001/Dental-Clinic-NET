@@ -1,18 +1,13 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Patients;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,23 +43,15 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 var queries = FullyQueryPatientFromContext();
-                var paginated = new Paginated<Patient>(queries, page);
+                var paginated = new Paginated<Patient>(queries, filter.Page, filter.PageSize);
 
-                var patientDTOs = paginated.Items.Select(pat => _servicesManager.AutoMapper.Map<PatientDTO>(pat));
-
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginated.PageSize,
-                    total = paginated.QueryCount,
-                    total_pages = paginated.PageCount,
-                    data = patientDTOs
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<PatientDTO[]>(items.ToArray()));
+                return Ok(dataset);
 
             }
             catch(Exception ex)
@@ -92,7 +79,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 Patient patient = await FullyQueryPatientFromContext().FirstOrDefaultAsync(pat => pat.Id == id);
                 if(patient == null)
                 {
-                    return NotFound("Truyền sai id rồi Hảo moiz");
+                    return NotFound($"Patient not found with id='{id}'");
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
@@ -104,8 +91,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return Ok(patientDTO);
                 }
 
-
-                return StatusCode(403, "Đăng nhập đúng thằng chưa");
+                return StatusCode(403, "Unexpected Request!");
 
             }
             catch (Exception ex)
@@ -144,7 +130,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest("This user is not patient!");
                 }
 
-                BaseUser loggedUser = await _servicesManager.UserManager.FindByNameAsync(User.Identity.Name);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 PermissionOnBaseUser permission = new PermissionOnBaseUser(loggedUser, patient.BaseUser);
 
                 if (!permission.IsOwner && !permission.IsAdmin)
@@ -158,7 +144,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest("Only Accept PDF or .docx file!");
                 }
 
-                string filename = $"patient_{request.Id}_" + Path.GetExtension(request.File.FileName);
+                string filename = $"patient_{patient.BaseUser.UserName}" + Path.GetExtension(request.File.FileName);
                 var uploadResult = await _servicesManager.DropboxServices.UploadAsync(request.File, filename);
 
                 FileMedia mediafile = patient.MedicalRecordFile;

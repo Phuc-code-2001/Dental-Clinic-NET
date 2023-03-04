@@ -99,7 +99,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             }
         }
 
-        public bool IsFreeTime(DateTime Date, TimeManager.Slot slot)
+        public bool IsFreeTime(DateTime Date, TimeManager.SlotManager slot)
         {
             throw new NotImplementedException();
         }

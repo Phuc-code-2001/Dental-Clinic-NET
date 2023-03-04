@@ -5,9 +5,9 @@ using Dental_Clinic_NET.API.Models.Services;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class ServiceAutoMapperProfile : Profile
+    public class ServiceProfileMapper : Profile
     {
-        public ServiceAutoMapperProfile()
+        public ServiceProfileMapper()
         {
             CreateMap<CreateService, Service>();
             CreateMap<Service, ServiceDTO>();
