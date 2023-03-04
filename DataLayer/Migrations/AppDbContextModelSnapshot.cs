@@ -48,7 +48,7 @@ namespace DataLayer.Migrations
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Slot")
+                    b.Property<int>("SlotManager")
                         .HasColumnType("int");
 
                     b.Property<int>("State")

@@ -5,11 +5,11 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Dental_Clinic_NET.API.AutoMapperProfiles
 {
-    public class EnumTypeAutoMapperProfile : Profile
+    public class EnumTypeProfileMapper : Profile
     {
-        public EnumTypeAutoMapperProfile()
+        public EnumTypeProfileMapper()
         {
-            CreateMap<TimeManager.Slot, EnumTypeDTO>()
+            CreateMap<TimeManager.SlotManager, EnumTypeDTO>()
                 .ForMember(des => des.Id, act => act.MapFrom(src => src))
                 .ForMember(des => des.Name, act => act.MapFrom(src => src.ToString()));
 
