@@ -1,9 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace Dental_Clinic_NET.API.Utils
 {
@@ -28,10 +24,18 @@ namespace Dental_Clinic_NET.API.Utils
 
             // Page 1 => pageSize first elements
             // Page 2 => skip pageSize * 1 element, take pageSize element
-            Items = queries.Skip(PageSize * (pageIndex - 1)).Take(PageSize);
-
-            HasNext = pageIndex + 1 <= PageCount;
-            HasPrevious = pageIndex - 1 > 0;
+            if(pageIndex > 0)
+            {
+                Items = queries.Skip(PageSize * (pageIndex - 1)).Take(PageSize);
+                HasNext = pageIndex + 1 <= PageCount;
+                HasPrevious = pageIndex - 1 > 0;
+            }
+            else
+            {
+                Items = queries;
+                HasNext = true;
+                HasPrevious = false;
+            }
         }
 
         public Paginated(IQueryable<T> queries, int pageIndex)
@@ -43,8 +47,19 @@ namespace Dental_Clinic_NET.API.Utils
         {
             if (pageSize < 1) throw new Exception("PageSize must be positive!");
             PageSize = pageSize;
-
             Init(queries, pageIndex);
+        }
+
+        public dynamic GetData(Func<IQueryable<T>, object> mapperItemsConfiguration = null)
+        {
+            return new
+            {
+                page = PageIndex,
+                per_page = PageSize,
+                total = QueryCount,
+                total_pages = PageCount,
+                data = mapperItemsConfiguration != null ? mapperItemsConfiguration(Items) : Items
+            };
         }
         
     }
