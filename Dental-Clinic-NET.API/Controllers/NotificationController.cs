@@ -2,12 +2,9 @@
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Notifications;
 using Dental_Clinic_NET.API.Services;
-using Dental_Clinic_NET.API.Services.Notifications;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;

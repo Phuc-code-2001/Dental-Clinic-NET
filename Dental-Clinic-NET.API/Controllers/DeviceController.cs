@@ -1,16 +1,11 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.Models.Services;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Devices;
 using Dental_Clinic_NET.API.Utils;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Dental_Clinic_NET.API.Models.Users;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Dental_Clinic_NET.API.DTOs;
@@ -35,25 +30,18 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 IQueryable<Device> devices = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room);
-                Paginated<Device> paginatedDevices = new Paginated<Device>(devices, page);
+                Paginated<Device> paginated = new Paginated<Device>(devices, filter.Page, filter.PageSize);
 
-                var deviceDTOs = _servicesManager.AutoMapper.Map<DeviceDTO[]>(paginatedDevices.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DeviceDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginatedDevices.PageSize,
-                    total = paginatedDevices.QueryCount,
-                    total_pages = paginatedDevices.PageCount,
-                    data = deviceDTOs
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {

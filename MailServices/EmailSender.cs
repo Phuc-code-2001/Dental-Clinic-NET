@@ -27,7 +27,7 @@ namespace MailServices
             emailMessage.From.Add(new MailboxAddress(_appName, "noreply@myapp.com"));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
-            emailMessage.Body = new TextPart("plain") { Text = htmlMessage };
+            emailMessage.Body = new TextPart("html") { Text = htmlMessage };
 
             using (var client = new SmtpClient())
             {

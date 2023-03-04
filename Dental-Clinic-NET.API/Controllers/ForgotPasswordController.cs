@@ -1,9 +1,6 @@
 ﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.Models.Users.ForgotPassword;
-using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -34,7 +31,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 if (!requiredUser.EmailConfirmed)
                 {
-                    return BadRequest("No have any email verified!");
+                    return BadRequest("Cannot reset password for account unverified!");
                 }
 
                 string verifiedEmail = requiredUser.NormalizedEmail;
