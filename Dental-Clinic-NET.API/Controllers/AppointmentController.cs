@@ -163,6 +163,17 @@ namespace Dental_Clinic_NET.API.Controllers
                 entity = QueryAll().FirstOrDefault(e => e.Id == entity.Id);
                 AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
 
+                // Create Notification
+                Notification notification = new Notification()
+                {
+                    Receiver = entity.Patient.BaseUser,
+                    Content = "Your appointment was created",
+                    Category = Notification.NotificationCategories.Success,
+                };
+                _servicesManager.DbContext.Notifications.Add(notification);
+                _servicesManager.DbContext.SaveChanges();
+                _servicesManager.NotificationServices.SendToClient(notification);
+
                 return Ok(entityDTO);
 
             }

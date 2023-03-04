@@ -2,17 +2,17 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Dental_Clinic_NET.API.Utils;
 
 namespace Dental_Clinic_NET.API.Models.Notifications
 {
-    public class NotificationFilter
+    public class NotificationFilter : PageFilter
     {
         public string ReceiverId { get; set; }
-        public DateTime? From { get; set; }
-        public DateTime? To { get; set; }
-        public string Keyword { get; set; }
-        public int PageIndex { get; set; }
-        public int PageSize { get; set; }
+        public DateTime? From { get; set; } = DateTime.MinValue;
+        public DateTime? To { get; set; } = DateTime.MaxValue;
+        public string Keyword { get; set; } = string.Empty;
+        
 
         public Expression<Func<Notification, bool>> ExprReceiver()
         {

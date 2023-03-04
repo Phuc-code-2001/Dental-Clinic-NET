@@ -20,7 +20,8 @@ namespace DataLayer.Domain
 
         public enum NotificationCategories
         {
-            AppointmentInComing,
+            Success,
+            Failed,
 
 
         }
