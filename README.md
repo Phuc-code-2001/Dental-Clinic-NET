@@ -12,8 +12,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ## Technology
 
 ### Backend
-1. Python + Django restframework
-2. C# dotnet 5.0 + ASP.NET Core + EntityFrameworkCore
+1. C# dotnet 5.0 + ASP.NET Core + EntityFrameworkCore
 
 ### Frontend
 1. ReactJs
@@ -22,7 +21,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 4. Ionicons
 
 ### Database
-1. Postgresql: postgresql-database.c1svonawnr25.ap-northeast-1.rds.amazonaws.com
+1. SQLServer: https://freeasphosting.net/cp/databases.aspx (Không connect được nếu dùng wifi trường FPT)
 
 ### Storage
 1. ImageKit
@@ -31,21 +30,23 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ### Realtime Engine
 1. Pusher
 
-### Deploy
-1. API on Heroku
-2. Frontend on GitHub
+### Check Email
+1. KickBox
 
-## Feature Until 6/11/2022
+### Deploy
+1. localhost
+
+## Feature Until 3/4/2022
 
 ### Guest
 + Register (Done)
-+ Verified Account (NotYet)
++ Verified Account (Done)
 + View Services (Done)
 
 ### BaseUser
 + Login (Done)
 + Change Password (Done)
-+ Forgot Password (NotYet)
++ Forgot Password (Done)
 + View Information (Done)
 + Update Information and Avatar (Done)
 
@@ -73,9 +74,10 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + Manage Sevice (Create, Update, Delete) (Done)
 + Manage Device (Create, Update, Delete) (Done)
 + Manage Appointment (Create, Update, Delete) (Done)
-+ Manage Notification (Create, Update, Delete) (NotYet)
-+ Manage ChatMessage (Update, Delete) (NotYet)
++ Manage Notification (Create, Update, Delete) (InProgress 80%)
++ Manage ChatMessage (Update, Delete) (Done)
 + Manage Feedback (Update, Delete) (NotYet)
 
-22 (Done)
-6 (NotYet)
+25 (Done)
+2 (NotYet)
+1 (InProgress)

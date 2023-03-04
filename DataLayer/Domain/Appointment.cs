@@ -36,7 +36,7 @@ namespace DataLayer.Domain
         public DateTime Date { get; set; }
 
         [Required]
-        public TimeManager.Slot Slot { get; set; }
+        public TimeManager.SlotManager Slot { get; set; }
         
         [Required]
         public string Content { get; set; }

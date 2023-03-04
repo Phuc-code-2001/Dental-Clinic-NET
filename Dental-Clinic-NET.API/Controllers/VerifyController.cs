@@ -1,11 +1,11 @@
 ﻿using DataLayer.Domain;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System;
 using Dental_Clinic_NET.API.Services;
 using System.Linq;
+using Dental_Clinic_NET.API.Models.VerifyModels;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -23,7 +23,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> RequiredConfirmAccountAsync([FromForm] string emailRequired = null)
+        public async Task<IActionResult> RequiredConfirmAccountAsync(RequireConfirmByEmail data)
         {
             try
             {
@@ -34,20 +34,24 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest("Your account already verified.");
                 }
 
-                if (!string.IsNullOrWhiteSpace(emailRequired))
+                if (!string.IsNullOrWhiteSpace(data.Email))
                 {
 
-                    bool duplicate = _servicesManager.UserManager.Users.Any(u => u.Email == emailRequired && u.EmailConfirmed);
+                    bool duplicate = _servicesManager.UserManager.Users.Any(u => u.Email == data.Email && u.EmailConfirmed);
                     if (duplicate)
                     {
-                        return BadRequest($"The email '{emailRequired}' have already account!");
+                        return BadRequest($"The email '{data.Email}' have already account!");
                     }
 
-                    user.Email = emailRequired;
+                    user.Email = data.Email;
+                    
                 }
+
                 var checker = await _servicesManager.KickboxServices.VerifyEmailAsync(user.Email);
                 if (checker.IsValid)
                 {
+                    await _servicesManager.UserManager.UpdateAsync(user);
+                    _servicesManager.DbContext.SaveChanges();
                     _servicesManager.UserServices.SendEmailToVerifyUser(user);
                     return Ok("We just sent an email to verify your account. Please check your email box include spam email.");
                 }
@@ -67,27 +71,34 @@ namespace Dental_Clinic_NET.API.Controllers
         [HttpGet]
         public async Task<IActionResult> EmailVerifyUserAsync([FromQuery] string userId, string code)
         {
-            BaseUser user = await _servicesManager.UserManager.FindByIdAsync(userId);
-            bool succeed = await _servicesManager.UserServices.ConfirmEmailForUser(user, code);
-
-            if (succeed)
+            try
             {
-                user.EmailConfirmed = true;
-                var updateResult = await _servicesManager.UserManager.UpdateAsync(user);
+                BaseUser user = await _servicesManager.UserManager.FindByIdAsync(userId);
+                bool succeed = await _servicesManager.UserServices.ConfirmEmailForUser(user, code);
 
-                if (updateResult.Succeeded)
+                if (succeed)
                 {
-                    return Ok("Tài khoản của bạn đã được xác thực thành công.");
+                    user.EmailConfirmed = true;
+                    var updateResult = await _servicesManager.UserManager.UpdateAsync(user);
+
+                    if (updateResult.Succeeded)
+                    {
+                        return Ok("Tài khoản của bạn đã được xác thực thành công.");
+                    }
+                    else
+                    {
+                        throw new Exception("Server error!");
+                    }
+
                 }
                 else
                 {
-                    throw new Exception("Server error!");
+                    return BadRequest("Xác thực thất bại. Nguyên nhân có thể do code không đúng hoặc hết hạn.");
                 }
-
             }
-            else
+            catch(Exception ex)
             {
-                return BadRequest("Xác thực thất bại. Nguyên nhân có thể do code không đúng hoặc hết hạn.");
+                return StatusCode(500, ex.Message);
             }
         }
 

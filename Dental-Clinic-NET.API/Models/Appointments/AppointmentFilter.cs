@@ -2,11 +2,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DataLayer.Domain;
+using Dental_Clinic_NET.API.Utils;
 using static DataLayer.Domain.Appointment;
 
 namespace Dental_Clinic_NET.API.Models.Appointments
 {
-    public class AppointmentFilter
+    public class AppointmentFilter : PageFilter
     {
         public string PatientId { get; set; }
 

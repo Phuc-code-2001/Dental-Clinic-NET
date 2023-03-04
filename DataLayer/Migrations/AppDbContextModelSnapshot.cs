@@ -48,7 +48,7 @@ namespace DataLayer.Migrations
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Slot")
+                    b.Property<int>("SlotManager")
                         .HasColumnType("int");
 
                     b.Property<int>("State")
@@ -146,9 +146,6 @@ namespace DataLayer.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserLockUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -164,8 +161,6 @@ namespace DataLayer.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("UserLockUserId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -423,6 +418,44 @@ namespace DataLayer.Migrations
                     b.ToTable("ChatMessages");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Clicked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Hidden")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReceiverId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
                 {
                     b.Property<string>("Id")
@@ -509,7 +542,12 @@ namespace DataLayer.Migrations
 
             modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("BaseUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Expired")
@@ -527,7 +565,9 @@ namespace DataLayer.Migrations
                     b.Property<DateTime?>("TimeCreated")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("BaseUserId");
 
                     b.ToTable("UserLocks");
                 });
@@ -715,13 +755,7 @@ namespace DataLayer.Migrations
                         .WithMany()
                         .HasForeignKey("EmailConfirmationUserId");
 
-                    b.HasOne("DataLayer.Domain.UserLock", "UserLock")
-                        .WithMany()
-                        .HasForeignKey("UserLockUserId");
-
                     b.Navigation("EmailConfirmation");
-
-                    b.Navigation("UserLock");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Conversation", b =>
@@ -799,6 +833,15 @@ namespace DataLayer.Migrations
                     b.Navigation("ToUser");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.Notification", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId");
+
+                    b.Navigation("Receiver");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Patient", b =>
                 {
                     b.HasOne("DataLayer.Domain.FileMedia", "MedicalRecordFile")
@@ -816,6 +859,13 @@ namespace DataLayer.Migrations
                     b.Navigation("BaseUser");
 
                     b.Navigation("MedicalRecordFile");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", null)
+                        .WithMany("UserLocks")
+                        .HasForeignKey("BaseUserId");
                 });
 
             modelBuilder.Entity("DeviceService", b =>
@@ -887,6 +937,11 @@ namespace DataLayer.Migrations
             modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
                 {
                     b.Navigation("Documents");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
+                {
+                    b.Navigation("UserLocks");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.Room", b =>

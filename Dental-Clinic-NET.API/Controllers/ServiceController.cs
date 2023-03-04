@@ -1,16 +1,14 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Services;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -34,27 +32,17 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
-                var services = _servicesManager.DbContext.Services.Include(d => d.Devices).ToArray();
-                var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
+                var services = _servicesManager.DbContext.Services
+                    .Include(s => s.Devices);
+                // var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
+                var paginated = new Paginated<Service>(services, filter.Page, filter.PageSize);
 
-                if(page != -1)
-                {
-                    Paginated<ServiceDTO> paginatedServices = new Paginated<ServiceDTO>(serviceDTOs.AsQueryable(), page);
-                    return Ok(new
-                    {
-                        page = page,
-                        per_page = paginatedServices.PageSize,
-                        total = paginatedServices.QueryCount,
-                        total_pages = paginatedServices.PageCount,
-                        data = paginatedServices.Items
-                    });
-                }
-
-                return Ok(serviceDTOs);
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ServiceDTO[]>(items.ToArray()));
+                return Ok(dataset);
 
             }
             catch (Exception ex)
@@ -112,16 +100,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Services.Add(service);
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Create", service, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);
 
@@ -184,17 +162,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(service).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Delete", new { Id = service.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
 
                 return Ok($"You just have completely delete service with id='{id}' success");
             }
@@ -292,16 +259,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 //Save
                 _servicesManager.DbContext.Entry(service).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Service-Update", service, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 // Map View
                 ServiceDTO serviceDTO = _servicesManager.AutoMapper.Map<ServiceDTO>(service);

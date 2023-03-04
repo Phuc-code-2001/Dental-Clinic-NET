@@ -1,21 +1,12 @@
-﻿using AutoMapper;
-using DataLayer.DataContexts;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services;
-using Dental_Clinic_NET.API.Services.Users;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers

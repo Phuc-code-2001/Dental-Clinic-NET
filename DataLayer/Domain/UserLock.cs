@@ -12,10 +12,12 @@ namespace DataLayer.Domain
     public class UserLock : BaseEntity
     {
         [Key]
-        [ForeignKey(nameof(BaseUser))]
-        public string UserId { get; set; }
-        public string Reason { get; set; }
+        public int Id { get; set; }
 
+        [ForeignKey(nameof(BaseUser))]
+        public string BaseUserId { get; set; }
+
+        public string Reason { get; set; }
         public bool IsLocked { get; set; }
         public DateTime Expired { get; set; }
 

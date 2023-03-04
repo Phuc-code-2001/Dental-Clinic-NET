@@ -1,18 +1,13 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
-using Dental_Clinic_NET.API.Models.Contacts;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Rooms;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -34,24 +29,17 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 var rooms = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices);
-                Paginated<Room> paginatedRooms = new Paginated<Room>(rooms, page);
+                Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
 
-                RoomDTO[] roomDTOs = _servicesManager.AutoMapper.Map<RoomDTO[]>(paginatedRooms.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<RoomDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginatedRooms.PageSize,
-                    total = paginatedRooms.QueryCount,
-                    total_pages = paginatedRooms.PageCount,
-                    data = roomDTOs
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {
@@ -88,17 +76,6 @@ namespace Dental_Clinic_NET.API.Controllers
                     .FirstOrDefault(r => r.Id == room.Id);
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Create", room, result =>
-                    {
-
-                    });
-
 
                 return Ok(roomDTO);
 
@@ -160,16 +137,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(room).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Delete", new { Id = room.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 return Ok($"You just have completely delete room with id='{id}' success");
 
             }
@@ -211,16 +178,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(room).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Room-Update", room, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
 

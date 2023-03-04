@@ -1,24 +1,16 @@
-﻿using AutoMapper;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Users;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Serializers;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
-using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -151,7 +143,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     
                     if (requiredUser.ImageAvatarId != null)
                     {
-                        await _servicesManager.ImageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
+                        var _ = _servicesManager.ImageKitServices.DeleteImageAsync(requiredUser.ImageAvatarId);
                     }
                     requiredUser.ImageURL = result.URL;
                     requiredUser.ImageAvatarId = result.ImageId;
@@ -182,24 +174,17 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Administrator))]
-        public IActionResult GetUsers(int page = 1)
+        public IActionResult GetUsers([FromQuery] PageFilter filter)
         {
             try
             {
-                var query = _servicesManager.DbContext.Users.Include(user => user.UserLock);
-                var paginatedQuery = new Paginated<BaseUser>(query, page);
 
-                var users = paginatedQuery.Items.ToArray();
-                var userDTOs = _servicesManager.AutoMapper.Map<UserDTO[]>(users);
+                var query = _servicesManager.DbContext.Users.Include(user => user.UserLocks);
+                Paginated<BaseUser> paginated = new Paginated<BaseUser>(query, filter.Page, filter.PageSize);
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginatedQuery.PageSize,
-                    total = paginatedQuery.QueryCount,
-                    total_pages = paginatedQuery.PageCount,
-                    data = userDTOs,
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<UserDTO[]>(items.ToArray()));
+
+                return Ok(dataset);
 
             }
             catch (Exception ex)
@@ -406,7 +391,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
                 
                 var errors = result.Errors.Select(e => new { e.Code, e.Description });
-                return BadRequest(errors);
+                return Conflict(errors);
 
             }
             catch (Exception ex)

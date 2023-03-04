@@ -1,19 +1,14 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.Models.Services;
+﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Dental_Clinic_NET.API.Models.Devices;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Dental_Clinic_NET.API.Models.Users;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -35,25 +30,18 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 IQueryable<Device> devices = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room);
-                Paginated<Device> paginatedDevices = new Paginated<Device>(devices, page);
+                Paginated<Device> paginated = new Paginated<Device>(devices, filter.Page, filter.PageSize);
 
-                var deviceDTOs = _servicesManager.AutoMapper.Map<DeviceDTO[]>(paginatedDevices.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DeviceDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginatedDevices.PageSize,
-                    total = paginatedDevices.QueryCount,
-                    total_pages = paginatedDevices.PageCount,
-                    data = deviceDTOs
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {
@@ -109,16 +97,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Devices.Add(device);
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Create", device, result =>
-                    {
-                        
-                    });
 
                 // Include services and room
                 device = _servicesManager.DbContext.Devices
@@ -188,16 +166,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(device).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Delete", new { Id = device.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 return Ok($"You just have completely delete service with id='{id}' success");
             }
             catch (Exception ex)
@@ -206,6 +174,16 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
         
+        /// <summary>
+        /// Update the device information
+        /// </summary>
+        /// <param name="request">Update expected data</param>
+        /// <returns>
+        ///     200: DeviceDTO
+        ///     404: string
+        ///     400: string
+        ///     500: string
+        /// </returns>
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         public IActionResult Update([FromForm] UpdateDevice request)
@@ -248,49 +226,25 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.AutoMapper.Map<UpdateDevice, Device>(request, device);
 
 
-                if(request.ServiceIdList != null)
+                if(request.ServiceIdList.Count > 0)
                 {
-                    List<Service> serviceToAdd = new List<Service>();
-                    List<Service> serviceToRemove = new List<Service>();
+                    IEnumerable<int> currentServiceListId = device.Services.Select(s => s.Id);
+                    IEnumerable<int> serviceToAddListId = request.ServiceIdList.Except(currentServiceListId);
+                    IEnumerable<int> serviceToRemoveListId = currentServiceListId.Except(request.ServiceIdList);
 
-                    foreach(int serviceId in request.ServiceIdList)
+                    device.Services = device.Services.Where(s => !serviceToRemoveListId.Contains(s.Id)).ToList();
+                    foreach(int serviceId in serviceToAddListId)
                     {
-                        Service service = _servicesManager.DbContext.Services.Find(serviceId);
-                        if(!device.Services.Contains(service)) {
-                            serviceToAdd.Add(service);
-                        }
-                    }
-
-                    foreach(Service service in device.Services)
-                    {
-                        if(!request.ServiceIdList.Contains(service.Id))
+                        Service serviceToAdd = _servicesManager.DbContext.Services.Find(serviceId);
+                        if(serviceToAdd != null)
                         {
-                            serviceToRemove.Add(service);
+                            device.Services.Add(serviceToAdd);
                         }
-                    }
-
-                    foreach(Service service in serviceToAdd)
-                    {
-                        device.Services.Add(service);
-                    }
-                    foreach(Service service in serviceToRemove)
-                    {
-                        device.Services.Remove(service);
                     }
                 }
 
                 _servicesManager.DbContext.Entry(device).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Device-Update", device, result =>
-                    {
-                        
-                    });
 
                 DeviceDTO deviceDTO = _servicesManager.AutoMapper.Map<DeviceDTO>(device);
 

@@ -11,7 +11,8 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
     {
         public UserLockProfileMapper()
         {
-            CreateMap<CreateUserLock, UserLock>();
+            CreateMap<CreateUserLock, UserLock>()
+                .ForMember(des => des.BaseUserId, opt => opt.MapFrom(src => src.UserId));
         }
     }
 }

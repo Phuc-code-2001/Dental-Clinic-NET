@@ -4,15 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System;
-using Dental_Clinic_NET.API.Models.Devices;
 using Dental_Clinic_NET.API.Models.Doctors;
-using DataLayer.DataContexts;
-using Dental_Clinic_NET.API.Models.Users;
 using System.Linq;
-using Dental_Clinic_NET.API.DTO;
 using Dental_Clinic_NET.API.Utils;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
+using Dental_Clinic_NET.API.DTOs;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -35,26 +32,20 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
                 var queries = _servicesManager.DbContext.Doctors
                     .Include(d => d.Certificate)
-                    .Include(d => d.BaseUser);
+                    .Include(d => d.BaseUser)
+                    .ThenInclude(user => user.UserLocks);
 
-                Paginated<Doctor> paginated = new Paginated<Doctor>(queries, page);
-                Doctor[] doctors = paginated.Items.ToArray();
-                DoctorDTO[] doctorDTOs = _servicesManager.AutoMapper.Map<DoctorDTO[]>(doctors);
+                Paginated<Doctor> paginated = new Paginated<Doctor>(queries, filter.Page, filter.PageSize);
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginated.PageSize,
-                    total = paginated.QueryCount,
-                    total_pages = paginated.PageCount,
-                    data = doctorDTOs
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DoctorDTO[]>(items.ToArray()));
+
+                return Ok(dataset);
 
             }
             catch (Exception ex)
@@ -169,16 +160,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(doctor).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Doctor-Update", doctor, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
                 doctor = _servicesManager.DbContext.Doctors
                     .Include(d => d.BaseUser)
                     .Include(d => d.Certificate)
@@ -208,8 +189,9 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 Doctor doctor = _servicesManager.DbContext.Doctors
-                    .Include(d => d.BaseUser)
                     .Include(d => d.Certificate)
+                    .Include(d => d.BaseUser)
+                    .ThenInclude(user => user.UserLocks)
                     .FirstOrDefault(d => d.Id == id);
 
                 if(doctor == null)

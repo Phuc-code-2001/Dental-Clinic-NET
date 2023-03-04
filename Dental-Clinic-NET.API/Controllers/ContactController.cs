@@ -1,18 +1,13 @@
-﻿using DataLayer.DataContexts;
-using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -37,21 +32,16 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll(int page = 1)
+        public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
             {
-                Paginated<Contact> paginatedContacts = new Paginated<Contact>(_servicesManager.DbContext.Contacts, page);
-                var contactDTOs = _servicesManager.AutoMapper.Map<ContactDTO[]>(paginatedContacts.Items.ToArray());
+                var contacts = _servicesManager.DbContext.Contacts;
+                Paginated<Contact> paginated = new Paginated<Contact>(contacts, filter.Page, filter.PageSize);
 
-                return Ok(new
-                {
-                    page,
-                    per_page = paginatedContacts.PageSize,
-                    total = paginatedContacts.QueryCount,
-                    total_pages = paginatedContacts.PageCount,
-                    data = contactDTOs
-                });
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ContactDTO[]>(items.ToArray()));
+
+                return Ok(dataset);
 
             }
             catch(Exception ex)
@@ -78,16 +68,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.SaveChanges();
 
                 ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-Create", contactDTO, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
 
                 return Ok(contactDTO);
 
@@ -157,19 +137,6 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(contact).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                ContactDTO contactDTO = _servicesManager.AutoMapper.Map<ContactDTO>(contact);
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-ChangeState", contactDTO, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                Console.WriteLine("Response done at: " + DateTime.Now);
                 return Ok($"Change state of contact to '{request.StateIndex}' success");
             }
             catch(Exception ex)
@@ -200,18 +167,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.DbContext.Entry(contact).State = EntityState.Deleted;
                 _servicesManager.DbContext.SaveChanges();
-
-                // Push event
-                string[] chanels = _servicesManager.DbContext.Users.Where(user => user.Type == UserType.Administrator)
-                    .Select(user => user.PusherChannel).ToArray();
-
-                Task pushEventTask = _servicesManager.PusherServices
-                    .PushTo(chanels, "Contact-Delete", new { Id = contact.Id }, result =>
-                    {
-                        Console.WriteLine("Push event done at: " + DateTime.Now);
-                    });
-
-                Console.WriteLine("Response done at: " + DateTime.Now);
 
                 return Ok($"You just have completely delete contact with id='{id}' success");
             }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Users;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,11 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<BasicRegisterModel, BaseUser>();
 
             CreateMap<BaseUser, UserDTO>()
-                .ForMember(des => des.IsLock, act => act.MapFrom(src => src.UserLock.IsLockCalculated))
-                .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()));
+                .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()))
+                .AfterMap((src, des) =>
+                {
+                    des.IsLock = (src.UserLocks?.OrderBy(e => e.TimeCreated).LastOrDefault()?.IsLockCalculated ?? false);
+                });
 
             CreateMap<UpdateUserModel, BaseUser>()
                 .ForAllMembers(opt => opt.Condition((src, des, field) =>

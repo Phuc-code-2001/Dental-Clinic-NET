@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.CustomPolicy
@@ -15,7 +16,6 @@ namespace Dental_Clinic_NET.API.CustomPolicy
 
         public RequestDelegate _next;
         public AppDbContext _dbContext;
-        public UserManager<BaseUser> _userManager;
 
         public UserLockMiddleware(RequestDelegate next)
         {
@@ -26,8 +26,10 @@ namespace Dental_Clinic_NET.API.CustomPolicy
         {
             
 
-            BaseUser user = await _userManager.FindByNameAsync(context.User.Identity.Name);
-            UserLock userLock = _dbContext.UserLocks.Find(user.Id);
+            BaseUser user = await _dbContext.Users
+                .Include(_user => _user.UserLocks)
+                .FirstOrDefaultAsync(_user => _user.UserName == context.User.Identity.Name);
+            UserLock userLock = user.UserLocks.OrderBy(l => l.TimeCreated).LastOrDefault();
 
             return userLock != null && userLock.IsLockCalculated;
         }
@@ -37,7 +39,6 @@ namespace Dental_Clinic_NET.API.CustomPolicy
             var authenResult = await context.AuthenticateAsync();
             if (authenResult.Succeeded)
             {
-                _userManager = context.RequestServices.GetService<UserManager<BaseUser>>();
                 _dbContext = context.RequestServices.GetService<AppDbContext>();
 
                 var checkUserLockResult = await UserLockHandlerAsync(context);

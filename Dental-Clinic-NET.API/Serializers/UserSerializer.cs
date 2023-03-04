@@ -1,14 +1,12 @@
 ﻿using DataLayer.Domain;
-using Dental_Clinic_NET.API.DTO;
+using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Permissions;
-using System.Collections.Generic;
+using System;
 
 namespace Dental_Clinic_NET.API.Serializers
 {
     public class UserSerializer
     {
-
-        public delegate UserDTO Transformer(BaseUser user);
 
         public PermissionOnBaseUser permission;
 
@@ -17,9 +15,9 @@ namespace Dental_Clinic_NET.API.Serializers
             this.permission = permission;
         }
 
-        public UserDTO Serialize(Transformer mapperHandle)
+        public UserDTO Serialize(Func<BaseUser, UserDTO> mapperConfiguration)
         {
-            var userInfo = mapperHandle(permission.Entity);
+            var userInfo = mapperConfiguration(permission.Entity);
 
             if (!(permission.IsOwner || permission.IsAdmin)) userInfo.UserName = null;
             if (!(permission.IsOwner || permission.IsAdmin)) userInfo.Email = null;

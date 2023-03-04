@@ -19,7 +19,7 @@ namespace Dental_Clinic_NET.API.Models.Appointments
         public DateTime? Date { get; set; }
 
         [Required]
-        public TimeManager.Slot? Slot { get; set; }
+        public TimeManager.SlotManager? Slot { get; set; }
 
         [Required]
         public string Content { get; set; }

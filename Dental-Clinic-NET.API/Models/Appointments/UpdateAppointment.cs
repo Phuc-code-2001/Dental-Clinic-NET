@@ -14,7 +14,7 @@ namespace Dental_Clinic_NET.API.Models.Appointments
         [DataType(DataType.Date)]
         public DateTime? Date { get; set; }
 
-        public TimeManager.Slot? Slot { get; set; }
+        public TimeManager.SlotManager? Slot { get; set; }
 
         public string Content { get; set; }
 
