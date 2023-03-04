@@ -7,6 +7,7 @@ using Dental_Clinic_NET.API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -41,11 +42,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 var queryFiltered = filter.Filter(queryAll);
-                Paginated<Notification> paginated = new Paginated<Notification>(queryFiltered, filter.PageIndex, filter.PageSize);
+                Paginated<Notification> paginated = new Paginated<Notification>(queryFiltered, filter.Page, filter.PageSize);
 
-                var dtos = _servicesManager.AutoMapper.Map<NotificationDTO[]>(paginated.Items.ToArray());
-
-                return Ok(dtos);
+                dynamic data = paginated.GetData(items => _servicesManager.AutoMapper.Map<NotificationDTO[]>(items.ToArray()));
+                return Ok(data);
             }
             catch(Exception ex)
             {
@@ -72,6 +72,99 @@ namespace Dental_Clinic_NET.API.Controllers
 
             }
             catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("{id}/Click")]
+        [Authorize]
+        public async Task<IActionResult> ClickAsync(int id) 
+        {
+            try
+            {
+                Notification notification = await _servicesManager.DbContext.Notifications
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if(notification == null)
+                {
+                    return NotFound("Notification not found.");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if(loggedUser.Id != notification.Receiver.Id)
+                {
+                    return StatusCode(403, "Bad request! Only allow receiver click!");
+                }
+
+                notification.Clicked = true;
+                _servicesManager.DbContext.Notifications.Update(notification);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("{id}/Hide")]
+        public async Task<IActionResult> HideAsync(int id)
+        {
+            try
+            {
+                Notification notification = await _servicesManager.DbContext.Notifications
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (notification == null)
+                {
+                    return NotFound("Notification not found.");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if (loggedUser.Id != notification.Receiver.Id)
+                {
+                    return StatusCode(403, "Bad request! Only allow receiver hide!");
+                }
+
+                notification.Hidden = true;
+                _servicesManager.DbContext.Notifications.Update(notification);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            try
+            {
+                Notification notification = await _servicesManager.DbContext.Notifications
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (notification == null)
+                {
+                    return NotFound("Notification not found.");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                if (loggedUser.Type != UserType.Administrator)
+                {
+                    return StatusCode(403, "Bad request! Only allow admin delete notification!");
+                }
+
+                _servicesManager.DbContext.Notifications.Remove(notification);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

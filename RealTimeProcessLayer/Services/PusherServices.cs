@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace RealTimeProcessLayer.Services
 {
-    public class PusherServices : Pusher, IPusherServices
+    public class PusherServices : Pusher
     {
 
         public delegate void CallBack(ITriggerResult result);
