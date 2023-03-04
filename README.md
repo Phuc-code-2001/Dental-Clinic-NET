@@ -36,17 +36,17 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ### Deploy
 1. localhost
 
-## Feature Until 6/11/2022
+## Feature Until 3/4/2022
 
 ### Guest
 + Register (Done)
-+ Verified Account (NotYet)
++ Verified Account (Done)
 + View Services (Done)
 
 ### BaseUser
 + Login (Done)
 + Change Password (Done)
-+ Forgot Password (NotYet)
++ Forgot Password (Done)
 + View Information (Done)
 + Update Information and Avatar (Done)
 
@@ -74,9 +74,10 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + Manage Sevice (Create, Update, Delete) (Done)
 + Manage Device (Create, Update, Delete) (Done)
 + Manage Appointment (Create, Update, Delete) (Done)
-+ Manage Notification (Create, Update, Delete) (NotYet)
-+ Manage ChatMessage (Update, Delete) (NotYet)
++ Manage Notification (Create, Update, Delete) (InProgress 80%)
++ Manage ChatMessage (Update, Delete) (Done)
 + Manage Feedback (Update, Delete) (NotYet)
 
-22 (Done)
-6 (NotYet)
+25 (Done)
+2 (NotYet)
+1 (InProgress)
