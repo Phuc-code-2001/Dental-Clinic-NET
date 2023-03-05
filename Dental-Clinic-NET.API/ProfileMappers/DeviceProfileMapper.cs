@@ -3,7 +3,7 @@ using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Devices;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class DeviceProfileMapper : Profile
     {
@@ -14,7 +14,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<Room, DeviceDTO.RoomInnerDTO>();
             CreateMap<Service, DeviceDTO.ServiceInnerDTO>();
             CreateMap<Device, DeviceDTO>();
-           
+
             CreateMap<UpdateDevice, Device>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.RoomId, opt => opt.MapFrom(src => src.RoomId.Value))
@@ -39,6 +39,6 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
         //    var result = imageKitServices.UploadImageAsync(formFile, formFile.FileName).Result;
         //    return result.URL;
         //}
-        
+
     }
 }

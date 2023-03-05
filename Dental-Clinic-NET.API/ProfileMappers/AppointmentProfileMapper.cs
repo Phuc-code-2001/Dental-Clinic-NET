@@ -5,14 +5,14 @@ using Dental_Clinic_NET.API.Models.Appointments;
 using System;
 using static DataLayer.Domain.TimeManager;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class AppointmentProfileMapper : Profile
     {
         public AppointmentProfileMapper()
         {
             CreateMap<Appointment, AppointmentDTO>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
             CreateMap<Appointment.States, EnumTypeDTO>()
@@ -22,7 +22,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<CreateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value));
-            
+
             CreateMap<UpdateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value))
@@ -37,7 +37,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
 
             // Appointment Lite
             CreateMap<Appointment, AppointmentDTOLite>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
         }
