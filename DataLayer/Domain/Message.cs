@@ -27,7 +27,5 @@ namespace DataLayer.Domain
 
         public bool IsRemoved { get; set; }
 
-
-
     }
 }

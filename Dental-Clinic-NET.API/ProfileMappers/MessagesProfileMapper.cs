@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
-using ChatServices.API.DTOs;
-using ChatServices.API.Models;
 using DataLayer.Domain;
+using DataLayer.Extensions;
+using Dental_Clinic_NET.API.DTOs.Messages;
+using Dental_Clinic_NET.API.Models.Chats;
 
-namespace ChatServices.API.Mappers
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
-    public class ChatMapperProfile : Profile
+    public class MessagesProfileMapper : Profile
     {
-        public ChatMapperProfile()
+        public MessagesProfileMapper()
         {
             CreateMap<PatToRecMessage, Message>()
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)));
@@ -16,14 +17,22 @@ namespace ChatServices.API.Mappers
                 .ForMember(des => des.Content, opt => opt.MapFrom(src => Base64Encode(src.Content)))
                 .ForMember(des => des.ToId, opt => opt.MapFrom(src => src.PatientId));
 
-            CreateMap<BaseUser, ChatUserDTO>();
+            CreateMap<BaseUser, ChatUserDTO>()
+                .AfterMap((src, des) =>
+                {
+                    des.UserRole = src.Type.ToString();
+                });
 
             CreateMap<Message, ChatMessageDTO>()
-                .ForMember(des => des.Content, opt => opt.MapFrom(
-                    src => src.IsRemoved ? string.Empty : Base64Decode(src.Content)));
+                .ForMember(des => des.Content, opt => opt.MapFrom(src => src.IsRemoved ? string.Empty : Base64Decode(src.Content)));
 
             CreateMap<Conversation, ConversationDTO>()
-                .ForMember(des => des.LastMessageCreated, opt => opt.MapFrom(src => src.LastMessage.TimeCreated));
+                .ForMember(des => des.LastMessageCreated, opt => opt.MapFrom(src => src.LastMessage.TimeCreated.Value))
+                .AfterMap((src, des) =>
+                {
+                    des.PreviewContent = src.LastMessage.Content.Substring(0, 15) + "...";
+                    des.TimeFormatted = TimeManager.TranslateTimeToAgo(src.LastMessage.TimeCreated.Value);
+                });
 
 
         }

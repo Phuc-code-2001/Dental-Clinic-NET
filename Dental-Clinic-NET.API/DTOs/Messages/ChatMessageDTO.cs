@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ChatServices.API.DTOs
+namespace Dental_Clinic_NET.API.DTOs.Messages
 {
     public class ChatMessageDTO
     {

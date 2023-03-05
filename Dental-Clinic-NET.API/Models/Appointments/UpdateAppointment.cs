@@ -1,4 +1,4 @@
-﻿using DataLayer.Domain;
+﻿using DataLayer.Extensions;
 using System;
 using System.ComponentModel.DataAnnotations;
 

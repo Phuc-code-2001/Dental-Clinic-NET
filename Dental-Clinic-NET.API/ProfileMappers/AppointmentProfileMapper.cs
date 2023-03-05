@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
+using DataLayer.Extensions;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Appointments;
 using System;
-using static DataLayer.Domain.TimeManager;
 
 namespace Dental_Clinic_NET.API.ProfileMappers
 {
@@ -12,7 +12,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
         public AppointmentProfileMapper()
         {
             CreateMap<Appointment, AppointmentDTO>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => Instance.TryConvertToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
             CreateMap<Appointment.States, EnumTypeDTO>()
@@ -37,7 +37,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
 
             // Appointment Lite
             CreateMap<Appointment, AppointmentDTOLite>()
-                .ForMember(des => des.Time, opt => opt.MapFrom(src => Instance.TryConvertToStrTime(src.Slot)))
+                .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
                 .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
 
         }

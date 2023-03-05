@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
+using DataLayer.Extensions;
 using Dental_Clinic_NET.API.DTOs;
-using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Dental_Clinic_NET.API.ProfileMappers
 {
