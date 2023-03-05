@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using DataLayer.Domain;
+using DataLayer.Extensions;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Appointments;
 using System;
-using static DataLayer.Domain.TimeManager;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class AppointmentProfileMapper : Profile
     {
@@ -22,7 +22,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
             CreateMap<CreateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value));
-            
+
             CreateMap<UpdateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
                 .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value))

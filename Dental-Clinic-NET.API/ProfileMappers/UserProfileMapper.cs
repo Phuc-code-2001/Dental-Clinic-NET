@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class UserProfileMapper : Profile
     {
@@ -18,7 +18,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
                 .ForMember(des => des.Role, act => act.MapFrom(src => src.Type.ToString()))
                 .AfterMap((src, des) =>
                 {
-                    des.IsLock = (src.UserLocks?.OrderBy(e => e.TimeCreated).LastOrDefault()?.IsLockCalculated ?? false);
+                    des.IsLock = src.UserLocks?.OrderBy(e => e.TimeCreated).LastOrDefault()?.IsLockCalculated ?? false;
                 });
 
             CreateMap<UpdateUserModel, BaseUser>()

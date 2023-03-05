@@ -4,9 +4,9 @@ using Dental_Clinic_NET.API.Models.Users.UserLock;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
-    
+
     public class UserLockProfileMapper : Profile
     {
         public UserLockProfileMapper()

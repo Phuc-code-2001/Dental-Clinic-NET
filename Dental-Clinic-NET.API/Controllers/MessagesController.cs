@@ -1,18 +1,19 @@
-﻿using ChatServices.API.DTOs;
-using ChatServices.API.Models;
-using ChatServices.API.Utils;
-using DataLayer.Domain;
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
+using System.Data;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading.Tasks;
+using System;
+using Dental_Clinic_NET.API.Models.Chats;
+using Dental_Clinic_NET.API.DTOs.Messages;
+using Dental_Clinic_NET.API.Utils;
 
-namespace ChatServices.API.Controllers
+namespace Dental_Clinic_NET.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
@@ -41,36 +42,33 @@ namespace ChatServices.API.Controllers
         {
             try
             {
-                string loggedUserName = User.Identity.Name;
-                BaseUser loggedUser = _servicesManager.DbContext
-                    .Users.FirstOrDefault(u => u.UserName == loggedUserName);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
 
                 Message message = _servicesManager.AutoMapper.Map<Message>(request);
                 message.FromId = loggedUser.Id;
 
-                var userChatBoxInfo = _servicesManager.DbContext
-                    .Conversations
+                var conversation = _servicesManager.DbContext.Conversations
                     .FirstOrDefault(cb => cb.UserId == loggedUser.Id);
 
-                if(userChatBoxInfo != null)
+                if (conversation != null)
                 {
-                    userChatBoxInfo.LastMessage = message;
-                    userChatBoxInfo.HasMessageUnRead = true;
+                    conversation.LastMessage = message;
+                    conversation.HasMessageUnRead = true;
 
-                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                    _servicesManager.DbContext.Entry(conversation).State = EntityState.Modified;
                 }
                 else
                 {
-                    userChatBoxInfo = new Conversation()
+                    conversation = new Conversation()
                     {
                         UserId = message.FromId,
                         HasMessageUnRead = true,
                         LastMessage = message,
                     };
 
-                    _servicesManager.DbContext.Conversations.Add(userChatBoxInfo);
+                    _servicesManager.DbContext.Conversations.Add(conversation);
                 }
-                
+
                 _servicesManager.DbContext.Add(message);
                 _servicesManager.DbContext.SaveChanges();
 
@@ -87,7 +85,7 @@ namespace ChatServices.API.Controllers
                         Console.WriteLine("Chat-PatToRec Done at: " + DateTime.Now);
                         Console.WriteLine("Data: " + JsonConvert.SerializeObject(messageDTO, Formatting.Indented));
                         Console.WriteLine("To Chanels: ");
-                        foreach(string chanel in chanels)
+                        foreach (string chanel in chanels)
                         {
                             Console.WriteLine(chanel);
                         }
@@ -96,7 +94,7 @@ namespace ChatServices.API.Controllers
                 return Ok(messageDTO);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -124,37 +122,35 @@ namespace ChatServices.API.Controllers
                     .Include(pat => pat.BaseUser)
                     .FirstOrDefault(pat => pat.Id == request.PatientId);
 
-                if(toPatient == null)
+                if (toPatient == null)
                 {
-                    return NotFound("Truyền cái PatientId đúng chưa? Patient not found!");
+                    return NotFound($"Patient not found with id= '{request.PatientId}'!");
                 }
 
-                string loggedUserName = User.Identity.Name;
-                BaseUser loggedUser = _servicesManager.DbContext
-                    .Users.FirstOrDefault(u => u.UserName == loggedUserName);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
 
                 Message message = _servicesManager.AutoMapper.Map<Message>(request);
                 message.FromId = loggedUser.Id;
 
-                var userChatBoxInfo = _servicesManager.DbContext
-                    .Conversations
+                Conversation conversation = _servicesManager.DbContext.Conversations
                     .FirstOrDefault(cb => cb.UserId == toPatient.Id);
 
-                if (userChatBoxInfo != null)
+                if (conversation != null)
                 {
-                    userChatBoxInfo.LastMessage = message;
-                    _servicesManager.DbContext.Entry(userChatBoxInfo).State = EntityState.Modified;
+                    conversation.LastMessage = message;
+                    conversation.HasMessageUnRead = false;
+                    _servicesManager.DbContext.Entry(conversation).State = EntityState.Modified;
                 }
                 else
                 {
-                    userChatBoxInfo = new Conversation()
+                    conversation = new Conversation()
                     {
                         UserId = message.ToId,
                         HasMessageUnRead = false,
                         LastMessage = message,
                     };
 
-                    _servicesManager.DbContext.Conversations.Add(userChatBoxInfo);
+                    _servicesManager.DbContext.Conversations.Add(conversation);
                 }
 
                 _servicesManager.DbContext.Add(message);
@@ -235,32 +231,22 @@ namespace ChatServices.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Patient))]
-        public IActionResult ListMessagesInConversationOfPatient(int page = 1)
+        public IActionResult ListMessagesInConversationOfPatient([FromQuery] PageFilter filter)
         {
             try
             {
-                string loggedUserName = User.Identity.Name;
-                BaseUser loggedUser = _servicesManager.DbContext
-                    .Users.FirstOrDefault(u => u.UserName == loggedUserName);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
 
                 var queries = _servicesManager.DbContext.ChatMessages
                     .Include(message => message.FromUser)
                     .Where(message => message.FromUser.Id == loggedUser.Id || message.ToUser.Id == loggedUser.Id)
                     .OrderByDescending(message => message.TimeCreated);
 
-                var paginated = new Paginated<Message>(queries, page);
+                var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
 
-                ChatMessageDTO[] datasetDTO = _servicesManager.AutoMapper
-                    .Map<ChatMessageDTO[]>(paginated.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginated.PageSize,
-                    total = paginated.QueryCount,
-                    total_pages = paginated.PageCount,
-                    data = datasetDTO,
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {
@@ -281,7 +267,7 @@ namespace ChatServices.API.Controllers
         /// </returns>
         [HttpGet("{patientId}")]
         [Authorize(Roles = nameof(UserType.Receptionist))]
-        public IActionResult ListMessagesInConversationOfReception(string patientId, int page = 1)
+        public IActionResult ListMessagesInConversationOfReception(string patientId, [FromQuery] PageFilter filter)
         {
             try
             {
@@ -291,27 +277,20 @@ namespace ChatServices.API.Controllers
 
                 if (toPatient == null)
                 {
-                    return NotFound("Truyền cái PatientId đúng chưa? Patient not found!");
+                    return NotFound($"Patient not found with id='{patientId}'!");
                 }
 
                 var queries = _servicesManager.DbContext.ChatMessages
                     .Include(message => message.FromUser)
-                    .Where(message => message.FromUser.Id == patientId || message.ToUser.Id == patientId)
+                    .Include(message => message.ToUser)
+                    .Where(message => message.FromId == patientId || message.ToId == patientId)
                     .OrderByDescending(message => message.TimeCreated);
 
-                var paginated = new Paginated<Message>(queries, page);
+                var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
 
-                ChatMessageDTO[] datasetDTO = _servicesManager.AutoMapper
-                    .Map<ChatMessageDTO[]>(paginated.Items.ToArray());
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
 
-                return Ok(new
-                {
-                    page = page,
-                    per_page = paginated.PageSize,
-                    total = paginated.QueryCount,
-                    total_pages = paginated.PageCount,
-                    data = datasetDTO,
-                });
+                return Ok(dataset);
             }
             catch (Exception ex)
             {
@@ -336,10 +315,10 @@ namespace ChatServices.API.Controllers
             try
             {
                 var userChatBox = _servicesManager.DbContext
-                    .Conversations
+                    .Conversations.Include(cb => cb.User)
                     .FirstOrDefault(cb => cb.Id == chatBoxId);
 
-                if(userChatBox == null)
+                if (userChatBox == null)
                 {
                     return NotFound($"ChatBox {chatBoxId} not found!");
                 }
@@ -349,9 +328,11 @@ namespace ChatServices.API.Controllers
                 _servicesManager.DbContext.SaveChanges();
 
                 // Push event
-                string[] chanels = _servicesManager.DbContext.Users
-                    .Where(user => user.Id == userChatBox.UserId)
-                    .Select(user => user.PusherChannel).ToArray();
+                string[] chanels = new string[]
+                {
+                    userChatBox.User.PusherChannel
+                };
+
                 string message = "Reception just have been seen your messages.";
                 Task pushEventTask = _servicesManager.PusherServices
                     .PushToAsync(chanels, "Chat-MarkAsSeenChatBox", message, result =>
@@ -380,15 +361,13 @@ namespace ChatServices.API.Controllers
         {
             try
             {
-                string loggedUserName = User.Identity.Name;
-                BaseUser loggedUser = _servicesManager.DbContext
-                    .Users.FirstOrDefault(u => u.UserName == loggedUserName);
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
 
 
                 Message message = _servicesManager.DbContext.ChatMessages
                     .FirstOrDefault(message => message.Id == messageId);
 
-                if(message == null || message.FromId != loggedUser.Id)
+                if (message == null || message.FromId != loggedUser.Id)
                 {
                     // Hide messageId from hacker
                     return StatusCode(403, "Cannot do operation!");
@@ -401,11 +380,10 @@ namespace ChatServices.API.Controllers
                 return Ok($"Bạn đã thu hồi tin nhắn. Mã: {messageId}!");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
-
     }
 }

@@ -3,7 +3,7 @@ using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Services;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class ServiceProfileMapper : Profile
     {

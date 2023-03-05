@@ -1,4 +1,4 @@
-﻿namespace ChatServices.API.Models
+﻿namespace Dental_Clinic_NET.API.Models.Chats
 {
     public class RecToPatMessage
     {

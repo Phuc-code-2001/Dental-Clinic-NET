@@ -5,7 +5,7 @@ using Dental_Clinic_NET.API.Models.Contacts;
 using Dental_Clinic_NET.API.Models.Rooms;
 using System.Linq;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class RoomProfileMapper : Profile
     {

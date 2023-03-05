@@ -1,8 +1,7 @@
-﻿using DataLayer.Domain;
+﻿using DataLayer.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
-using static DataLayer.Domain.Appointment;
 
 namespace Dental_Clinic_NET.API.Models.Appointments
 {

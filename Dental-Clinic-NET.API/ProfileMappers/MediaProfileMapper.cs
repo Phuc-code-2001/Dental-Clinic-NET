@@ -4,7 +4,7 @@ using Dental_Clinic_NET.API.DTOs;
 using FileProcessorServices;
 using Microsoft.Extensions.Configuration;
 
-namespace Dental_Clinic_NET.API.AutoMapperProfiles
+namespace Dental_Clinic_NET.API.ProfileMappers
 {
     public class MediaProfileMapper : Profile
     {
@@ -20,7 +20,7 @@ namespace Dental_Clinic_NET.API.AutoMapperProfiles
 
         private string GetLink(string path)
         {
-            if(path == null) return null;
+            if (path == null) return null;
             return dropboxServices.GetShareLinkAsync(path).Result;
         }
     }
