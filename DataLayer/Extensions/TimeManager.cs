@@ -82,7 +82,6 @@ namespace DataLayer.Extensions
             if (dayCount > 0)
             {
                 message += string.Format("{0} day{1} ", dayCount, dayCount > 1 ? "s" : "");
-                totalSeconds %= dayUnit;
             }
             else
             {
@@ -90,24 +89,23 @@ namespace DataLayer.Extensions
                 if (hourCount > 0)
                 {
                     message += string.Format("{0} hour{1} ", hourCount, hourCount > 1 ? "s" : "");
-                    totalSeconds %= hourUnit;
                 }
-
-                int minuteCount = totalSeconds / minuteUnit;
-                if (minuteCount > 0)
+                else
                 {
-                    message += string.Format("{0} minute{1} ", minuteCount, minuteCount > 1 ? "s" : "");
-                    totalSeconds %= minuteUnit;
-                }
 
-                if (hourCount == 0)
-                {
-                    if (totalSeconds > 0)
+                    int minuteCount = totalSeconds / minuteUnit;
+                    if (minuteCount > 0)
                     {
-                        message += string.Format("{0} second{1} ", totalSeconds, totalSeconds > 1 ? "s" : "");
+                        message += string.Format("{0} minute{1} ", minuteCount, minuteCount > 1 ? "s" : "");
+                    }
+                    else
+                    {
+                        if (totalSeconds > 0)
+                        {
+                            message += string.Format("{0} second{1} ", totalSeconds, totalSeconds > 1 ? "s" : "");
+                        }
                     }
                 }
-
             }
 
             message += "ago";
