@@ -21,5 +21,8 @@ namespace Dental_Clinic_NET.API.Models.Services
         public int Price { get; set; }
 
         public List<int> DeviceIdList { get; set; } = new List<int>();
+
+        public bool IsPublic { get; set; }
+
     }
 }

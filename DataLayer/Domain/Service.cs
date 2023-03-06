@@ -18,5 +18,8 @@ namespace DataLayer.Domain
         public string Description { get; set; }
         public int Price { get; set; }
         public ICollection<Device> Devices { get; set; }
+
+        public bool IsPublic { get; set; } = true;
+
     }
 }
