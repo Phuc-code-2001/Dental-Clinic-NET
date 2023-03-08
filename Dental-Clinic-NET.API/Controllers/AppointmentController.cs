@@ -226,7 +226,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+                AppointmentDTOLite entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTOLite>(entity);
 
                 return Ok(entityDTO);
             }

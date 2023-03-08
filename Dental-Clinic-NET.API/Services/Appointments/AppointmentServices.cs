@@ -42,18 +42,18 @@ namespace Dental_Clinic_NET.API.Services.Appointments
 
                 case UserType.Doctor:
                     return permission.IsOwner
-                        && entity.State == Appointment.States.Accept
-                        && entity.State == Appointment.States.Doing;
+                        && (entity.State == Appointment.States.Accept
+                        || entity.State == Appointment.States.Doing);
 
                 case UserType.Receptionist:
                     return entity.State == Appointment.States.NotYet
-                        && entity.State == Appointment.States.Accept;
+                        || entity.State == Appointment.States.Accept;
 
                 case UserType.Technican:
                     return entity.State == Appointment.States.Transfer
-                        && entity.State == Appointment.States.TransferDoing
-                        && entity.State == Appointment.States.TransferCancel
-                        && entity.State == Appointment.States.TransferComplete;
+                        || entity.State == Appointment.States.TransferDoing
+                        || entity.State == Appointment.States.TransferCancel
+                        || entity.State == Appointment.States.TransferComplete;
 
                 case UserType.Administrator:
                     return true;
