@@ -14,6 +14,8 @@ namespace Dental_Clinic_NET.API.DTOs
 
         public EnumTypeDTO[] Devices { get; set; }
 
+        public bool IsPublic { get; set; }
+
     }
 
     public class ServiceDTOLite : BaseEntityDTO
@@ -22,5 +24,7 @@ namespace Dental_Clinic_NET.API.DTOs
         public string ServiceCode { get; set; }
         public string ServiceName { get; set; }
         public string ImageURL { get; set; }
+
+        public bool IsPublic { get; set; }
     }
 }
