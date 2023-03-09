@@ -1,6 +1,7 @@
 ﻿using DataLayer.DataContexts;
 using DataLayer.Domain;
 using DataLayer.Extensions;
+using Dental_Clinic_NET.API.Models.Schedules;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -100,20 +101,34 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             return checkPermission;
         }
 
-        public Doctor FindDoctorForAppointment(Appointment appointment)
+        public List<Doctor> GetFreeDoctors(TimeIdentifier timeIdentifier)
         {
             List<Doctor> busyDoctors = _context.Appointments
-                .Include(apm => apm.Doctor)
-                .Where(apm => apm.Date == appointment.Date && apm.Slot == appointment.Slot)
-                .Select(apm => apm.Doctor).ToList();
+                .Include(x => x.Doctor)
+                .Where(x => x.Date == timeIdentifier.Date.Value && x.Slot == timeIdentifier.Slot)
+                .Select(x => x.Doctor).ToList();
 
-            Doctor[] doctors = _context.Doctors.AsEnumerable()
+            List<Doctor> doctors = _context.Doctors
+                .Include(x => x.BaseUser)
+                .ThenInclude(x => x.UserLocks)
+                .AsEnumerable()
                 .Except(busyDoctors)
-                .ToArray();
+                .ToList();
 
-            if(doctors.Length > 0)
+            return doctors;
+        }
+
+        public Doctor FindDoctorForAppointment(Appointment appointment)
+        {
+            List<Doctor> doctors = GetFreeDoctors(new TimeIdentifier
             {
-                int randIndex = (new Random()).Next(doctors.Length);
+                Date = appointment.Date,
+                Slot = appointment.Slot,
+            });
+
+            if(doctors.Count > 0)
+            {
+                int randIndex = (new Random()).Next(doctors.Count);
                 Doctor doctorSelected = doctors[randIndex];
                 return doctorSelected;
             }
@@ -126,8 +141,8 @@ namespace Dental_Clinic_NET.API.Services.Appointments
         public Room FindRoomForAppointment(Appointment appointment)
         {
             List<Room> busyRooms = _context.Appointments
-                .Include(apm => apm.Room)
-                .Where(apm => apm.Date == appointment.Date && apm.Slot == appointment.Slot)
+                .Include(x => x.Room)
+                .Where(x => x.Date == appointment.Date && x.Slot == appointment.Slot)
                 .Select(apm => apm.Room).ToList();
 
             Room[] rooms = _context.Rooms.AsEnumerable()
@@ -144,11 +159,6 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             {
                 throw new Exception("No have any Room!");
             }
-        }
-
-        public bool IsFreeTime(DateTime Date, TimeManager.SlotManager slot)
-        {
-            throw new NotImplementedException();
         }
     }
 }
