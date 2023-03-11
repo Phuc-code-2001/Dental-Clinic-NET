@@ -31,7 +31,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult GetAll([FromQuery] PageFilter filter)
         {
             try
@@ -87,7 +87,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult Get(int id)
         {
             try
@@ -114,7 +114,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpPut]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult ChangeState(UpdateContact request)
         {
             try
@@ -154,7 +154,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult Delete(int id)
         {
             try
