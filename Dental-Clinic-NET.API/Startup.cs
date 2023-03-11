@@ -22,6 +22,7 @@ using MailServices;
 using Dental_Clinic_NET.API.CustomPolicy;
 using Dental_Clinic_NET.API.Services.Doctors;
 using Dental_Clinic_NET.API.Services.Notifications;
+using Dental_Clinic_NET.API.ProfileMappers;
 
 namespace Dental_Clinic_NET.API
 {
