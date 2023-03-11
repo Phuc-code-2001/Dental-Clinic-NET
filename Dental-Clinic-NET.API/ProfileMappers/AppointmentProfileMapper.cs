@@ -21,7 +21,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
 
             CreateMap<CreateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))
-                .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot.Value));
+                .ForMember(des => des.Slot, opt => opt.MapFrom(src => src.Slot));
 
             CreateMap<UpdateAppointment, Appointment>()
                 .ForMember(des => des.Date, opt => opt.MapFrom(src => src.Date.Value))

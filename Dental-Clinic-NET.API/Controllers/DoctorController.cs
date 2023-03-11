@@ -184,15 +184,16 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet("{id}")]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> GetAsync(string id)
         {
             try
             {
-                Doctor doctor = _servicesManager.DbContext.Doctors
+
+                Doctor doctor = await _servicesManager.DbContext.Doctors
                     .Include(d => d.Certificate)
                     .Include(d => d.BaseUser)
                     .ThenInclude(user => user.UserLocks)
-                    .FirstOrDefault(d => d.Id == id);
+                    .FirstOrDefaultAsync(d => d.Id == id);
 
                 if(doctor == null)
                 {

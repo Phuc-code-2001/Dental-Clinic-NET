@@ -50,6 +50,7 @@ namespace DataLayer.DataContexts
         public DbSet<UserLock> UserLocks { get; set; }
 
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Post> Posts { get; set; }
 
         public override int SaveChanges()
         {
