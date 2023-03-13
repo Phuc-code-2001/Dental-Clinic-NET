@@ -24,6 +24,10 @@ namespace Dental_Clinic_NET.API.DTOs
         public string State { get; set; }
 
         public DocumentDTO[] Documents { get; set; }
+
+        public DateTime From { get; set; }
+        public DateTime To => From + TimeSpan.FromMinutes(30);
+
     }
 
     public class AppointmentDTOLite : BaseEntityDTO
@@ -45,5 +49,8 @@ namespace Dental_Clinic_NET.API.DTOs
         public string Time { get; set; }
 
         public string State { get; set; }
+
+        public DateTime From { get; set; }
+        public DateTime To => From + TimeSpan.FromMinutes(30);
     }
 }

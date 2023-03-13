@@ -13,7 +13,8 @@ namespace Dental_Clinic_NET.API.ProfileMappers
         {
             CreateMap<Appointment, AppointmentDTO>()
                 .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
-                .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
+                .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()))
+                .ForMember(des => des.From, opt => opt.MapFrom(src => src.Date + TimeManager.Instance.GetTime(src.Slot).Value));
 
             CreateMap<Appointment.States, EnumTypeDTO>()
                 .ForMember(des => des.Id, opt => opt.MapFrom(src => src))
@@ -38,7 +39,8 @@ namespace Dental_Clinic_NET.API.ProfileMappers
             // Appointment Lite
             CreateMap<Appointment, AppointmentDTOLite>()
                 .ForMember(des => des.Time, opt => opt.MapFrom(src => TimeManager.Instance.TryConvertToStrTime(src.Slot)))
-                .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()));
+                .ForMember(des => des.State, opt => opt.MapFrom(src => src.State.ToString()))
+                .ForMember(des => des.From, opt => opt.MapFrom(src => src.Date + TimeManager.Instance.GetTime(src.Slot).Value));
 
         }
 
