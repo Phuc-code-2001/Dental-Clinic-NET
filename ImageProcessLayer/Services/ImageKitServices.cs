@@ -69,7 +69,7 @@ namespace ImageProcessLayer.Services
         {
             // Convert the image to PNG format
             var image = Image.FromStream(stream);
-            image = ResizeImage(image);
+            // image = ResizeImage(image);
             var pngStream = new MemoryStream();
             image.Save(pngStream, System.Drawing.Imaging.ImageFormat.Png);
             pngStream.Position = 0;
