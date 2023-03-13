@@ -15,8 +15,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
         {
 
             CreateMap<Post, PostDTO>()
-                .ForMember(des => des.Creator, opt => opt.MapFrom(src => src.Creator.UserName))
-                .ForMember(des => des.Services, opt => opt.MapFrom(src => src.Services.Select(x => x.ServiceCode)));
+                .ForMember(des => des.Creator, opt => opt.MapFrom(src => src.Creator.UserName));
 
             CreateMap<CreatePost, Post>();
 
