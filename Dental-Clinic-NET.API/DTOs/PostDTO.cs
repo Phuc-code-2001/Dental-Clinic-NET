@@ -12,6 +12,6 @@ namespace Dental_Clinic_NET.API.DTOs
         public string Creator { get; set; }
         public DateTime PublishDate { get; set; }
 
-        public List<string> Services { get; set; }
+        public List<ServiceDTOLite> Services { get; set; }
     }
 }
