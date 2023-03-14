@@ -101,15 +101,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Check device inner
-                service.Devices = new List<Device>();
-                foreach (int id in request.DeviceIdList)
-                {
-                    Device device = _servicesManager.DbContext.Devices.Find(id);
-                    if (device != null)
-                    {
-                        service.Devices.Add(device);
-                    }
-                }
+                service.Devices = _servicesManager.DbContext.Devices
+                    .Where(x => request.DeviceIdList.Contains(x.Id)).ToList();
 
                 _servicesManager.DbContext.Services.Add(service);
                 _servicesManager.DbContext.SaveChanges();
@@ -236,38 +229,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.AutoMapper.Map<UpdateService, Service>(request, service);
 
                 // Setup DeviceList
-                if(request.DeviceIdList != null)
-                {
-                    List<Device> deviceToAdd = new List<Device>();
-                    List<Device> deviceToRemove = new List<Device>();
-                    // Check To Add
-                    foreach (int deviceId in request.DeviceIdList)
-                    {
-                        Device device = _servicesManager.DbContext.Devices.Find(deviceId);
-                        if (device != null && !service.Devices.Contains(device))
-                        {
-                            deviceToAdd.Add(device);
-                        }
-                    }
-                    // Check To Remove
-                    foreach (Device device in service.Devices)
-                    {
-                        if (!request.DeviceIdList.Contains(device.Id))
-                        {
-                            deviceToRemove.Add(device);
-                        }
-                    }
-                    // Add
-                    foreach (Device device in deviceToAdd)
-                    {
-                        service.Devices.Add(device);
-                    }
-                    // Remove
-                    foreach (Device device in deviceToRemove)
-                    {
-                        service.Devices.Remove(device);
-                    }
-                } 
+                service.Devices = _servicesManager.DbContext.Devices
+                    .Where(x => request.DeviceIdList.Contains(x.Id)).ToList();
 
                 //Save
                 _servicesManager.DbContext.Entry(service).State = EntityState.Modified;
