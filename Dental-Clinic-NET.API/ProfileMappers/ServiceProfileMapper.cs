@@ -2,6 +2,7 @@
 using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Services;
+using System;
 
 namespace Dental_Clinic_NET.API.ProfileMappers
 {
@@ -13,12 +14,11 @@ namespace Dental_Clinic_NET.API.ProfileMappers
             CreateMap<Service, ServiceDTO>();
 
             CreateMap<UpdateService, Service>()
-                    .ForAllMembers(opt => opt.Condition((src, des, field) =>
+                    .ForAllMembers(opt => opt.Condition((UpdateService src, Service des, object field) =>
                     {
-                        bool condition_01 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
-                        bool condition_02 = field is int && int.Parse(field.ToString()) > 0;
-                        return condition_01 || condition_02;
+                        return field != null;
                     }));
+
 
             // EnumType to handle selectbox
 
