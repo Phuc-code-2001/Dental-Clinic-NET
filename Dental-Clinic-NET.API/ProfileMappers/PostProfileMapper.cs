@@ -19,6 +19,8 @@ namespace Dental_Clinic_NET.API.ProfileMappers
 
             CreateMap<CreatePost, Post>();
 
+            CreateMap<UpdatePost, Post>();
+
         }
     }
 }
