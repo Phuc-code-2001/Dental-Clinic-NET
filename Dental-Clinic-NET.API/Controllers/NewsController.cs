@@ -98,7 +98,9 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Post post = _servicesManager.DbContext.Posts.FirstOrDefault(x => x.Id == id);
+                Post post = _servicesManager.DbContext.Posts
+                            .Include(x => x.Services)
+                            .FirstOrDefault(x => x.Id == id);
                 if(post == null)
                 {
                     return NotFound("Post not found!");
@@ -106,7 +108,9 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdatePost, Post>(form, post);
 
-                post.Services = _servicesManager.DbContext.Services.Where(x => form.ServicesId.Contains(x.Id)).ToList();
+                post.Services = _servicesManager.DbContext.Services
+                                .Where(x => form.ServicesId.Contains(x.Id))
+                                .ToList();
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 post.Creator = loggedUser;
