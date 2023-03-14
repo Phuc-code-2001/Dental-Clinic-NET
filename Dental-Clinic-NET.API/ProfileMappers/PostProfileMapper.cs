@@ -19,6 +19,12 @@ namespace Dental_Clinic_NET.API.ProfileMappers
 
             CreateMap<CreatePost, Post>();
 
+            CreateMap<UpdatePost, Post>()
+                .ForAllMembers(opt => opt.Condition((src, des, field) =>
+                {
+                    return field != null;
+                }));
+
         }
     }
 }
