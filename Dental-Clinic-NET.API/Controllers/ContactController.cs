@@ -32,11 +32,13 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] ContactFilter filter)
         {
             try
             {
-                var contacts = _servicesManager.DbContext.Contacts;
+                IQueryable<Contact> contacts = _servicesManager.DbContext.Contacts;
+
+                contacts = filter.GetFilterdQuery(contacts);
                 Paginated<Contact> paginated = new Paginated<Contact>(contacts, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ContactDTO[]>(items.ToArray()));
