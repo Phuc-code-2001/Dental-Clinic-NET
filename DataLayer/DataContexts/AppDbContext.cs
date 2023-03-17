@@ -52,6 +52,8 @@ namespace DataLayer.DataContexts
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Post> Posts { get; set; }
 
+        public DbSet<FeedBack> FeedBacks { get; set; }
+
         public override int SaveChanges()
         {
 

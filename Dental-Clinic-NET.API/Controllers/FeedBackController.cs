@@ -1,0 +1,110 @@
+﻿using DataLayer.Domain;
+using Dental_Clinic_NET.API.DTOs;
+using Dental_Clinic_NET.API.Models.FeedBacks;
+using Dental_Clinic_NET.API.Permissions;
+using Dental_Clinic_NET.API.Services;
+using Dental_Clinic_NET.API.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Dental_Clinic_NET.API.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class FeedBackController : ControllerBase
+    {
+        ServicesManager _servicesManager;
+
+        public FeedBackController(ServicesManager servicesManager)
+        {
+            _servicesManager = servicesManager;
+        }
+
+        [HttpPost]
+        [Authorize(Roles = nameof(UserType.Patient))]
+        public async Task<IActionResult> CreateAsync(FeedBackCreation formData)
+        {
+            try
+            {
+                Appointment appointment = await _servicesManager.DbContext.Appointments
+                    .FirstOrDefaultAsync(x => x.Id == formData.AppointmentId);
+
+                if (appointment == null)
+                {
+                    return NotFound("Appoiment not found!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
+                var permission = new PermissionOnAppointment(loggedUser, appointment);
+                if(!permission.IsOwner)
+                {
+                    return StatusCode(403, "You don't have permission to feedback!");
+                }
+
+                if(appointment.State != Appointment.States.Complete)
+                {
+                    return BadRequest("Appointment is not complete");
+                }
+
+                FeedBack feedBack = new FeedBack()
+                {
+                    AppointmentId = appointment.Id,
+                    ServiceId = appointment.ServiceId,
+                    User = loggedUser,
+                    Content = formData.Content,
+                    RatingPoint = formData.RatingPoint.Value
+                };
+
+                _servicesManager.DbContext.FeedBacks.Add(feedBack);
+                _servicesManager.DbContext.SaveChanges();
+                FeedBackDTO feedBackView = _servicesManager.AutoMapper.Map<FeedBackDTO>(feedBack);
+
+                return Ok(feedBackView);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetServiceFeedBacks(int serviceId, [FromQuery] PageFilter filter)
+        {
+            try
+            {
+                IQueryable<FeedBack> feedbacks = _servicesManager.DbContext.FeedBacks
+                    .Include(x => x.User)
+                    .Where(x => x.ServiceId == serviceId);
+
+                FeedbacksOfServiceView view = new FeedbacksOfServiceView();
+
+                view.AverageRatingPoint = feedbacks.Average(x => x.RatingPoint);
+                view.Total = feedbacks.Count();
+                
+                view.Percentages = feedbacks.AsEnumerable().GroupBy(x => x.RatingPoint)
+                    .ToDictionary(x => x.Key, x => x.Count() / (float) view.Total);
+
+                Paginated<FeedBack> paginated = new Paginated<FeedBack>(feedbacks, filter.Page, filter.PageSize);
+
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<FeedBackDTO[]>(items));
+
+                view.Items = dataset;
+
+                return Ok(view);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+    }
+}
