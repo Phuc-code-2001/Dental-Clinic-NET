@@ -44,7 +44,8 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                 case UserType.Doctor:
                     return permission.IsOwner
                         && (entity.State == Appointment.States.Accept
-                        || entity.State == Appointment.States.Doing);
+                        || entity.State == Appointment.States.Doing
+                        || entity.State == Appointment.States.TransferComplete);
 
                 case UserType.Receptionist:
                     return entity.State == Appointment.States.NotYet
