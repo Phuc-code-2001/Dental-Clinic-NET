@@ -58,6 +58,7 @@ namespace DataLayer.Domain
         }
 
         public ICollection<Document> Documents { get; set; } = new HashSet<Document>();
+        public List<SegmentationResult> SegmentationResults { get; set; } = new List<SegmentationResult>();
         
     }
     

@@ -23,6 +23,7 @@ using Dental_Clinic_NET.API.CustomPolicy;
 using Dental_Clinic_NET.API.Services.Doctors;
 using Dental_Clinic_NET.API.Services.Notifications;
 using Dental_Clinic_NET.API.ProfileMappers;
+using SegementationXRayServices;
 
 namespace Dental_Clinic_NET.API
 {
@@ -115,6 +116,12 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<NotificationServices>();
 
             services.AddTransient<ServicesManager>();
+
+            services.AddTransient<XRayClient>(provider =>
+            {
+                IConfiguration cfg = provider.GetRequiredService<IConfiguration>();
+                return new XRayClient(cfg);
+            });
 
             services.AddRouting();
 
