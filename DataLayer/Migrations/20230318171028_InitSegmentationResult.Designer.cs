@@ -4,14 +4,16 @@ using DataLayer.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230318171028_InitSegmentationResult")]
+    partial class InitSegmentationResult
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -587,17 +589,9 @@ namespace DataLayer.Migrations
                     b.Property<string>("ModelName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TechnicanId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("TeethCount")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
-
-                    b.HasIndex("TechnicanId");
 
                     b.ToTable("SegmentationResults");
                 });
@@ -1024,13 +1018,7 @@ namespace DataLayer.Migrations
                         .WithMany("SegmentationResults")
                         .HasForeignKey("AppointmentId");
 
-                    b.HasOne("DataLayer.Domain.BaseUser", "Technican")
-                        .WithMany()
-                        .HasForeignKey("TechnicanId");
-
                     b.Navigation("Appointment");
-
-                    b.Navigation("Technican");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.SegmentationResult+SegmentationImageResult", b =>

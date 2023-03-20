@@ -54,6 +54,8 @@ namespace DataLayer.DataContexts
 
         public DbSet<FeedBack> FeedBacks { get; set; }
 
+        public DbSet<SegmentationResult> SegmentationResults { get; set; }
+
         public override int SaveChanges()
         {
 
