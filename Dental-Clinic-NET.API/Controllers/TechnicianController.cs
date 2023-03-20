@@ -30,36 +30,6 @@ namespace Dental_Clinic_NET.API.Controllers
             _client = client;
         }
 
-
-        [HttpGet]
-        public IActionResult GetAppointmentQueue([FromQuery] PageFilter filter)
-        {
-            try
-            {
-                var queries = _servicesManager.DbContext.Appointments
-                    .Where(x => x.State == Appointment.States.Transfer
-                    || x.State == Appointment.States.TransferDoing
-                    || x.State == Appointment.States.TransferCancel
-                    || x.State == Appointment.States.TransferComplete)
-                    .OrderBy(x => x.State);
-
-                Paginated<Appointment> paginated = new Paginated<Appointment>(queries, filter.Page, filter.PageSize);
-
-                var dataset = paginated.GetData(items =>
-                {
-                    return _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items.ToArray());
-                });
-
-                return Ok(dataset);
-
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-
         [HttpPost]
         [Authorize(Roles = nameof(UserType.Technican))]
         public async Task<IActionResult> UploadXRayImageAsync([FromForm] UploadXRayForm form)
