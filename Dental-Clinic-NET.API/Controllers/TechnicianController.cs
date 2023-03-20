@@ -3,12 +3,14 @@ using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Technician;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SegementationXRayServices;
 using SegementationXRayServices.Requests;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static DataLayer.Domain.SegmentationResult;
@@ -59,10 +61,14 @@ namespace Dental_Clinic_NET.API.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = nameof(UserType.Technican))]
         public async Task<IActionResult> UploadXRayImageAsync([FromForm] UploadXRayForm form)
         {
             try
             {
+
+                BaseUser technicican = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
                 // Find Appointment
                 Appointment appointment = await _servicesManager.DbContext.Appointments
                                 .Include(x => x.SegmentationResults)
@@ -84,6 +90,7 @@ namespace Dental_Clinic_NET.API.Controllers
                     SegmentationResult result = new SegmentationResult()
                     {
                         Appointment = appointment,
+                        Technican = technicican,
                         ModelName = responseData.ModuleName,
                         ImageResultSet = responseData.PredictionResultSet.First().ImageResultSet
                             .Select(x => new SegmentationImageResult()
@@ -113,6 +120,32 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult GetSegmentationResults(int appointmentId)
+        {
+            try
+            {
+                Appointment appointment = _servicesManager.DbContext.Appointments
+                    .Include(x => x.SegmentationResults)
+                    .ThenInclude(x => x.ImageResultSet)
+                    .FirstOrDefault(x => x.Id == appointmentId);
+
+                if (appointment == null)
+                {
+                    return NotFound("Appoiment Not Found!");
+                }
+
+                List<SegmentationResult> results = appointment.SegmentationResults;
+
+                var jsonResults = _servicesManager.AutoMapper.Map<SegmentationResultDTOLite[]>(results.ToArray());
+
+                return Ok(jsonResults);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
     }
 }
