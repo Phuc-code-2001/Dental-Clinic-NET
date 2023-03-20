@@ -30,13 +30,22 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] SearchFilter<Device> filter)
         {
             try
             {
                 IQueryable<Device> devices = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room);
+
+                devices = filter.FilteredQuery(devices, (src, key) =>
+                {
+                    return src.Where(
+                        x => x.DeviceName.Contains(key)
+                        || x.DeviceValue.ToString().Contains(key)
+                    );
+                });
+
                 Paginated<Device> paginated = new Paginated<Device>(devices, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DeviceDTO[]>(items.ToArray()));

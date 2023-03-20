@@ -29,13 +29,18 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] SearchFilter<Room> filter)
         {
             try
             {
-                var rooms = _servicesManager.DbContext.Rooms
+                IQueryable<Room> rooms = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices);
                 Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
+
+                rooms = filter.FilteredQuery(rooms, (src, key) =>
+                {
+                    return src.Where(x => x.RoomCode.Contains(key));
+                });
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<RoomDTO[]>(items.ToArray()));
 
