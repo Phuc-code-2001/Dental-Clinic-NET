@@ -28,7 +28,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             bool c1 = permission.IsAdmin;
             bool c2 = permission.IsOwner;
             bool c3 = permission.LoggedUser.Type == UserType.Receptionist;
-            bool c4 = user.Type == UserType.Technican && CanWrite(entity, user);
+            bool c4 = user.Type == UserType.Technician && CanWrite(entity, user);
             return c1 || c2 || c3 || c4;
         }
 
