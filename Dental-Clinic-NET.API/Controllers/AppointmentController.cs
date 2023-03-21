@@ -38,7 +38,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 .Include(apt => apt.Service.Devices)
                 .Include(apt => apt.Room.Devices)
                 .Include(apt => apt.Documents)
-                .ThenInclude(d => d.File);
+                .ThenInclude(d => d.File)
+                .OrderByDescending(x => x.Date)
+                .ThenBy(x => x.Slot);
+
         }
 
         /// <summary>
