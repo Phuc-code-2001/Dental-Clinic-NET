@@ -31,7 +31,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = nameof(UserType.Technican))]
+        [Authorize(Roles = nameof(UserType.Technician))]
         public async Task<IActionResult> UploadXRayImageAsync([FromForm] UploadXRayForm form)
         {
             try
