@@ -52,7 +52,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                     return entity.State == Appointment.States.NotYet
                         || entity.State == Appointment.States.Accept;
 
-                case UserType.Technican:
+                case UserType.Technician:
                     return entity.State == Appointment.States.Transfer
                         || entity.State == Appointment.States.TransferDoing
                         || entity.State == Appointment.States.TransferCancel
@@ -87,7 +87,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                             || newState == Appointment.States.Doing
                             || newState == Appointment.States.Transfer;
 
-                    case UserType.Technican:
+                    case UserType.Technician:
                         return newState == Appointment.States.Transfer
                             || newState == Appointment.States.TransferCancel
                             || newState == Appointment.States.TransferDoing
