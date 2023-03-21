@@ -1026,13 +1026,13 @@ namespace DataLayer.Migrations
                         .WithMany("SegmentationResults")
                         .HasForeignKey("AppointmentId");
 
-                    b.HasOne("DataLayer.Domain.BaseUser", "Technican")
+                    b.HasOne("DataLayer.Domain.BaseUser", "Technician")
                         .WithMany()
                         .HasForeignKey("TechnicanId");
 
                     b.Navigation("Appointment");
 
-                    b.Navigation("Technican");
+                    b.Navigation("Technician");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.SegmentationResult+SegmentationImageResult", b =>
