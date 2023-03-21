@@ -106,5 +106,42 @@ namespace Dental_Clinic_NET.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAppointmentFeedback(int AppointmentId)
+        {
+            try
+            {
+                Appointment appointment = _servicesManager.DbContext.Appointments.FirstOrDefault(x => x.Id == AppointmentId);
+
+                if(appointment == null)
+                {
+                    return NotFound($"Appointment with id='{AppointmentId}' not found!");
+                }
+
+                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                PermissionOnAppointment permission = new PermissionOnAppointment(loggedUser, appointment);
+
+                if(!(permission.IsOwner || permission.IsAdmin || loggedUser.Type == UserType.Receptionist))
+                {
+                    return Unauthorized("Do not have permission!");
+                }
+
+                FeedBack feedback = _servicesManager.DbContext.FeedBacks
+                    .Include(x => x.User)
+                    .FirstOrDefault(x => x.AppointmentId == AppointmentId);
+
+
+                FeedBackDTO jsonData = _servicesManager.AutoMapper.Map<FeedBackDTO>(feedback);
+                return Ok(jsonData);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+    
     }
 }
