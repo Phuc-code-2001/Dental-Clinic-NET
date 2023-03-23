@@ -259,7 +259,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        public IActionResult UpdateState(int id, Appointment.States state)
+        public async Task<IActionResult> UpdateStateAsync(int id, Appointment.States state)
         {
             try
             {
@@ -276,11 +276,13 @@ namespace Dental_Clinic_NET.API.Controllers
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái, quyền và dữ liệu đầu vào!");
                 }
 
+                var oldState = entity.State;
                 entity.State = state;
                 _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
                 AppointmentDTOLite entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTOLite>(entity);
+                await _servicesManager.AppointmentServices.HandleSendSignalStateChange(oldState, entityDTO);
 
                 return Ok(entityDTO);
             }
