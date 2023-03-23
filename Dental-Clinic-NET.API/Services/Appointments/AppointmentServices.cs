@@ -162,5 +162,6 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                 throw new Exception("No have any Room!");
             }
         }
+
     }
 }

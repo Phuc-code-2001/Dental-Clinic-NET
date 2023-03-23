@@ -1,5 +1,6 @@
 ﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
+using Dental_Clinic_NET.API.Models.Appointments;
 using Dental_Clinic_NET.API.Models.Technician;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
@@ -110,6 +111,41 @@ namespace Dental_Clinic_NET.API.Controllers
                 var jsonResults = _servicesManager.AutoMapper.Map<SegmentationResultDTOLite[]>(results.ToArray());
 
                 return Ok(jsonResults);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = nameof(UserType.Technician))]
+        public IActionResult GetAppointmentQueue([FromQuery] AppointmentFilter filter)
+        {
+            try
+            {
+
+                var validStates = new HashSet<Appointment.States>
+                {
+                    Appointment.States.Transfer,
+                    Appointment.States.TransferDoing,
+                    Appointment.States.TransferCancel,
+                    Appointment.States.TransferComplete
+                };
+
+                IQueryable<Appointment> query = _servicesManager.DbContext.Appointments
+                    .Include(x => x.Patient.BaseUser)
+                    .Include(x => x.Doctor.BaseUser)
+                    .Include(x => x.Service)
+                    .Where(x => validStates.Contains(x.State));
+
+                query = filter.Filter(query).OrderByDescending(x => x.Date);
+
+                var paginated = new Paginated<Appointment>(query, filter.Page, filter.PageSize);
+                var jsonData = paginated.GetData((items) =>
+                _servicesManager.AutoMapper.Map<Appointment[], AppointmentDTOLite[]>(items.ToArray()));
+
+                return Ok(jsonData);
             }
             catch(Exception ex)
             {

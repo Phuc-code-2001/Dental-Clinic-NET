@@ -39,6 +39,7 @@ namespace Dental_Clinic_NET.API.Services.Doctors
             else
             {
                 throw new Exception("File format must be *.pdf");
+
             }
         }
 
