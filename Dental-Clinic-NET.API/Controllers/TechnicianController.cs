@@ -153,5 +153,27 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
+        [HttpDelete]
+        public IActionResult RemoveSegmentationResult(int id)
+        {
+            try
+            {
+                SegmentationResult obj = _servicesManager.DbContext.SegmentationResults
+                    .FirstOrDefault(x => x.Id == id);
+
+                if (obj == null) return NotFound();
+
+                _servicesManager.DbContext.Remove(obj);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok();
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 }
