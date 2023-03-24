@@ -71,6 +71,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 baseUser.FullName = request.FullName;
                 baseUser.Gender = request.Gender;
                 baseUser.Type = UserType.Doctor;
+                baseUser.PusherChannel = _servicesManager.UserServices.GenerateUniqueUserChannel();
 
                 // Doctor Info
                 Doctor doctor = new Doctor()
