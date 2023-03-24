@@ -318,7 +318,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
+                var permission = new PermissionOnAppointment(loggedUser, entity);
+                if (!(permission.IsOwner || permission.IsAdmin))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
@@ -391,7 +392,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
+                var permission = new PermissionOnAppointment(loggedUser, entity);
+                if (!(permission.IsOwner || permission.IsAdmin))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
@@ -445,7 +447,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
-        public IActionResult RemoveDocument(int id) 
+        public IActionResult RemoveDocument(int id)
         {
             try
             {

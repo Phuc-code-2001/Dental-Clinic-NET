@@ -24,7 +24,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult Create([FromForm] CreatePost form)
         {
             try
@@ -93,7 +93,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult Update(int id, [FromForm] UpdatePost form)
         {
             try
@@ -129,7 +129,7 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpDelete]
-        [Authorize(Roles = nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Receptionist))]
         public IActionResult Delete(int id)
         {
             try
