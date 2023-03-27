@@ -19,18 +19,11 @@ using Dental_Clinic_NET.API.Services;
 using FileProcessorServices;
 using Dental_Clinic_NET.API.Services.Appointments;
 using MailServices;
-using AutoMapper;
-using Dental_Clinic_NET.API.AutoMapperProfiles;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Dental_Clinic_NET.API.CustomPolicy;
 using Dental_Clinic_NET.API.Services.Doctors;
 using Dental_Clinic_NET.API.Services.Notifications;
+using Dental_Clinic_NET.API.ProfileMappers;
+using SegementationXRayServices;
 
 namespace Dental_Clinic_NET.API
 {
@@ -123,6 +116,12 @@ namespace Dental_Clinic_NET.API
             services.AddTransient<NotificationServices>();
 
             services.AddTransient<ServicesManager>();
+
+            services.AddTransient<XRayClient>(provider =>
+            {
+                IConfiguration cfg = provider.GetRequiredService<IConfiguration>();
+                return new XRayClient(cfg);
+            });
 
             services.AddRouting();
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using DataLayer.Extensions;
 
 namespace DataLayer.Domain
 {
@@ -57,6 +58,7 @@ namespace DataLayer.Domain
         }
 
         public ICollection<Document> Documents { get; set; } = new HashSet<Document>();
+        public List<SegmentationResult> SegmentationResults { get; set; } = new List<SegmentationResult>();
         
     }
     

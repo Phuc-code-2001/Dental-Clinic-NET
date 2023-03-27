@@ -7,6 +7,6 @@ namespace Dental_Clinic_NET.API.Models.Users.ForgotPassword
     public class ForgotPasswordForm
     {
         [Required]
-        public string UserName { get; set; }
+        public string UserName { get; set; } // Edit usecase is both username and email
     }
 }

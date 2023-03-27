@@ -18,8 +18,11 @@ namespace Dental_Clinic_NET.API.Models.Services
         public IFormFile ImageFile { get; set; }
 
         [Required]
-        public int Price { get; set; }
+        public int? Price { get; set; }
 
         public List<int> DeviceIdList { get; set; } = new List<int>();
+
+        public bool IsPublic { get; set; } = true;
+
     }
 }

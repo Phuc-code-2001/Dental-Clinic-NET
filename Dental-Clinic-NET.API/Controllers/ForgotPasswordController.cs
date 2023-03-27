@@ -2,6 +2,7 @@
 using Dental_Clinic_NET.API.Models.Users.ForgotPassword;
 using Dental_Clinic_NET.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 
@@ -23,7 +24,8 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                BaseUser requiredUser = await _servicesManager.UserManager.FindByNameAsync(form.UserName);
+                BaseUser requiredUser = await _servicesManager.UserManager.Users
+                    .FirstOrDefaultAsync(x => x.UserName == form.UserName || x.Email == form.UserName);
                 if(requiredUser == null)
                 {
                     return NotFound("User not found!");

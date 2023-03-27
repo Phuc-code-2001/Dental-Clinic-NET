@@ -9,6 +9,7 @@ using Dental_Clinic_NET.API.Utils;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Dental_Clinic_NET.API.DTOs;
+using System.Threading.Tasks;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -24,22 +25,34 @@ namespace Dental_Clinic_NET.API.Controllers
 
 
         /// <summary>
-        ///     List all services by admin
+        ///     List all queries by admin
         /// </summary>
         /// <returns>
         ///     200: Request success
         ///     500: Server Handle Error
-        ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] ServicesFilter filter)
         {
             try
             {
-                var services = _servicesManager.DbContext.Services
+                IQueryable<Service> queries = _servicesManager.DbContext.Services
                     .Include(s => s.Devices);
-                // var serviceDTOs = _servicesManager.AutoMapper.Map<ServiceDTO[]>(services);
-                var paginated = new Paginated<Service>(services, filter.Page, filter.PageSize);
+
+                bool onlyShowPublic = true;
+                if(User.Identity.IsAuthenticated)
+                {
+                    BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+                    if(loggedUser.Type == UserType.Administrator)
+                    {
+                        onlyShowPublic = false;
+                    }
+                }
+
+                if (onlyShowPublic) queries = queries.Where(service => service.IsPublic);
+
+                var filtered = filter.GetFilteredQuery(queries);
+                var paginated = new Paginated<Service>(filtered, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ServiceDTO[]>(items.ToArray()));
                 return Ok(dataset);
@@ -51,7 +64,7 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
         /// <summary>
-        ///     Create new services from any actor
+        ///     Create new queries from any actor
         /// </summary>
         /// <param name="request">Services Info</param>
         /// <returns>
@@ -88,15 +101,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Check device inner
-                service.Devices = new List<Device>();
-                foreach (int id in request.DeviceIdList)
-                {
-                    Device device = _servicesManager.DbContext.Devices.Find(id);
-                    if (device != null)
-                    {
-                        service.Devices.Add(device);
-                    }
-                }
+                service.Devices = _servicesManager.DbContext.Devices
+                    .Where(x => request.DeviceIdList.Contains(x.Id)).ToList();
 
                 _servicesManager.DbContext.Services.Add(service);
                 _servicesManager.DbContext.SaveChanges();
@@ -223,38 +229,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.AutoMapper.Map<UpdateService, Service>(request, service);
 
                 // Setup DeviceList
-                if(request.DeviceIdList != null)
-                {
-                    List<Device> deviceToAdd = new List<Device>();
-                    List<Device> deviceToRemove = new List<Device>();
-                    // Check To Add
-                    foreach (int deviceId in request.DeviceIdList)
-                    {
-                        Device device = _servicesManager.DbContext.Devices.Find(deviceId);
-                        if (device != null && !service.Devices.Contains(device))
-                        {
-                            deviceToAdd.Add(device);
-                        }
-                    }
-                    // Check To Remove
-                    foreach (Device device in service.Devices)
-                    {
-                        if (!request.DeviceIdList.Contains(device.Id))
-                        {
-                            deviceToRemove.Add(device);
-                        }
-                    }
-                    // Add
-                    foreach (Device device in deviceToAdd)
-                    {
-                        service.Devices.Add(device);
-                    }
-                    // Remove
-                    foreach (Device device in deviceToRemove)
-                    {
-                        service.Devices.Remove(device);
-                    }
-                } 
+                service.Devices = _servicesManager.DbContext.Devices
+                    .Where(x => request.DeviceIdList.Contains(x.Id)).ToList();
 
                 //Save
                 _servicesManager.DbContext.Entry(service).State = EntityState.Modified;
@@ -266,6 +242,57 @@ namespace Dental_Clinic_NET.API.Controllers
                 return Ok(serviceDTO);
             }
             catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserType.Administrator))]
+        public async Task<IActionResult> MakePublicAsync(int id)
+        {
+            try
+            {
+                Service service = await _servicesManager.DbContext.Services.FirstOrDefaultAsync(x => x.Id == id);
+                if(service == null)
+                {
+                    return NotFound($"Service with id={id} not found!");
+                }
+
+                service.IsPublic = true;
+                _servicesManager.DbContext.Services.Update(service);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok(service);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserType.Administrator))]
+        public async Task<IActionResult> MakeHiddenAsync(int id)
+        {
+            try
+            {
+                Service service = await _servicesManager.DbContext.Services.FirstOrDefaultAsync(x => x.Id == id);
+                if(service == null)
+                {
+                    return NotFound($"Service with id={id} not found!");
+                }
+
+                service.IsPublic = false;
+                _servicesManager.DbContext.Services.Update(service);
+                _servicesManager.DbContext.SaveChanges();
+
+                return Ok(service);
+
+            }
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

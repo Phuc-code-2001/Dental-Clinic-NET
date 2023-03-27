@@ -1,6 +1,7 @@
 ﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.Appointments;
+using Dental_Clinic_NET.API.Models.Schedules;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +38,10 @@ namespace Dental_Clinic_NET.API.Controllers
                 .Include(apt => apt.Service.Devices)
                 .Include(apt => apt.Room.Devices)
                 .Include(apt => apt.Documents)
-                .ThenInclude(d => d.File);
+                .ThenInclude(d => d.File)
+                .OrderByDescending(x => x.Date)
+                .ThenBy(x => x.Slot);
+
         }
 
         /// <summary>
@@ -73,6 +78,22 @@ namespace Dental_Clinic_NET.API.Controllers
             
         }
 
+        [HttpGet]
+        public IActionResult GetFreeDoctorsAsync([FromQuery] TimeIdentifier timeIdentifier)
+        {
+            try
+            {
+                List<Doctor> doctors = _servicesManager.AppointmentServices.GetFreeDoctors(timeIdentifier);
+                List<DoctorDTO> dtos = _servicesManager.AutoMapper.Map<List<DoctorDTO>>(doctors);
+                dtos = dtos.Where(x => x.BaseUser.IsLock == false).ToList();
+                return Ok(dtos);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         /// <summary>
         ///     Create new Appointment, by admin or by patient
         /// </summary>
@@ -102,12 +123,48 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Check Service
-                if(_servicesManager.DbContext.Services.Find(request.ServiceId) == null)
+                Service service = _servicesManager.DbContext.Services.Find(request.ServiceId);
+                if (service == null)
                 {
                     return BadRequest("Truyền sai serviceId rồi => Service not found");
                 }
 
-                if(request.Document != null)
+                if (!service.IsPublic)
+                {
+                    return BadRequest("Service is not public");
+                }
+
+                // Check Doctor
+                if (!string.IsNullOrWhiteSpace(entity.DoctorId))
+                {
+                    Doctor doctor = await _servicesManager.DoctorServices.GetOrCreateDoctorInfoAsync(entity.DoctorId);
+                    if(doctor == null)
+                    {
+                        return BadRequest("Doctor invalid!");
+                    }
+
+                    bool checkDoctorFree = _servicesManager.AppointmentServices
+                        .GetFreeDoctors(request).Contains(doctor);
+
+                    if(checkDoctorFree)
+                    {
+                        entity.Doctor = doctor;
+                    }
+                    else
+                    {
+                        return BadRequest($"Doctor not free at {(TimeIdentifier)request}");
+                    }
+
+                }
+                else
+                {
+                    entity.Doctor = _servicesManager.AppointmentServices.FindDoctorForAppointment(entity);
+                }
+
+                // Find empty room
+                entity.Room = _servicesManager.AppointmentServices.FindRoomForAppointment(entity);
+
+                if (request.Document != null)
                 {
                     // < Xử lý file >
                     if(!request.Document.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
@@ -132,9 +189,6 @@ namespace Dental_Clinic_NET.API.Controllers
 
                     // </ Xử lý file >
                 }
-
-                entity.Doctor = _servicesManager.AppointmentServices.FindDoctorForAppointment(entity);
-                entity.Room = _servicesManager.AppointmentServices.FindRoomForAppointment(entity);
 
                 _servicesManager.DbContext.Appointments.Add(entity);
                 _servicesManager.DbContext.SaveChanges();
@@ -203,173 +257,32 @@ namespace Dental_Clinic_NET.API.Controllers
             }
         }
 
-        /// <summary>
-        ///  Transform an appointment to 'Accept' state
-        /// </summary>
-        /// <param name="id">id of appointment</param>
-        /// <returns>
-        ///     200: Request success
-        ///     404: Not found
-        ///     403: Forbiden
-        ///     401: Unauthorize
-        ///     500: Server handle error
-        /// </returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
-        public IActionResult Accept(int id)
+        [Authorize]
+        public async Task<IActionResult> UpdateStateAsync(int id, Appointment.States state)
         {
             try
             {
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+                Appointment entity = QueryAll().FirstOrDefault(x => x.Id == id);
 
                 if (entity == null)
                 {
-                    return NotFound("Appointment not found!");
+                    return NotFound($"Appointment not found with id='{id}'!");
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if(!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
+                if (!_servicesManager.AppointmentServices.CanUpdateState(entity, loggedUser, state))
                 {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
+                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái, quyền và dữ liệu đầu vào!");
                 }
 
-                entity.State = Appointment.States.Accept;
+                var oldState = entity.State;
+                entity.State = state;
                 _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
-
-                return Ok(entityDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        ///  Transform an appointment to 'Cancel' state
-        /// </summary>
-        /// <param name="id">id of appointment</param>
-        /// <returns>
-        ///     200: Request success
-        ///     404: Not found
-        ///     403: Forbiden
-        ///     401: Unauthorize
-        ///     500: Server handle error
-        /// </returns>
-        [HttpPut("{id}")]
-        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
-        public IActionResult Cancel(int id)
-        {
-            try
-            {
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
-
-                if (entity == null)
-                {
-                    return NotFound("Truyền sai id rồi => Appointment not found!");
-                }
-
-                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
-                {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
-                }
-
-                entity.State = Appointment.States.Cancel;
-                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
-                _servicesManager.DbContext.SaveChanges();
-
-                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
-
-                return Ok(entityDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        ///  Transform an appointment to 'Doing' state
-        /// </summary>
-        /// <param name="id">id of appointment</param>
-        /// <returns>
-        ///     200: Request success
-        ///     404: Not found
-        ///     403: Forbiden
-        ///     401: Unauthorize
-        ///     500: Server handle error
-        /// </returns>
-        [HttpPut("{id}")]
-        [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
-        public IActionResult Doing(int id)
-        {
-            try
-            {
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
-
-                if (entity == null)
-                {
-                    return NotFound("Truyền sai id rồi => Appointment not found!");
-                }
-
-                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
-                {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
-                }
-
-                entity.State = Appointment.States.Doing;
-                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
-                _servicesManager.DbContext.SaveChanges();
-
-                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
-
-                return Ok(entityDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        ///  Transform an appointment to 'Complete' state
-        /// </summary>
-        /// <param name="id">id of appointment</param>
-        /// <returns>
-        ///     200: Request success
-        ///     404: Not found
-        ///     403: Forbiden
-        ///     401: Unauthorize
-        ///     500: Server handle error
-        /// </returns>
-        [HttpPut("{id}")]
-        [Authorize(Roles = nameof(UserType.Doctor) + "," + nameof(UserType.Administrator))]
-        public IActionResult Complete(int id)
-        {
-            try
-            {
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
-
-                if (entity == null)
-                {
-                    return NotFound("Truyền sai id rồi => Appointment not found!");
-                }
-
-                BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
-                {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
-                }
-
-                entity.State = Appointment.States.Complete;
-                _servicesManager.DbContext.Entry(entity).State = EntityState.Modified;
-                _servicesManager.DbContext.SaveChanges();
-
-                AppointmentDTO entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTO>(entity);
+                AppointmentDTOLite entityDTO = _servicesManager.AutoMapper.Map<AppointmentDTOLite>(entity);
+                await _servicesManager.AppointmentServices.HandleSendSignalStateChange(oldState, entityDTO);
 
                 return Ok(entityDTO);
             }
@@ -405,7 +318,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
+                var permission = new PermissionOnAppointment(loggedUser, entity);
+                if (!(permission.IsOwner || permission.IsAdmin))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
@@ -478,7 +392,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                if (!_servicesManager.AppointmentServices.CanWrite(entity, loggedUser))
+                var permission = new PermissionOnAppointment(loggedUser, entity);
+                if (!(permission.IsOwner || permission.IsAdmin))
                 {
                     return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái và quyền!");
                 }
@@ -532,7 +447,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
-        public IActionResult RemoveDocument(int id) 
+        public IActionResult RemoveDocument(int id)
         {
             try
             {

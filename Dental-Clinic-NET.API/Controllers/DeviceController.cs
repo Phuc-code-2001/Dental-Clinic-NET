@@ -30,13 +30,22 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] SearchFilter<Device> filter)
         {
             try
             {
                 IQueryable<Device> devices = _servicesManager.DbContext.Devices
                     .Include(d => d.Services)
                     .Include(d => d.Room);
+
+                devices = filter.FilteredQuery(devices, (src, key) =>
+                {
+                    return src.Where(
+                        x => x.DeviceName.Contains(key)
+                        || x.DeviceValue.ToString().Contains(key)
+                    );
+                });
+
                 Paginated<Device> paginated = new Paginated<Device>(devices, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DeviceDTO[]>(items.ToArray()));
@@ -85,15 +94,8 @@ namespace Dental_Clinic_NET.API.Controllers
 
 
                 // Check service inner
-                device.Services = new List<Service>();
-                foreach(int id in request.ServiceIdList)
-                {
-                    Service service = _servicesManager.DbContext.Services.Find(id);
-                    if(service != null)
-                    {
-                        device.Services.Add(service);
-                    }
-                }
+                device.Services = _servicesManager.DbContext.Services
+                                .Where(x => request.ServiceIdList.Contains(x.Id)).ToList();
 
                 _servicesManager.DbContext.Devices.Add(device);
                 _servicesManager.DbContext.SaveChanges();
@@ -225,23 +227,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 _servicesManager.AutoMapper.Map<UpdateDevice, Device>(request, device);
 
-
-                if(request.ServiceIdList.Count > 0)
-                {
-                    IEnumerable<int> currentServiceListId = device.Services.Select(s => s.Id);
-                    IEnumerable<int> serviceToAddListId = request.ServiceIdList.Except(currentServiceListId);
-                    IEnumerable<int> serviceToRemoveListId = currentServiceListId.Except(request.ServiceIdList);
-
-                    device.Services = device.Services.Where(s => !serviceToRemoveListId.Contains(s.Id)).ToList();
-                    foreach(int serviceId in serviceToAddListId)
-                    {
-                        Service serviceToAdd = _servicesManager.DbContext.Services.Find(serviceId);
-                        if(serviceToAdd != null)
-                        {
-                            device.Services.Add(serviceToAdd);
-                        }
-                    }
-                }
+                device.Services = _servicesManager.DbContext.Services.Where(x => request.ServiceIdList.Contains(x.Id)).ToList();
 
                 _servicesManager.DbContext.Entry(device).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();

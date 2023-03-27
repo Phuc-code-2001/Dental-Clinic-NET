@@ -48,7 +48,7 @@ namespace DataLayer.Migrations
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SlotManager")
+                    b.Property<int>("Slot")
                         .HasColumnType("int");
 
                     b.Property<int>("State")
@@ -360,6 +360,41 @@ namespace DataLayer.Migrations
                     b.ToTable("EmailConfirmations");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.FeedBack", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float>("RatingPoint")
+                        .HasColumnType("real");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FeedBacks");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.FileMedia", b =>
                 {
                     b.Property<int>("Id")
@@ -477,6 +512,38 @@ namespace DataLayer.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.Post", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatorId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("LastTimeModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PublishDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("TimeCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.ToTable("Posts");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -504,6 +571,60 @@ namespace DataLayer.Migrations
                     b.ToTable("Rooms");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.SegmentationResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InputImageURL")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModelName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TechnicanId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("TeethCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("TechnicanId");
+
+                    b.ToTable("SegmentationResults");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.SegmentationResult+SegmentationImageResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SegmentationResultId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SegmentationResultId");
+
+                    b.ToTable("SegmentationImageResult");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Service", b =>
                 {
                     b.Property<int>("Id")
@@ -519,6 +640,9 @@ namespace DataLayer.Migrations
 
                     b.Property<string>("ImageURL")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastTimeModified")
                         .HasColumnType("datetime2");
@@ -718,6 +842,21 @@ namespace DataLayer.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("PostService", b =>
+                {
+                    b.Property<int>("PostsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServicesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PostsId", "ServicesId");
+
+                    b.HasIndex("ServicesId");
+
+                    b.ToTable("PostService");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
                 {
                     b.HasOne("DataLayer.Domain.Doctor", "Doctor")
@@ -818,6 +957,15 @@ namespace DataLayer.Migrations
                     b.Navigation("File");
                 });
 
+            modelBuilder.Entity("DataLayer.Domain.FeedBack", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Message", b =>
                 {
                     b.HasOne("DataLayer.Domain.BaseUser", "FromUser")
@@ -859,6 +1007,37 @@ namespace DataLayer.Migrations
                     b.Navigation("BaseUser");
 
                     b.Navigation("MedicalRecordFile");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.Post", b =>
+                {
+                    b.HasOne("DataLayer.Domain.BaseUser", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId");
+
+                    b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.SegmentationResult", b =>
+                {
+                    b.HasOne("DataLayer.Domain.Appointment", "Appointment")
+                        .WithMany("SegmentationResults")
+                        .HasForeignKey("AppointmentId");
+
+                    b.HasOne("DataLayer.Domain.BaseUser", "Technician")
+                        .WithMany()
+                        .HasForeignKey("TechnicanId");
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Technician");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.SegmentationResult+SegmentationImageResult", b =>
+                {
+                    b.HasOne("DataLayer.Domain.SegmentationResult", null)
+                        .WithMany("ImageResultSet")
+                        .HasForeignKey("SegmentationResultId");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.UserLock", b =>
@@ -934,9 +1113,26 @@ namespace DataLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PostService", b =>
+                {
+                    b.HasOne("DataLayer.Domain.Post", null)
+                        .WithMany()
+                        .HasForeignKey("PostsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataLayer.Domain.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServicesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DataLayer.Domain.Appointment", b =>
                 {
                     b.Navigation("Documents");
+
+                    b.Navigation("SegmentationResults");
                 });
 
             modelBuilder.Entity("DataLayer.Domain.BaseUser", b =>
@@ -947,6 +1143,11 @@ namespace DataLayer.Migrations
             modelBuilder.Entity("DataLayer.Domain.Room", b =>
                 {
                     b.Navigation("Devices");
+                });
+
+            modelBuilder.Entity("DataLayer.Domain.SegmentationResult", b =>
+                {
+                    b.Navigation("ImageResultSet");
                 });
 #pragma warning restore 612, 618
         }

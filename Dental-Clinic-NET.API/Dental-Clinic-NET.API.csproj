@@ -36,6 +36,7 @@
     <ProjectReference Include="..\ImageProcessLayer\ImageProcessLayer.csproj" />
     <ProjectReference Include="..\MailServices\MailServices.csproj" />
     <ProjectReference Include="..\RealTimeProcessLayer\RealTimeProcessLayer.csproj" />
+    <ProjectReference Include="..\SegementationXRayServices\SegementationXRayServices.csproj" />
   </ItemGroup>
 
 </Project>

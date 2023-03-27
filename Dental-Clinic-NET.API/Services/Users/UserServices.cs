@@ -140,8 +140,8 @@ namespace Dental_Clinic_NET.API.Services.Users
             if (exist && confirmation.LastRequiredCode.Equals(code) && confirmation.ValidTo >= DateTime.Now)
             {
 
-                _dbContext.EmailConfirmations.Add(confirmation);
-                _dbContext.SaveChanges();
+                //_dbContext.EmailConfirmations.Add(confirmation);
+                //_dbContext.SaveChanges();
                 UserServices.EmailConfirmarionCache.Remove(user.Email);
                 return await Task.FromResult(true);
             }

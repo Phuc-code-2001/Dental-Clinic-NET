@@ -31,12 +31,14 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpGet]
-        [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
+        public IActionResult GetAll([FromQuery] ContactFilter filter)
         {
             try
             {
-                var contacts = _servicesManager.DbContext.Contacts;
+                IQueryable<Contact> contacts = _servicesManager.DbContext.Contacts;
+
+                contacts = filter.GetFilterdQuery(contacts);
                 Paginated<Contact> paginated = new Paginated<Contact>(contacts, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ContactDTO[]>(items.ToArray()));
@@ -87,7 +89,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult Get(int id)
         {
             try
@@ -114,7 +116,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     
         /// </returns>
         [HttpPut]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult ChangeState(UpdateContact request)
         {
             try
@@ -154,7 +156,7 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server handle error
         /// </returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = nameof(UserType.Administrator) + "," + nameof(UserType.Receptionist))]
         public IActionResult Delete(int id)
         {
             try

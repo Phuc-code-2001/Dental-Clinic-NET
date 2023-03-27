@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DataLayer.Domain;
+using DataLayer.Extensions;
 using Dental_Clinic_NET.API.Utils;
 using static DataLayer.Domain.Appointment;
 
@@ -9,58 +10,40 @@ namespace Dental_Clinic_NET.API.Models.Appointments
 {
     public class AppointmentFilter : PageFilter
     {
-        public string PatientId { get; set; }
+        public string PatientId { get; set; } = string.Empty; 
 
-        public string DoctorId { get; set; }
+        public string DoctorId { get; set; } = string.Empty; 
 
-        public Nullable<Int32> Slot { get; set; }
+        public TimeManager.SlotManager? Slot { get; set; }
         
         [DataType(DataType.Date, ErrorMessage = "Format 'MM/dd/yyyy' required!")]
-        public Nullable<DateTime> StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         [DataType(DataType.Date, ErrorMessage = "Format 'MM/dd/yyyy' required!")]
-        public Nullable<DateTime> EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
-        public Nullable<Int32> ServiceId { get; set; }
+        public int? ServiceId { get; set; }
 
-        public Nullable<Int32> State { get; set; }
+        public Appointment.States? State { get; set; }
+
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+
 
         public IQueryable<Appointment> Filter(IQueryable<Appointment> queries)
         {
 
-            if(PatientId != null)
-            {
-                queries = queries.Where(apt => apt.PatientId == PatientId);
-            }
-            
-            if(DoctorId != null)
-            {
-                queries = queries.Where(apt => apt.DoctorId == DoctorId);
-            }
-
-            if (Slot != null)
-            {
-                queries = queries.Where(apt => (int) apt.Slot == Slot.Value);
-            }
-            if (State != null)
-            {
-                queries = queries.Where(apt => (int) apt.State == State.Value);
-            }
-
-            if (ServiceId != null)
-            {
-                queries = queries.Where(apt => apt.ServiceId == ServiceId);
-            }
-
-            if (StartDate != null)
-            {
-                queries = queries.Where(apt => apt.Date >= StartDate.Value);
-            }
-
-            if (EndDate != null)
-            {
-                queries = queries.Where(apt => apt.Date <= EndDate.Value);
-            }
+            queries = queries.Where(apt => (Slot == null || apt.Slot == Slot.Value) &&
+                        (State == null || apt.State == State.Value) &&
+                        (ServiceId == null || apt.ServiceId == ServiceId.Value) &&
+                        (StartDate == null || apt.Date >= StartDate.Value) &&
+                        (EndDate == null || apt.Date <= EndDate.Value) &&
+                        (string.IsNullOrWhiteSpace(PatientId) || apt.PatientId.Contains(PatientId)) &&
+                        (string.IsNullOrWhiteSpace(DoctorId) || apt.DoctorId.Contains(DoctorId)) &&
+                        (
+                            (string.IsNullOrWhiteSpace(UserName) || apt.Patient.BaseUser.UserName.Contains(UserName)) ||
+                            (string.IsNullOrWhiteSpace(PhoneNumber) || apt.Patient.BaseUser.PhoneNumber.Contains(PhoneNumber)))
+                        );
 
             return queries;
         }
