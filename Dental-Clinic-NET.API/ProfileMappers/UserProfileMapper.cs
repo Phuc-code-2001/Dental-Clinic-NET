@@ -22,6 +22,14 @@ namespace Dental_Clinic_NET.API.ProfileMappers
                 });
 
             CreateMap<UpdateUserModel, BaseUser>()
+                .ForMember(des => des.BirthDate, opt => opt.Ignore())
+                .AfterMap((src, des) =>
+                {
+                    if(src.BirthDate.HasValue)
+                    {
+                        des.BirthDate = src.BirthDate.Value;
+                    }
+                })
                 .ForAllMembers(opt => opt.Condition((src, des, field) =>
                 {
                     bool condition_01 = field is string && !string.IsNullOrWhiteSpace(field.ToString());
