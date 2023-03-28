@@ -60,7 +60,14 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                var queryAll = QueryAll();
+                var queryAll = _servicesManager.DbContext.Appointments
+                                .Include(x => x.Patient.BaseUser)
+                                .Include(apt => apt.Doctor.BaseUser)
+                                .Include(apt => apt.Service)
+                                .Include(apt => apt.Room)
+                                .OrderByDescending(x => x.Date)
+                                .ThenBy(x => x.Slot);
+
                 var filtered = filter.Filter(queryAll);
                 var permissionFiltered = filtered.AsEnumerable()
                     .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
@@ -237,6 +244,11 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+
+                if (entity == null)
+                {
+                    return NotFound($"Appointment with id={id} not found.");
+                }
 
                 if(!_servicesManager.AppointmentServices.CanRead(entity, loggedUser))
                 {
@@ -446,7 +458,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator) + "," + nameof(UserType.Doctor))]
         public IActionResult RemoveDocument(int id)
         {
             try
