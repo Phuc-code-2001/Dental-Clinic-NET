@@ -76,9 +76,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     _servicesManager.DbContext.SegmentationResults.Add(result);
                     _servicesManager.DbContext.SaveChanges();
 
-                    SegmentationResultDTO jsonResult = _servicesManager.AutoMapper.Map<SegmentationResultDTO>(result);
+                    //SegmentationResultDTO jsonResult = _servicesManager.AutoMapper.Map<SegmentationResultDTO>(result);
 
-                    return Ok(jsonResult);
+                    //return Ok(jsonResult);
+                    return Ok("Upload succeeded.");
                 }
 
 
@@ -96,17 +97,12 @@ namespace Dental_Clinic_NET.API.Controllers
         {
             try
             {
-                Appointment appointment = _servicesManager.DbContext.Appointments
-                    .Include(x => x.SegmentationResults)
-                    .ThenInclude(x => x.ImageResultSet)
-                    .FirstOrDefault(x => x.Id == appointmentId);
-
-                if (appointment == null)
-                {
-                    return NotFound("Appoiment Not Found!");
-                }
-
-                List<SegmentationResult> results = appointment.SegmentationResults;
+                
+                List<SegmentationResult> results = _servicesManager.DbContext.SegmentationResults
+                    .Include(x => x.Appointment)
+                    .Include(x => x.Technican)
+                    .Include(x => x.ImageResultSet)
+                    .Where(x => x.Appointment.Id == appointmentId).ToList();
 
                 var jsonResults = _servicesManager.AutoMapper.Map<SegmentationResultDTOLite[]>(results.ToArray());
 

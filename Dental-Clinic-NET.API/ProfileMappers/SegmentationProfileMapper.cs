@@ -11,7 +11,8 @@ namespace Dental_Clinic_NET.API.ProfileMappers
             CreateMap<SegmentationResult, SegmentationResultDTO>();
             CreateMap<SegmentationResult.SegmentationImageResult, SegmentationResultDTO.SegmentationImageResultDTO>();
 
-            CreateMap<SegmentationResult, SegmentationResultDTOLite>();
+            CreateMap<SegmentationResult, SegmentationResultDTOLite>()
+                .ForMember(des => des.Technician, opt => opt.MapFrom(src => src.Technican.UserName));
             CreateMap<SegmentationResult.SegmentationImageResult, SegmentationResultDTOLite.SegmentationImageResultDTOLite>();
         }
     }
