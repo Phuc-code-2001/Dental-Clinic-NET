@@ -25,7 +25,7 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser requiredUser = await _servicesManager.UserManager.Users
-                    .FirstOrDefaultAsync(x => x.UserName == form.UserName || x.Email == form.UserName);
+                    .FirstOrDefaultAsync(x => x.UserName == form.UserName || (x.Email == form.UserName && x.EmailConfirmed));
                 if(requiredUser == null)
                 {
                     return NotFound("User not found!");
