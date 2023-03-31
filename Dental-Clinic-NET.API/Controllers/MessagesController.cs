@@ -211,7 +211,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .ToArray();
                 var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
 
-                return Ok(datasetDTO);
+                return Ok(datasetDTO.OrderBy(x => x.Seen).ThenByDescending(x => x.LastMessageCreated));
             }
             catch (Exception ex)
             {
