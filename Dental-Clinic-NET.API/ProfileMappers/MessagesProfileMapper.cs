@@ -59,7 +59,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
                     if(des.PreviewContent.Length < decodeContent.Length) des.PreviewContent += "...";
                     if(src.LastMessage.FromUser.Type == UserType.Receptionist)
                     {
-                        des.PreviewContent = "Reception:" + des.PreviewContent;
+                        des.PreviewContent = "You:" + des.PreviewContent;
                     }
 
                     des.TimeFormatted = TimeManager.TranslateTimeToAgo(src.LastMessage.TimeCreated.Value);

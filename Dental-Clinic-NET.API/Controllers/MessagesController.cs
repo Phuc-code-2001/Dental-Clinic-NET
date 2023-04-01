@@ -211,7 +211,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .ToArray();
                 var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
 
-                return Ok(datasetDTO.OrderBy(x => x.Seen).ThenByDescending(x => x.LastMessageCreated));
+                return Ok(datasetDTO.OrderBy(x => x.Seen).OrderByDescending(x => x.LastMessageId));
             }
             catch (Exception ex)
             {
@@ -377,7 +377,9 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(message).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                return Ok($"Bạn đã thu hồi tin nhắn. Mã: {messageId}!");
+                ChatMessageDTO msgDTO = _servicesManager.AutoMapper.Map<ChatMessageDTO>(message);
+
+                return Ok(msgDTO);
 
             }
             catch (Exception ex)
