@@ -211,7 +211,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 .ToArray();
                 var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
 
-                return Ok(datasetDTO);
+                return Ok(datasetDTO.OrderBy(x => x.Seen).OrderByDescending(x => x.LastMessageId));
             }
             catch (Exception ex)
             {
@@ -229,9 +229,34 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     403: Forbiden
         ///     500: Server handle error
         /// </returns>
+        //[HttpGet]
+        //[Authorize(Roles = nameof(UserType.Patient))]
+        //public IActionResult ListMessagesInConversationOfPatient([FromQuery] PageFilter filter)
+        //{
+        //    try
+        //    {
+        //        BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
+
+        //        var queries = _servicesManager.DbContext.ChatMessages
+        //            .Include(message => message.FromUser)
+        //            .Where(message => message.FromUser.Id == loggedUser.Id || message.ToUser.Id == loggedUser.Id)
+        //            .OrderByDescending(message => message.TimeCreated);
+
+        //        var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
+
+        //        var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
+
+        //        return Ok(dataset);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Patient))]
-        public IActionResult ListMessagesInConversationOfPatient([FromQuery] PageFilter filter)
+        public IActionResult ListMessagesInConversationOfPatient([FromQuery] MessagesFilter filter)
         {
             try
             {
@@ -239,14 +264,18 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 var queries = _servicesManager.DbContext.ChatMessages
                     .Include(message => message.FromUser)
-                    .Where(message => message.FromUser.Id == loggedUser.Id || message.ToUser.Id == loggedUser.Id)
-                    .OrderByDescending(message => message.TimeCreated);
+                    .Where(message => message.FromId == loggedUser.Id || message.ToId == loggedUser.Id)
+                    .OrderByDescending(message => message.Id);
 
-                var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
 
-                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
+                var filtered = filter.GetData(queries);
+                var jsonData = _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(filtered.ToArray());
 
-                return Ok(dataset);
+                return Ok(new
+                {
+                    total=queries.Count(),
+                    data=jsonData,
+                });
             }
             catch (Exception ex)
             {
@@ -265,9 +294,42 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     403: Forbiden
         ///     500: Server handle error
         /// </returns>
+        //[HttpGet("{patientId}")]
+        //[Authorize(Roles = nameof(UserType.Receptionist))]
+        //public IActionResult ListMessagesInConversationOfReception(string patientId, [FromQuery] PageFilter filter)
+        //{
+        //    try
+        //    {
+        //        Patient toPatient = _servicesManager.DbContext.Patients
+        //            .Include(pat => pat.BaseUser)
+        //            .FirstOrDefault(pat => pat.Id == patientId);
+
+        //        if (toPatient == null)
+        //        {
+        //            return NotFound($"Patient not found with id='{patientId}'!");
+        //        }
+
+        //        var queries = _servicesManager.DbContext.ChatMessages
+        //            .Include(message => message.FromUser)
+        //            .Include(message => message.ToUser)
+        //            .Where(message => message.FromId == patientId || message.ToId == patientId)
+        //            .OrderByDescending(message => message.TimeCreated);
+
+        //        var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
+
+        //        var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
+
+        //        return Ok(dataset);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+
         [HttpGet("{patientId}")]
         [Authorize(Roles = nameof(UserType.Receptionist))]
-        public IActionResult ListMessagesInConversationOfReception(string patientId, [FromQuery] PageFilter filter)
+        public IActionResult ListMessagesInConversationOfReception(string patientId, [FromQuery] MessagesFilter filter)
         {
             try
             {
@@ -286,11 +348,14 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Where(message => message.FromId == patientId || message.ToId == patientId)
                     .OrderByDescending(message => message.TimeCreated);
 
-                var paginated = new Paginated<Message>(queries, filter.Page, filter.PageSize);
+                var filtered = filter.GetData(queries);
+                var jsonData = _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(filtered.ToArray());
 
-                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ChatMessageDTO[]>(items.ToArray()));
-
-                return Ok(dataset);
+                return Ok(new
+                {
+                    total = queries.Count(),
+                    data = jsonData,
+                });
             }
             catch (Exception ex)
             {
@@ -363,7 +428,6 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
 
-
                 Message message = _servicesManager.DbContext.ChatMessages
                     .FirstOrDefault(message => message.Id == messageId);
 
@@ -377,7 +441,20 @@ namespace Dental_Clinic_NET.API.Controllers
                 _servicesManager.DbContext.Entry(message).State = EntityState.Modified;
                 _servicesManager.DbContext.SaveChanges();
 
-                return Ok($"Bạn đã thu hồi tin nhắn. Mã: {messageId}!");
+                ChatMessageDTO msgDTO = _servicesManager.AutoMapper.Map<ChatMessageDTO>(message);
+
+                // Push event
+                string[] chanels = _servicesManager.DbContext.Users
+                    .Where(user => user.Type == UserType.Receptionist)
+                    .Select(user => user.PusherChannel).ToArray();
+
+                Task pushEventTask = _servicesManager.PusherServices
+                    .PushToAsync(chanels, "Chat-RemoveMessage", msgDTO, result =>
+                    {
+                        
+                    });
+
+                return Ok(msgDTO);
 
             }
             catch (Exception ex)
