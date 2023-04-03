@@ -41,7 +41,7 @@ namespace Dental_Clinic_NET.API.Models.Appointments
                         (string.IsNullOrWhiteSpace(PatientId) || apt.PatientId.Contains(PatientId)) &&
                         (string.IsNullOrWhiteSpace(DoctorId) || apt.DoctorId.Contains(DoctorId)) &&
                         (
-                            (string.IsNullOrWhiteSpace(UserName) || apt.Patient.BaseUser.UserName.Contains(UserName)) ||
+                            (string.IsNullOrWhiteSpace(UserName) || apt.Patient.BaseUser.UserName.Contains(UserName)) &&
                             (string.IsNullOrWhiteSpace(PhoneNumber) || apt.Patient.BaseUser.PhoneNumber.Contains(PhoneNumber)))
                         );
 
