@@ -43,11 +43,15 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = "Administrator")]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] PatientFilter filter)
         {
             try
             {
-                var queries = FullyQueryPatientFromContext();
+                IQueryable<Patient> queries = _servicesManager.DbContext.Patients
+                                .Include(pat => pat.BaseUser)
+                                .Where(pat => pat.BaseUser.Type == UserType.Patient);
+
+                queries = filter.GetFilteredQuery(queries);
                 var paginated = new Paginated<Patient>(queries, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<PatientDTO[]>(items.ToArray()));
