@@ -132,6 +132,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Include(x => x.User)
                     .FirstOrDefault(x => x.AppointmentId == AppointmentId);
 
+                if(feedback == null)
+                {
+                    return NotFound();
+                }
 
                 FeedBackDTO jsonData = _servicesManager.AutoMapper.Map<FeedBackDTO>(feedback);
                 return Ok(jsonData);
