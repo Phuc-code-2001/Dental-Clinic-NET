@@ -34,9 +34,10 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 IQueryable<Room> rooms = _servicesManager.DbContext.Rooms
-                    .Include(r => r.Devices);
-                Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
+                    .Include(r => r.Devices)
+                    .Include(r => r.RoomCategory);
 
+                Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
                 rooms = filter.FilteredQuery(rooms, (src, key) =>
                 {
                     return src.Where(x => x.RoomCode.Contains(key));
@@ -68,6 +69,17 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 Room room = _servicesManager.AutoMapper.Map<Room>(request);
 
+                // Check room categories
+                RoomCategory cate = _servicesManager.DbContext.RoomCategories.Find(request.RoomCategoryId);
+                if(cate == null)
+                {
+                    return BadRequest("RoomCatgory Wrong!");
+                }
+                else
+                {
+                    room.RoomCategory = cate;
+                }
+
                 // Check room code
                 bool duplicateRoomCode = _servicesManager.DbContext.Rooms.Any(r => r.RoomCode == room.RoomCode);
                 if (duplicateRoomCode) 
@@ -78,6 +90,7 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 room = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices)
+                    .Include(r => r.RoomCategory)
                     .FirstOrDefault(r => r.Id == room.Id);
 
                 RoomDTO roomDTO = _servicesManager.AutoMapper.Map<RoomDTO>(room);
@@ -106,6 +119,7 @@ namespace Dental_Clinic_NET.API.Controllers
             {
                 Room room = _servicesManager.DbContext.Rooms
                     .Include(r => r.Devices)
+                    .Include(r => r.RoomCategory)
                     .FirstOrDefault(r => r.Id == id);
 
                 if (room == null) return NotFound("Room not found.");
@@ -169,6 +183,17 @@ namespace Dental_Clinic_NET.API.Controllers
                 if (room == null)
                 {
                     return NotFound("Room not found");
+                }
+
+                // Check room categories
+                RoomCategory cate = _servicesManager.DbContext.RoomCategories.Find(request.RoomCategoryId);
+                if (cate == null)
+                {
+                    return BadRequest("RoomCatgory Wrong!");
+                }
+                else
+                {
+                    room.RoomCategory = cate;
                 }
 
                 bool duplicatedCode = _servicesManager.DbContext.Rooms

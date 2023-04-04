@@ -62,9 +62,8 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 var queryAll = _servicesManager.DbContext.Appointments
                                 .Include(x => x.Patient.BaseUser)
-                                .Include(apt => apt.Doctor.BaseUser)
-                                .Include(apt => apt.Service)
-                                .Include(apt => apt.Room)
+                                .Include(x => x.Doctor.BaseUser)
+                                .Include(x => x.Service)
                                 .OrderByDescending(x => x.Date)
                                 .ThenBy(x => x.Slot);
 
@@ -285,7 +284,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 if (!_servicesManager.AppointmentServices.CanUpdateState(entity, loggedUser, state))
                 {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái, quyền và dữ liệu đầu vào!");
+                    return StatusCode(403, "Cannot do this action! You don't have permission!");
                 }
 
                 var oldState = entity.State;

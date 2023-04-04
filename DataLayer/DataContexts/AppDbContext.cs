@@ -35,6 +35,7 @@ namespace DataLayer.DataContexts
         public DbSet<FileMedia> FileMedias { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Room> Rooms { get; set; }
+        public DbSet<RoomCategory> RoomCategories { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Service> Services { get; set; }
 

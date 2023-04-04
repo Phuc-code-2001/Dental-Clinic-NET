@@ -16,5 +16,8 @@ namespace Dental_Clinic_NET.API.Models.Rooms
 
         public RoomTypes RoomType { get; set; } = RoomTypes.GeneralRoom;
 
+        [Required]
+        public int? RoomCategoryId { get; set; } 
+
     }
 }

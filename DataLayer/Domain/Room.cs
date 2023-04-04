@@ -20,5 +20,15 @@ namespace DataLayer.Domain
             GeneralRoom,
             SpecificationRoom,
         }
+
+        public RoomCategory RoomCategory { get; set; }
+
+    }
+    
+    public class RoomCategory
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }
