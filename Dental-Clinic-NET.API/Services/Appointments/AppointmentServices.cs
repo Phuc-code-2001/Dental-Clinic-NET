@@ -27,6 +27,15 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             PusherServices = pusherServices;
         }
 
+
+        //public IQueryable<Appointment> FilterCanReadByQuery(IQueryable<Appointment> source)
+        //{
+        //    return source.Where(x =>
+                
+
+        //    );
+        //}
+
         public bool CanRead(Appointment entity, BaseUser user)
         {
             var permission = new PermissionOnAppointment(user, entity);

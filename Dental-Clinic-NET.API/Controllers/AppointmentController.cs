@@ -66,12 +66,31 @@ namespace Dental_Clinic_NET.API.Controllers
                                 .Include(x => x.Service)
                                 .OrderByDescending(x => x.Date)
                                 .ThenBy(x => x.Slot);
+                
+                switch(loggedUser.Type)
+                {
+                    case UserType.Patient:
+                        filter.PatientId = loggedUser.Id;
+                        break;
+                    case UserType.Doctor:
+                        filter.DoctorId = loggedUser.Id;
+                        break;
+                    case UserType.Receptionist:
+                        break;
+                    case UserType.Technician:
+                        break;
+                    case UserType.Administrator:
+                        break;
+                }
 
-                var filtered = filter.Filter(queryAll);
-                var permissionFiltered = filtered.AsEnumerable()
-                    .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
+                IQueryable<Appointment> filtered = filter.Filter(queryAll);
+                //if(loggedUser.Type == UserType.Doctor || loggedUser.Type == UserType.Patient)
+                //{
+                //    filtered = filtered.AsEnumerable()
+                //        .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
+                //}
 
-                Paginated<Appointment> paginated = new Paginated<Appointment>(permissionFiltered, filter.Page, filter.PageSize);
+                Paginated<Appointment> paginated = new Paginated<Appointment>(filtered, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items.ToArray()));
                 return Ok(dataset);

@@ -10,9 +10,9 @@ namespace Dental_Clinic_NET.API.Models.Appointments
 {
     public class AppointmentFilter : PageFilter
     {
-        public string PatientId { get; set; } = string.Empty; 
+        public string PatientId { get; set; } = string.Empty;
 
-        public string DoctorId { get; set; } = string.Empty; 
+        public string DoctorId { get; set; } = string.Empty;
 
         public TimeManager.SlotManager? Slot { get; set; }
         
