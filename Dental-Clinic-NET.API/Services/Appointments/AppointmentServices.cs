@@ -162,7 +162,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                 .Select(apm => apm.Room).ToList();
 
             Room[] rooms = DbContext.Rooms.AsEnumerable()
-                .Where(r => r.RoomType == Room.RoomTypes.GeneralRoom)
+                .Where(r => r.RoomType == Room.RoomTypes.Active)
                 .Except(busyRooms)
                 .ToArray();
             if(rooms.Length > 0)

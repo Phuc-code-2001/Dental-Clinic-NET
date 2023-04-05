@@ -29,21 +29,16 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] SearchFilter<Room> filter)
+        public IActionResult GetAll([FromQuery] RoomFilter filter)
         {
             try
             {
-                IQueryable<Room> rooms = _servicesManager.DbContext.Rooms
-                    .Include(r => r.Devices)
+                IQueryable<Room> queries = _servicesManager.DbContext.Rooms
                     .Include(r => r.RoomCategory);
+                queries = filter.GetFilteredQuery(queries);
+                Paginated<Room> paginated = new Paginated<Room>(queries, filter.Page, filter.PageSize);
 
-                Paginated<Room> paginated = new Paginated<Room>(rooms, filter.Page, filter.PageSize);
-                rooms = filter.FilteredQuery(rooms, (src, key) =>
-                {
-                    return src.Where(x => x.RoomCode.Contains(key));
-                });
-
-                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<RoomDTO[]>(items.ToArray()));
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<RoomDTOLite[]>(items.ToArray()));
 
                 return Ok(dataset);
             }
@@ -70,15 +65,19 @@ namespace Dental_Clinic_NET.API.Controllers
                 Room room = _servicesManager.AutoMapper.Map<Room>(request);
 
                 // Check room categories
-                RoomCategory cate = _servicesManager.DbContext.RoomCategories.Find(request.RoomCategoryId);
+                RoomCategory cate = _servicesManager.DbContext.RoomCategories.FirstOrDefault(x => x.Name == request.Category);
                 if(cate == null)
                 {
-                    return BadRequest("RoomCatgory Wrong!");
+                    cate = new RoomCategory()
+                    {
+                        Name = request.Category,
+                    };
                 }
                 else
                 {
                     room.RoomCategory = cate;
                 }
+                room.RoomCategory = cate;
 
                 // Check room code
                 bool duplicateRoomCode = _servicesManager.DbContext.Rooms.Any(r => r.RoomCode == room.RoomCode);
@@ -186,15 +185,19 @@ namespace Dental_Clinic_NET.API.Controllers
                 }
 
                 // Check room categories
-                RoomCategory cate = _servicesManager.DbContext.RoomCategories.Find(request.RoomCategoryId);
+                RoomCategory cate = _servicesManager.DbContext.RoomCategories.FirstOrDefault(x => x.Name == request.Category);
                 if (cate == null)
                 {
-                    return BadRequest("RoomCatgory Wrong!");
+                    cate = new RoomCategory()
+                    {
+                        Name = request.Category,
+                    };
                 }
                 else
                 {
                     room.RoomCategory = cate;
                 }
+                room.RoomCategory = cate;
 
                 bool duplicatedCode = _servicesManager.DbContext.Rooms
                     .Any(r => r.Id != room.Id && r.RoomCode == request.RoomCode);
