@@ -17,7 +17,7 @@ namespace Dental_Clinic_NET.API.Models.Rooms
                 (RoomId == null || x.Id == RoomId) &&
                 (RoomTypeId == null || (int) x.RoomType == RoomTypeId) &&
                 (CategoryId == null || x.RoomCategory.Id == CategoryId) &&
-                (!string.IsNullOrWhiteSpace(Code) || x.RoomCode.Contains(Code))
+                (string.IsNullOrWhiteSpace(Code) || x.RoomCode.Contains(Code))
             );
         }
 
