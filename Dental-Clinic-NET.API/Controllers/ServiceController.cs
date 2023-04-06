@@ -54,7 +54,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 var filtered = filter.GetFilteredQuery(queries);
                 var paginated = new Paginated<Service>(filtered, filter.Page, filter.PageSize);
 
-                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ServiceDTO[]>(items.ToArray()));
+                var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<ServiceDTOLite[]>(items.ToArray()));
                 return Ok(dataset);
 
             }
