@@ -29,6 +29,6 @@ namespace Dental_Clinic_NET.API.Models.Devices
         [Required]
         public int? RoomId { get; set; }
 
-        public List<int> ServiceIdList { get; set; } = new List<int>();
+        public HashSet<int> ServiceIdList { get; set; } = new HashSet<int>();
     }
 }
