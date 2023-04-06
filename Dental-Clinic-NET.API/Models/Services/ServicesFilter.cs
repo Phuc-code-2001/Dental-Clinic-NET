@@ -9,57 +9,21 @@ namespace Dental_Clinic_NET.API.Models.Services
         public string Code { get; set; }
         public string Name { get; set; }
 
-        public int MinPrice { get; set; } = int.MinValue;
-        public int MaxPrice { get; set; } = int.MaxValue;
+        public int? MinPrice { get; set; } = int.MinValue;
+        public int? MaxPrice { get; set; } = int.MaxValue;
 
         public bool Union { get; set; } = false;
 
         public IQueryable<Service> GetFilteredQuery(IQueryable<Service> src)
         {
-            bool hasFilterRequired = Code != null && Name != null && MinPrice != int.MinValue && MaxPrice != int.MaxValue;
-            if(hasFilterRequired)
-            {
-                return src.AsEnumerable().Where(service => CheckConditionService(service)).AsQueryable();
-            }
-            return src;
+            return src.Where(x =>
+                (string.IsNullOrWhiteSpace(Code) || x.ServiceCode.Contains(Code)) &&
+                (string.IsNullOrWhiteSpace(Name) || x.ServiceName.Contains(Name)) &&
+                (MinPrice == null || x.Price >= MinPrice) &&
+                (MaxPrice == null || x.Price <= MaxPrice)
+            );
         }
 
-        private bool CheckConditionService(Service service)
-        {
-            bool rootCondition = !Union;
-
-            if (Union)
-            {
-                if (!string.IsNullOrWhiteSpace(Code))
-                {
-                    rootCondition = rootCondition || service.ServiceCode.Contains(Code);
-                }
-
-                if (!string.IsNullOrWhiteSpace(Name))
-                {
-                    rootCondition = rootCondition || service.ServiceName.Contains(Name);
-                }
-
-                rootCondition = rootCondition || (MinPrice <= service.Price && service.Price <= MaxPrice);
-
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(Code))
-                {
-                    rootCondition = rootCondition && service.ServiceCode.Contains(Code);
-                }
-
-                if (!string.IsNullOrWhiteSpace(Name))
-                {
-                    rootCondition = rootCondition && service.ServiceName.Contains(Name);
-                }
-
-                rootCondition = rootCondition && (MinPrice <= service.Price && service.Price <= MaxPrice);
-            }
-
-            return rootCondition;
-        }
-
+        
     }
 }

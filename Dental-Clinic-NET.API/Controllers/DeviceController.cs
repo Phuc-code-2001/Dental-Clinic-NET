@@ -40,9 +40,11 @@ namespace Dental_Clinic_NET.API.Controllers
 
                 devices = filter.FilteredQuery(devices, (src, key) =>
                 {
-                    return src.Where(
-                        x => x.DeviceName.Contains(key)
-                        || x.DeviceValue.ToString().Contains(key)
+                    return src.Where(x => 
+                        x.Id.ToString() == key || 
+                        x.DeviceName.Contains(key) || 
+                        x.DeviceValue.ToString().Contains(key) ||
+                        x.Room.RoomCode.Contains(key)
                     );
                 });
 

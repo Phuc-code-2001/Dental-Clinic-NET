@@ -49,15 +49,17 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] PostFilter filter)
         {
             try
             {
-                var posts = _servicesManager.DbContext.Posts
+                IQueryable<Post> posts = _servicesManager.DbContext.Posts
                             .Include(x => x.Creator)
                             .Include(x => x.Services);
-                var paginated = new Paginated<Post>(posts, filter.Page, filter.PageSize);
 
+                posts = filter.GetFilteredQuery(posts);
+
+                var paginated = new Paginated<Post>(posts, filter.Page, filter.PageSize);
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<PostDTO[]>(items.ToArray()));
 
                 return Ok(dataset);
