@@ -12,6 +12,9 @@ using System;
 using Dental_Clinic_NET.API.Models.Chats;
 using Dental_Clinic_NET.API.DTOs.Messages;
 using Dental_Clinic_NET.API.Utils;
+using SimMetrics.Net;
+using SimMetrics.Net.API;
+
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -196,7 +199,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Receptionist))]
-        public IActionResult ListUsersChatBox()
+        public IActionResult ListUsersChatBox([FromQuery] ConversationFilter filter)
         {
             try
             {
@@ -205,13 +208,14 @@ namespace Dental_Clinic_NET.API.Controllers
                 // 2. Khi có người gửi tin nhắn, căn cứ vào hộp thoại có tồn tại không mà thêm vào database
                 // 3. Truy vấn vào hộp thoại khi muốn hiện danh sách
 
-                var dataset = _servicesManager.DbContext.Conversations
+                IQueryable<Conversation> queries = _servicesManager.DbContext.Conversations
                 .Include(cb => cb.User)
-                .Include(cb => cb.LastMessage)
-                .ToArray();
-                var datasetDTO = _servicesManager.AutoMapper.Map<ConversationDTO[]>(dataset);
+                .Include(cb => cb.LastMessage);
 
-                return Ok(datasetDTO.OrderBy(x => x.Seen).OrderByDescending(x => x.LastMessageId));
+                queries = filter.GetFilteredData(queries);
+                var dataset = _servicesManager.AutoMapper.Map<ConversationDTO[]>(queries.ToArray());
+
+                return Ok(dataset);
             }
             catch (Exception ex)
             {
