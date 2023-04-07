@@ -54,6 +54,11 @@ namespace Dental_Clinic_NET.API.Controllers
                     return BadRequest("Appointment is not complete");
                 }
 
+                if(_servicesManager.DbContext.FeedBacks.Any(x => x.AppointmentId == appointment.Id))
+                {
+                    return BadRequest("This appointment already have feedback!");
+                }
+
                 FeedBack feedBack = new FeedBack()
                 {
                     AppointmentId = appointment.Id,
