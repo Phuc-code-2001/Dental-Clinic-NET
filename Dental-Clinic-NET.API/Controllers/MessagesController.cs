@@ -12,8 +12,6 @@ using System;
 using Dental_Clinic_NET.API.Models.Chats;
 using Dental_Clinic_NET.API.DTOs.Messages;
 using Dental_Clinic_NET.API.Utils;
-using SimMetrics.Net;
-using SimMetrics.Net.API;
 
 
 namespace Dental_Clinic_NET.API.Controllers

@@ -6,7 +6,6 @@ using Dental_Clinic_NET.API.Models.Schedules;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OData.ModelBuilder.Core.V1;
 using RealTimeProcessLayer.Services;
 using System;
 using System.Collections.Generic;

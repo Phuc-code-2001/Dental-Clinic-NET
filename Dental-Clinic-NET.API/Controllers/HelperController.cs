@@ -11,7 +11,6 @@ using ImageProcessLayer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using RealTimeProcessLayer.Services;
 using System;
@@ -91,7 +90,6 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpGet]
-        [EnableQuery]
         public IActionResult ViewAllAccount(int page = 1)
         {
             try

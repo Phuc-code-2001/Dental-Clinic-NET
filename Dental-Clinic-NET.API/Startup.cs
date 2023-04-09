@@ -13,7 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ImageProcessLayer.Services;
 using Dental_Clinic_NET.API.Services.Users;
-using Microsoft.AspNetCore.OData;
 using RealTimeProcessLayer.Services;
 using Dental_Clinic_NET.API.Services;
 using FileProcessorServices;
@@ -125,12 +124,7 @@ namespace Dental_Clinic_NET.API
 
             services.AddRouting();
 
-            services.AddControllers()
-            .AddOData(opt =>
-            {
-                opt.Select().Filter().Count().OrderBy().Expand();
-            });
-
+            services.AddControllers();
 
             services.AddSwaggerGen(c =>
             {
