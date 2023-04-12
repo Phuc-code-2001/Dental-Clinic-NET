@@ -24,6 +24,7 @@ using Dental_Clinic_NET.API.Services.Doctors;
 using Dental_Clinic_NET.API.Services.Notifications;
 using Dental_Clinic_NET.API.ProfileMappers;
 using SegementationXRayServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dental_Clinic_NET.API
 {
@@ -49,7 +50,10 @@ namespace Dental_Clinic_NET.API
                     .AllowAnyHeader());
             });
 
-            services.AddDbContext<AppDbContext>();
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.AddIdentityCore<BaseUser>(options =>
             {
