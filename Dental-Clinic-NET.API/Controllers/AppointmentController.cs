@@ -256,12 +256,12 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet("{id}")]
         [Authorize]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+                Appointment entity = await QueryAll().FirstOrDefaultAsync(x => x.Id == id);
 
                 if (entity == null)
                 {
