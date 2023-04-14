@@ -53,7 +53,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ## Patient
 + Take Appointment (Done)
 + Upload and Update medical record (Done)
-+ Feedback Appointment (NotYet)
++ Feedback Appointment (Done)
 
 ## Doctor
 + Receive Appointment (Done)
@@ -74,10 +74,8 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 + Manage Sevice (Create, Update, Delete) (Done)
 + Manage Device (Create, Update, Delete) (Done)
 + Manage Appointment (Create, Update, Delete) (Done)
-+ Manage Notification (Create, Update, Delete) (InProgress 80%)
++ Manage Notification (Create, Update, Delete) (Done)
 + Manage ChatMessage (Update, Delete) (Done)
-+ Manage Feedback (Update, Delete) (NotYet)
++ Manage Feedback (Update, Delete) (Done)
 
-25 (Done)
-2 (NotYet)
-1 (InProgress)
+27 (Done)
