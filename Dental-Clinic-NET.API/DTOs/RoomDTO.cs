@@ -16,6 +16,14 @@ namespace Dental_Clinic_NET.API.DTOs
             public int Id { get; set; }
             public string DeviceName { get; set; }
         }
+
+        public RoomCateDTO RoomCategory { get; set; }
+    }
+
+    public class RoomCateDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set;}
     }
 
     public class RoomDTOLite : BaseEntityDTO
@@ -24,5 +32,7 @@ namespace Dental_Clinic_NET.API.DTOs
         public string RoomCode { get; set; }
         public string Description { get; set; }
         public EnumTypeDTO RoomType { get; set; }
+
+        public RoomCateDTO RoomCategory { get; set; }
     }
 }

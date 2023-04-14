@@ -10,6 +10,7 @@ using Dental_Clinic_NET.API.Utils;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Dental_Clinic_NET.API.DTOs;
+using System.Collections.Generic;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -32,15 +33,15 @@ namespace Dental_Clinic_NET.API.Controllers
         ///     500: Server Handle Error
         /// </returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] PageFilter filter)
+        public IActionResult GetAll([FromQuery] DoctorFilter filter)
         {
             try
             {
-                var queries = _servicesManager.DbContext.Doctors
-                    .Include(d => d.Certificate)
+                IQueryable<Doctor> queries = _servicesManager.DbContext.Doctors
                     .Include(d => d.BaseUser)
                     .ThenInclude(user => user.UserLocks);
 
+                queries = filter.GetFilteredQuery(queries);
                 Paginated<Doctor> paginated = new Paginated<Doctor>(queries, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<DoctorDTO[]>(items.ToArray()));
@@ -206,6 +207,21 @@ namespace Dental_Clinic_NET.API.Controllers
                 return Ok(doctorDTO);
 
 
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        // [Authorize(Roles = nameof(UserType.Administrator))]
+        public IActionResult GetMajorList()
+        {
+            try
+            {
+                HashSet<string> majors = _servicesManager.DbContext.Doctors.Select(x => x.Major).ToHashSet();
+                return Ok(majors);
             }
             catch(Exception ex)
             {

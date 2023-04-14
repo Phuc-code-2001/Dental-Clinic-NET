@@ -31,6 +31,7 @@ namespace Dental_Clinic_NET.API.DTOs
         public string InputImageURL { get; set; }
         public string ModelName { get; set; }
         public int TeethCount { get; set; }
+        public string Technician { get; set; }
 
         public List<SegmentationImageResultDTOLite> ImageResultSet { get; set; }
 

@@ -60,12 +60,37 @@ namespace Dental_Clinic_NET.API.Controllers
             try
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                var queryAll = QueryAll();
-                var filtered = filter.Filter(queryAll);
-                var permissionFiltered = filtered.AsEnumerable()
-                    .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
+                var queryAll = _servicesManager.DbContext.Appointments
+                                .Include(x => x.Patient.BaseUser)
+                                .Include(x => x.Doctor.BaseUser)
+                                .Include(x => x.Service)
+                                .OrderByDescending(x => x.Date)
+                                .ThenBy(x => x.Slot);
+                
+                switch(loggedUser.Type)
+                {
+                    case UserType.Patient:
+                        filter.PatientId = loggedUser.Id;
+                        break;
+                    case UserType.Doctor:
+                        filter.DoctorId = loggedUser.Id;
+                        break;
+                    case UserType.Receptionist:
+                        break;
+                    case UserType.Technician:
+                        break;
+                    case UserType.Administrator:
+                        break;
+                }
 
-                Paginated<Appointment> paginated = new Paginated<Appointment>(permissionFiltered, filter.Page, filter.PageSize);
+                IQueryable<Appointment> filtered = filter.Filter(queryAll);
+                //if(loggedUser.Type == UserType.Doctor || loggedUser.Type == UserType.Patient)
+                //{
+                //    filtered = filtered.AsEnumerable()
+                //        .Where(entity => _servicesManager.AppointmentServices.CanRead(entity, loggedUser)).AsQueryable();
+                //}
+
+                Paginated<Appointment> paginated = new Paginated<Appointment>(filtered, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<AppointmentDTOLite[]>(items.ToArray()));
                 return Ok(dataset);
@@ -231,12 +256,17 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet("{id}")]
         [Authorize]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
-                Appointment entity = QueryAll().FirstOrDefault(apm => apm.Id == id);
+                Appointment entity = await QueryAll().FirstOrDefaultAsync(x => x.Id == id);
+
+                if (entity == null)
+                {
+                    return NotFound($"Appointment with id={id} not found.");
+                }
 
                 if(!_servicesManager.AppointmentServices.CanRead(entity, loggedUser))
                 {
@@ -273,7 +303,7 @@ namespace Dental_Clinic_NET.API.Controllers
                 BaseUser loggedUser = _servicesManager.UserServices.GetLoggedUser(HttpContext);
                 if (!_servicesManager.AppointmentServices.CanUpdateState(entity, loggedUser, state))
                 {
-                    return StatusCode(403, "Không thể thực hiện! Kiểm tra lại trạng thái, quyền và dữ liệu đầu vào!");
+                    return StatusCode(403, "Cannot do this action! You don't have permission!");
                 }
 
                 var oldState = entity.State;
@@ -446,7 +476,7 @@ namespace Dental_Clinic_NET.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator))]
+        [Authorize(Roles = nameof(UserType.Receptionist) + "," + nameof(UserType.Administrator) + "," + nameof(UserType.Doctor))]
         public IActionResult RemoveDocument(int id)
         {
             try

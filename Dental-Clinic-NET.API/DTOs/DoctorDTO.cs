@@ -16,7 +16,5 @@ namespace Dental_Clinic_NET.API.DTOs
     {
         public string Id { get; set; }
         public UserDTOLite BaseUser { get; set; }
-        public string Major { get; set; }
-        public bool Verified { get; set; }
     }
 }

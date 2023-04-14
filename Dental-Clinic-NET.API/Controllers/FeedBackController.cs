@@ -1,6 +1,7 @@
 ﻿using DataLayer.Domain;
 using Dental_Clinic_NET.API.DTOs;
 using Dental_Clinic_NET.API.Models.FeedBacks;
+using Dental_Clinic_NET.API.Models.Services;
 using Dental_Clinic_NET.API.Permissions;
 using Dental_Clinic_NET.API.Services;
 using Dental_Clinic_NET.API.Utils;
@@ -51,6 +52,11 @@ namespace Dental_Clinic_NET.API.Controllers
                 if(appointment.State != Appointment.States.Complete)
                 {
                     return BadRequest("Appointment is not complete");
+                }
+
+                if(_servicesManager.DbContext.FeedBacks.Any(x => x.AppointmentId == appointment.Id))
+                {
+                    return BadRequest("This appointment already have feedback!");
                 }
 
                 FeedBack feedBack = new FeedBack()
@@ -108,6 +114,44 @@ namespace Dental_Clinic_NET.API.Controllers
         }
 
         [HttpGet]
+        public IActionResult GetRankServices() 
+        {
+            try
+            {
+                IQueryable<Service> queries = _servicesManager.DbContext
+                    .Services.Where(service => service.IsPublic);
+
+                ServiceDTOLite[] services = _servicesManager.AutoMapper.Map<ServiceDTOLite[]>(queries.ToArray());
+
+                List<ServiceRanking> ranking = new List<ServiceRanking>();
+                foreach(ServiceDTOLite service in services)
+                {
+                    IQueryable<FeedBack> feedbacks = _servicesManager.DbContext
+                        .FeedBacks.Where(x => x.ServiceId == service.Id);
+                    int count = feedbacks.Count();
+                    float avg = count > 0 ? feedbacks.Average(x => x.RatingPoint) : 0;
+
+                    ranking.Add(new ServiceRanking
+                    {
+                        ServiceInfo = service,
+                        AveragePoint = avg,
+                        FeedBackCount = count
+                    });
+                }
+
+                ranking = ranking.OrderByDescending(x => x.AveragePoint).ToList();
+
+                return Ok(ranking);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+
+        [HttpGet]
         [Authorize]
         public IActionResult GetAppointmentFeedback(int AppointmentId)
         {
@@ -132,6 +176,10 @@ namespace Dental_Clinic_NET.API.Controllers
                     .Include(x => x.User)
                     .FirstOrDefault(x => x.AppointmentId == AppointmentId);
 
+                if(feedback == null)
+                {
+                    return NotFound();
+                }
 
                 FeedBackDTO jsonData = _servicesManager.AutoMapper.Map<FeedBackDTO>(feedback);
                 return Ok(jsonData);

@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Dropbox.Api.TeamLog.TrustedTeamsRequestAction;
 
 namespace Dental_Clinic_NET.API.Controllers
 {
@@ -174,12 +176,32 @@ namespace Dental_Clinic_NET.API.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = nameof(UserType.Administrator))]
-        public IActionResult GetUsers([FromQuery] PageFilter filter)
+        public IActionResult GetUsers([FromQuery] UserFilter filter)
         {
             try
             {
 
-                var query = _servicesManager.DbContext.Users.Include(user => user.UserLocks);
+                IQueryable<BaseUser> query = _servicesManager.DbContext.Users.Include(user => user.UserLocks);
+                if(filter.IsLock.HasValue)
+                {
+                    List<UserLock> userLocks = _servicesManager.DbContext.UserLocks.OrderBy(x => x.TimeCreated).ToList();
+
+                    HashSet<string> lockingUserIdList = userLocks.GroupBy(x => x.BaseUserId)
+                        .Where(group => group.Last().IsLockCalculated).Select(x => x.Key).ToHashSet();
+                    
+                    if(filter.IsLock.Value)
+                    {
+                        // true
+                        query = query.Where(x => lockingUserIdList.Contains(x.Id));
+                    }
+                    else
+                    {
+                        // false
+                        query = query.Where(x => !lockingUserIdList.Contains(x.Id));
+                    }
+                }
+
+                query = filter.GetFilteredQuery(query);
                 Paginated<BaseUser> paginated = new Paginated<BaseUser>(query, filter.Page, filter.PageSize);
 
                 var dataset = paginated.GetData(items => _servicesManager.AutoMapper.Map<UserDTO[]>(items.ToArray()));

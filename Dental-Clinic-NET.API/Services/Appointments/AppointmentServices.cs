@@ -27,6 +27,15 @@ namespace Dental_Clinic_NET.API.Services.Appointments
             PusherServices = pusherServices;
         }
 
+
+        //public IQueryable<Appointment> FilterCanReadByQuery(IQueryable<Appointment> source)
+        //{
+        //    return source.Where(x =>
+                
+
+        //    );
+        //}
+
         public bool CanRead(Appointment entity, BaseUser user)
         {
             var permission = new PermissionOnAppointment(user, entity);
@@ -153,7 +162,7 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                 .Select(apm => apm.Room).ToList();
 
             Room[] rooms = DbContext.Rooms.AsEnumerable()
-                .Where(r => r.RoomType == Room.RoomTypes.GeneralRoom)
+                .Where(r => r.RoomType == Room.RoomTypes.Active)
                 .Except(busyRooms)
                 .ToArray();
             if(rooms.Length > 0)
@@ -196,7 +205,27 @@ namespace Dental_Clinic_NET.API.Services.Appointments
                 await PusherServices.PushToAsync(chanels, "AppointmentUpdate", message);
             }
 
+            if(newInfo.State.EndsWith(nameof(Appointment.States.Cancel)))
+            {
+                List<string> chanels = new List<string>();
+                if((int) oldState >= (int) Appointment.States.Transfer)
+                {
+                    // Send event to doctor
+                    BaseUser doctor = DbContext.Users.FirstOrDefault(x => x.Id == newInfo.Doctor.Id);
+                    if (doctor != null) chanels.Add(doctor.PusherChannel);
+                }
+
+                chanels.AddRange(DbContext.Users
+                    .Where(x => x.Type == UserType.Receptionist)
+                    .Select(x => x.PusherChannel).ToList()
+                );
+
+                await PusherServices.PushToAsync(chanels.ToArray(), "AppointmentUpdate", message);
+
+            }
+
         }
+
 
     }
 }

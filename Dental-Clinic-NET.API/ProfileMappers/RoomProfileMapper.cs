@@ -15,6 +15,7 @@ namespace Dental_Clinic_NET.API.ProfileMappers
 
             CreateMap<Device, RoomDTO.DeviceInnerDTO>();
             CreateMap<Room, RoomDTO>();
+            CreateMap<RoomCategory, RoomCateDTO>();
 
             CreateMap<UpdateRoom, Room>()
                 .ForAllMembers(opt => opt.Condition((src, des, field) =>
