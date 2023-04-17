@@ -25,6 +25,7 @@ using Dental_Clinic_NET.API.Services.Notifications;
 using Dental_Clinic_NET.API.ProfileMappers;
 using SegementationXRayServices;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Dental_Clinic_NET.API
 {
@@ -52,7 +53,10 @@ namespace Dental_Clinic_NET.API
 
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                string connection = Configuration["UseConnectionString"];
+                options.UseSqlServer(
+                    Configuration.GetConnectionString(connection ?? "DefaultConnection")
+                );
             });
 
             services.AddIdentityCore<BaseUser>(options =>

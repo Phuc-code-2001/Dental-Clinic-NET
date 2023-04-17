@@ -1,6 +1,7 @@
 ﻿using DataLayer.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,22 +13,21 @@ namespace DataLayer.DataContexts
     public class AppDbContext : IdentityDbContext<BaseUser>
     {
 
-        public AppDbContext(DbContextOptions options) : base(options) { }
+        IConfiguration Configuration { get; set; }
 
-        //private static string host = "sql.bsite.net\\MSSQL2016";
-        //private static string user = "phucht2022_DentalClinicNET_V2";
-        //private static string password = "12345678";
-        //private static string database = "phucht2022_DentalClinicNET_V2";
+        public AppDbContext(DbContextOptions options, IConfiguration configuration) : base(options)
+        {
+            Configuration = configuration;
+        }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        string connectionString = $"Server={host};Database={database};uid={user};pwd={password}";
-        //        optionsBuilder.UseSqlServer(connectionString);
-        //        string connection = $"Server=sql.bsite.net\\MSSQL2016;Database=phucht2022_DentalClinicNET_V2;uid=phucht2022_DentalClinicNET_V2;pwd=12345678";
-        //    }
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(
+                Configuration.GetConnectionString(Configuration["UseConnectionString"]),
+                builder => builder.MigrationsAssembly("Dental-Clinic-NET.API")
+            );
+
+        }
 
         public DbSet<Contact> Contacts { get; set; }
 

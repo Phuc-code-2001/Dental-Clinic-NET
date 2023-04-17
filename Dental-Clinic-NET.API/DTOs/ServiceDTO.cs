@@ -24,6 +24,7 @@ namespace Dental_Clinic_NET.API.DTOs
         public string ServiceCode { get; set; }
         public string ServiceName { get; set; }
         public string ImageURL { get; set; }
+        public int Price { get; set; }
 
         public bool IsPublic { get; set; }
     }
