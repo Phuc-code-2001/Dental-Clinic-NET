@@ -36,7 +36,7 @@ This is graduation thesis of group 01 class SE1503. It's used for clinic managem
 ### Deploy
 1. localhost
 
-## Feature Until 3/4/2022
+## Feature Until 3/4/2023
 
 ### Guest
 + Register (Done)
